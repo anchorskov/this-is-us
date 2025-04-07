@@ -5,24 +5,27 @@
     {{ $cover_dimming_class := site.Params.cover_dimming_class | compare.Default "bg-black-60" }}
     <div class="{{ $cover_dimming_class }}">
 
+      <!-- Header container -->
       <div class="flex items-center justify-between ph3 pt3">
-        <!-- Hamburger left -->
-        <div class="hamburger-left">
+
+        <!-- Hamburger (left) -->
+        <div class="tl">
           <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
-
-        <!-- Title centered -->
-        <div class="w-100 tc">
-          <h1 class="f1 f-headline-l fw2 white-90 mb0 lh-title">
+      
+        <!-- Title (centered within full width) -->
+        <div class="flex-auto tc">
+          <h1 class="f2 f-subheadline-l fw2 white-90 lh-title ma0">
             This is US
           </h1>
         </div>
-
-        <!-- Empty spacer to balance layout -->
-        <div class="hamburger-placeholder" style="width: 100px;"></div>
+      
+        <!-- Spacer (right, for symmetry if needed) -->
+        <div style="width: 2rem;"></div>
+      
       </div>
+      
 
-      <!-- Menu links -->
       {{ partials.Include "site-navigation.html" . }}
 
     </div>
@@ -31,18 +34,15 @@
   <header>
     <div class="pb3-m pb6-l {{ .Site.Params.background_color_class | compare.Default "bg-black" }}">
 
-      <div class="flex items-center justify-between ph3 pt3">
-        <div class="hamburger-left">
+      <div class="ph3 pt3">
+        <div class="tl">
           <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
-
-        <div class="w-100 tc">
-          <h1 class="f1 f-headline-l fw2 light-silver mb0 lh-title">
+        <div class="tc mt3">
+          <h1 class="f1 f-headline-l fw2 light-silver lh-title">
             This is US
           </h1>
         </div>
-
-        <div class="hamburger-placeholder" style="width: 100px;"></div>
       </div>
 
       {{ partials.Include "site-navigation.html" . }}
