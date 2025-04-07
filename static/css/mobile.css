@@ -1,0 +1,29 @@
+/* Start by resetting the nav */
+nav.menu {
+    display: none;
+    background-color: #222;
+    flex-direction: column;
+    align-items: center;
+    padding: 1em;
+    position: relative;
+    z-index: 999;
+  }
+  
+  /* Ensure this wins */
+  nav.menu.visible {
+    display: flex !important; /* force it to override theme */
+  }
+  
+  /* Optional spacing & styling */
+  nav.menu a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  nav.menu a:hover {
+    background-color: #444;
+  }
+  

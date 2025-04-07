@@ -1,0 +1,84 @@
+{{ $featured_image := partials.Include "func/GetFeaturedImage.html" . }}
+{{ if $featured_image }}
+  {{ $featured_image_class := site.Params.featured_image_class | compare.Default "cover bg-top" }}
+  <header class="{{ $featured_image_class }}" style="background-image: url('{{ $featured_image }}');">
+    {{ $cover_dimming_class := site.Params.cover_dimming_class | compare.Default "bg-black-60" }}
+    <div class="{{ $cover_dimming_class }}">
+
+      <div class="flex items-center justify-between ph3 pt3">
+        <!-- Hamburger left -->
+        <div class="hamburger-left">
+          <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+        </div>
+
+        <!-- Title centered -->
+        <div class="w-100 tc">
+          <h1 class="f1 f-headline-l fw2 white-90 mb0 lh-title">
+            This is US
+          </h1>
+        </div>
+
+        <!-- Empty spacer to balance layout -->
+        <div class="hamburger-placeholder" style="width: 100px;"></div>
+      </div>
+
+      <!-- Menu links hidden by default -->
+      {{ partials.Include "site-navigation.html" . }}
+
+    </div>
+  </header>
+{{ else }}
+  <!-- fallback if no featured image -->
+  <header>
+    <div class="pb3-m pb6-l {{ .Site.Params.background_color_class | compare.Default "bg-black" }}">
+
+      <div class="flex items-center justify-between ph3 pt3">
+        <div class="hamburger-left">
+          <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+        </div>
+
+        <div class="w-100 tc">
+          <h1 class="f1 f-headline-l fw2 light-silver mb0 lh-title">
+            This is US
+          </h1>
+        </div>
+
+        <div class="hamburger-placeholder" style="width: 100px;"></div>
+      </div>
+
+      {{ partials.Include "site-navigation.html" . }}
+
+    </div>
+  </header>
+{{ end }}
+
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById("main-menu");
+    if (menu) {
+      menu.classList.toggle("visible");
+    }
+  }
+</script>
+<script>
+  function toggleMenu() {
+    const menu = document.getElementById("main-menu");
+
+    if (!menu) {
+      console.log("❌ ERROR: Menu with id 'main-menu' not found.");
+      return;
+    }
+
+    const isHidden = menu.classList.contains("hidden");
+    const isVisible = menu.classList.contains("visible");
+
+    console.log("☰ Button clicked.");
+    console.log("Initial state — hidden:", isHidden, "visible:", isVisible);
+
+    menu.classList.toggle("visible");
+    menu.classList.toggle("hidden");
+
+    // Log the new class list
+    console.log("✅ Menu toggled. New class list:", menu.className);
+  }
+</script>

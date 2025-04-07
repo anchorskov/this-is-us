@@ -1,0 +1,55 @@
+baseURL = "http://localhost/"
+languageCode = "en-us"
+title = "This is US"
+theme = "ananke"
+
+[pagination]
+  pagerSize = 10
+
+[params]
+  description = "Reclaiming our voice. Standing together."
+  author = "The Integrity Project"
+
+[menu]
+
+  [[menu.main]]
+    identifier = "home"
+    name = "Home"
+    url = "/"
+    weight = 1
+
+  [[menu.main]]
+    identifier = "about"
+    name = "Our Why"
+    url = "/about/"
+    weight = 2
+
+  [[menu.main]]
+    identifier = "events"
+    name = "Events"
+    url = "/events/"
+    weight = 3
+
+  [[menu.main]]
+    identifier = "voices"
+    name = "Voices"
+    url = "/voices/"
+    weight = 4
+
+  [[menu.main]]
+    identifier = "learn"
+    name = "Learn"
+    url = "/learn/"
+    weight = 5
+
+  [[menu.main]]
+    identifier = "podcast"
+    name = "Podcast"
+    url = "/podcast/"
+    weight = 6
+
+  [[menu.main]]
+    identifier = "contact"
+    name = "Contact"
+    url = "/contact/"
+    weight = 7
