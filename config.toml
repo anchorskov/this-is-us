@@ -9,6 +9,7 @@ theme = "ananke"
 [params]
   description = "Reclaiming our voice. Standing together."
   author = "The Integrity Project"
+  custom_css = ["custom.css"]
 
 [menu]
 

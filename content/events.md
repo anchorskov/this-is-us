@@ -5,7 +5,10 @@ title: "Events"
 ## Upcoming Events
 
 ### 🎓 Voices for Democracy Workshop  
-🗓 **June 1, 2026 – 11:00 AM**  
+🗓 **April 12 2025 – 11:00 AM to 7:00 PM**  
+🗓 **This is US Townhall** 
+🗓 **Eansville Community Center**  
+
 Empower your voice in democracy through dialogue and action.
 
 ---

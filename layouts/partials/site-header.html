@@ -8,7 +8,7 @@
       <div class="flex items-center justify-between ph3 pt3">
         <!-- Hamburger left -->
         <div class="hamburger-left">
-          <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+          <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
 
         <!-- Title centered -->
@@ -22,19 +22,18 @@
         <div class="hamburger-placeholder" style="width: 100px;"></div>
       </div>
 
-      <!-- Menu links hidden by default -->
+      <!-- Menu links -->
       {{ partials.Include "site-navigation.html" . }}
 
     </div>
   </header>
 {{ else }}
-  <!-- fallback if no featured image -->
   <header>
     <div class="pb3-m pb6-l {{ .Site.Params.background_color_class | compare.Default "bg-black" }}">
 
       <div class="flex items-center justify-between ph3 pt3">
         <div class="hamburger-left">
-          <button class="menu-toggle" onclick="toggleMenu()">☰ Menu</button>
+          <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
 
         <div class="w-100 tc">
@@ -52,14 +51,7 @@
   </header>
 {{ end }}
 
-<script>
-  function toggleMenu() {
-    const menu = document.getElementById("main-menu");
-    if (menu) {
-      menu.classList.toggle("visible");
-    }
-  }
-</script>
+<!-- JavaScript for toggling menu -->
 <script>
   function toggleMenu() {
     const menu = document.getElementById("main-menu");
@@ -78,7 +70,6 @@
     menu.classList.toggle("visible");
     menu.classList.toggle("hidden");
 
-    // Log the new class list
     console.log("✅ Menu toggled. New class list:", menu.className);
   }
 </script>

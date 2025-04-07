@@ -24,4 +24,20 @@ nav.menu {
   nav.menu a:hover {
     background-color: #444;
   }
+  [params]
+    custom_css = ["custom.css"]
+/* Initial state - hidden */
+nav.menu {
+    display: none;
+  }
+  
+  /* When toggled: show it */
+  nav.menu.visible {
+    display: flex !important;
+  }
+  
+  /* If using 'hidden' class to hide, this line is essential: */
+  nav.menu.hidden {
+    display: none !important;
+  }
   
