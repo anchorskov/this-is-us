@@ -1,0 +1,28 @@
+# Hugo build outputs
+/public/
+/resources/_gen/
+/hugo_stats.json
+
+# OS or IDE files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*.tmp
+
+# Node & package files (if used)
+node_modules/
+package-lock.json
+package.json
+
+# Logs
+*.log
+
+# VSCode settings
+.vscode/
+
+# Optional: ignore the theme if using submodule
+# /themes/ananke/
