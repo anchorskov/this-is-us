@@ -1,28 +1,36 @@
-# Hugo build outputs
-/public/
-/resources/_gen/
-/hugo_stats.json
+# ──────────────────────────────────────────────────────────────────────────────
+# Python test & coverage artifacts
+# ──────────────────────────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
 
-# OS or IDE files
-.DS_Store
-Thumbs.db
+# ──────────────────────────────────────────────────────────────────────────────
+# MyPy cache
+# ──────────────────────────────────────────────────────────────────────────────
+.mypy_cache/
 
-# Backup files
-*.bak
-*.swp
-*.swo
-*.tmp
+# ──────────────────────────────────────────────────────────────────────────────
+# Python packaging build dirs
+# ──────────────────────────────────────────────────────────────────────────────
+build/
+dist/
+*.egg-info/
 
-# Node & package files (if used)
-node_modules/
-package-lock.json
-package.json
+# ──────────────────────────────────────────────────────────────────────────────
+# JetBrains IDE (if you ever open in PyCharm, WebStorm, etc.)
+# ──────────────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
 
-# Logs
-*.log
+# ──────────────────────────────────────────────────────────────────────────────
+# VSCode workspace file
+# ──────────────────────────────────────────────────────────────────────────────
+*.code-workspace
 
-# VSCode settings
-.vscode/
-
-# Optional: ignore the theme if using submodule
-# /themes/ananke/
+# ──────────────────────────────────────────────────────────────────────────────
+# Extra log files
+# ──────────────────────────────────────────────────────────────────────────────
+npm-debug.log*
+yarn-error.log*
+yarn.lock
