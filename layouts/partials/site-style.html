@@ -1,0 +1,5 @@
+<link rel="stylesheet" href="/css/global.css" />
+
+{{ with .Params.customCSS }}
+  <link rel="stylesheet" href="/css/pages/{{ . }}.css" />
+{{ end }}

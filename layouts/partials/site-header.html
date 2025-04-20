@@ -5,26 +5,25 @@
     {{ $cover_dimming_class := site.Params.cover_dimming_class | compare.Default "bg-black-60" }}
     <div class="{{ $cover_dimming_class }}">
 
-      <!-- Header container -->
+      <!-- Header row: hamburger left, title centered -->
       <div class="flex items-center justify-between ph3 pt3">
 
         <!-- Hamburger (left) -->
         <div class="tl">
           <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
-      
-        <!-- Title (centered within full width) -->
+
+        <!-- Title centered -->
         <div class="flex-auto tc">
           <h1 class="f2 f-subheadline-l fw2 white-90 lh-title ma0">
             This is US
           </h1>
         </div>
-      
-        <!-- Spacer (right, for symmetry if needed) -->
+
+        <!-- Spacer (right) -->
         <div style="width: 2rem;"></div>
-      
+
       </div>
-      
 
       {{ partials.Include "site-navigation.html" . }}
 
@@ -34,15 +33,20 @@
   <header>
     <div class="pb3-m pb6-l {{ .Site.Params.background_color_class | compare.Default "bg-black" }}">
 
-      <div class="ph3 pt3">
+      <div class="flex items-center justify-between ph3 pt3">
+
         <div class="tl">
           <button class="menu-toggle" onclick="toggleMenu()">☰</button>
         </div>
-        <div class="tc mt3">
-          <h1 class="f1 f-headline-l fw2 light-silver lh-title">
+
+        <div class="flex-auto tc">
+          <h1 class="f2 f-subheadline-l fw2 light-silver lh-title ma0">
             This is US
           </h1>
         </div>
+
+        <div style="width: 2rem;"></div>
+
       </div>
 
       {{ partials.Include "site-navigation.html" . }}
@@ -51,7 +55,6 @@
   </header>
 {{ end }}
 
-<!-- JavaScript for toggling menu -->
 <script>
   function toggleMenu() {
     const menu = document.getElementById("main-menu");

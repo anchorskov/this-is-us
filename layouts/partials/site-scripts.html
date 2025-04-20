@@ -1,0 +1,5 @@
+<script src="/js/main.js" defer></script>
+
+{{ with .Params.customJS }}
+  <script src="/js/pages/{{ . }}.js" defer></script>
+{{ end }}
