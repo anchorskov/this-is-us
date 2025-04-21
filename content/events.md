@@ -1,24 +1,32 @@
 ---
 title: "Events"
+layout: "events"
 ---
 
 ## Upcoming Events
 
-### 🎓 Voices for Democracy Workshop  
-🗓 **April 12 2025 – 11:00 AM to 7:00 PM**  
-🗓 **This is US Townhall** 
-🗓 **Eansville Community Center**  
-
-Empower your voice in democracy through dialogue and action.
+<div id="events-container">
+  <p>Loading live events...</p>
+</div>
 
 ---
 
-### 💬 Courageous Conversations Series  
-🗓 **June 1, 2026 – 12:00 PM**  
-Engage in real talk about the issues dividing us—and what can unite us.
+## Want to Host an Event?
+<button onclick="login()">Login to Submit an Event</button>
 
----
+<div id="submit-form" style="display: none;">
+  <form id="eventForm">
+    <input type="text" placeholder="Event Title" name="title" required />
+    <input type="datetime-local" name="datetime" required />
+    <textarea placeholder="Event Description" name="description"></textarea>
+    <button type="submit">Submit</button>
+  </form>
+</div>
 
-### 🕊 Unity in Action Rally  
-🗓 **June 1, 2026 – 1:00 PM**  
-Celebrate shared humanity and take a public stand for truth and unity.
+<!-- Firebase Core -->
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
+
+<!-- Your JS -->
+<script src="/js/events.js"></script>
