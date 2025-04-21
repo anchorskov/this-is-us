@@ -1,43 +1,33 @@
 /* Override Ananke's nav with force */
 nav.menu {
-    display: none !important;
-    flex-direction: column;
-    align-items: center;
-    background-color: #222;
-    padding: 1em;
-    position: relative;
-    z-index: 9999;
-  }
-  
-  nav.menu.visible {
-    display: flex !important;
-  }
-  
-  nav.menu a {
-    color: #fff;
-    text-decoration: none;
-    padding: 10px;
-    width: 100%;
-    text-align: center;
-  }
-  
-  nav.menu a:hover {
-    background-color: #444;
-  }
-  [params]
-    custom_css = ["custom.css"]
-/* Initial state - hidden */
-nav.menu {
-    display: none;
-  }
-  
-  /* When toggled: show it */
-  nav.menu.visible {
-    display: flex !important;
-  }
-  
-  /* If using 'hidden' class to hide, this line is essential: */
-  nav.menu.hidden {
-    display: none !important;
-  }
-  
+  display: none !important;
+  flex-direction: column;
+  align-items: center;
+  background-color: #222;
+  padding: 1em;
+  position: relative;
+  z-index: 9999;
+}
+
+/* Show when toggled on */
+nav.menu.visible {
+  display: flex !important;
+}
+
+/* Hide when toggled off */
+nav.menu.hidden {
+  display: none !important;
+}
+
+/* Link styles */
+nav.menu a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+nav.menu a:hover {
+  background-color: #444;
+}

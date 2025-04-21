@@ -1,56 +1,80 @@
-baseURL = "http://localhost/"
+baseURL = "https://this-is-us.org/"
 languageCode = "en-us"
 title = "This is US"
-theme = "ananke"
+theme = "PaperMod"
+
+buildDrafts = false
+buildFuture = false
 
 [pagination]
   pagerSize = 10
 
 [params]
-  description = "Reclaiming our voice. Standing together."
   author = "The Integrity Project"
-  custom_css = ["custom.css"]
+  description = "Reclaiming our voice. Standing together."
+  defaultTheme = "auto"
+  disableScrollToTop = false
+  ShowReadingTime = true
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowCodeCopyButtons = true
+  ShowBreadCrumbs = true
+  ShowWordCount = true
+  UseHugoToc = true
+
+  # Optional branding
+  subtitle = "Reclaiming our voice. Standing together."
+  keywords = ["community", "justice", "voices", "podcast"]
+
+  [params.assets]
+    disableScrollBarStyle = false
+    customCSS = ["css/custom.css"]
+
+#[params.socialIcons]
+#  [[params.socialIcons]]
+#    name = "twitter"
+#    url  = "https://twitter.com/YOUR_HANDLE"
 
 [menu]
 
   [[menu.main]]
     identifier = "home"
-    name = "Home"
-    url = "/"
-    weight = 1
+    name       = "Home"
+    url        = "/"
+    weight     = 1
 
   [[menu.main]]
     identifier = "about"
-    name = "Our Why"
-    url = "/about/"
-    weight = 2
+    name       = "Our Why"
+    url        = "/about/"
+    weight     = 2
 
   [[menu.main]]
     identifier = "events"
-    name = "Events"
-    url = "/events/"
-    weight = 3
+    name       = "Events"
+    url        = "/events/"
+    weight     = 3
 
   [[menu.main]]
     identifier = "voices"
-    name = "Voices"
-    url = "/voices/"
-    weight = 4
+    name       = "Voices"
+    url        = "/voices/"
+    weight     = 4
 
   [[menu.main]]
     identifier = "learn"
-    name = "Learn"
-    url = "/learn/"
-    weight = 5
+    name       = "Learn"
+    url        = "/learn/"
+    weight     = 5
 
   [[menu.main]]
     identifier = "podcast"
-    name = "Podcast"
-    url = "/podcast/"
-    weight = 6
+    name       = "Podcast"
+    url        = "/podcast/"
+    weight     = 6
 
   [[menu.main]]
     identifier = "contact"
-    name = "Contact"
-    url = "/contact/"
-    weight = 7
+    name       = "Contact"
+    url        = "/contact/"
+    weight     = 7
