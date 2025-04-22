@@ -1,0 +1,16 @@
+.button {
+    background-color: #4285F4;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .button:hover {
+    background-color: #3367d6;
+  }
+  #top-link {
+    display: none !important;
+  }
+  

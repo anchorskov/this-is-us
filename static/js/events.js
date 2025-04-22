@@ -1,6 +1,4 @@
-// Include this script in your HTML after Firebase libraries are loaded (see below)
-
-// Firebase config
+// 🔥 Firebase Config
 const firebaseConfig = {
     apiKey: "AIzaSyB2JqSDeOgNOdMHCfHqaC78Rgr-l7LqIkU",
     authDomain: "this-is-us-events.firebaseapp.com",
@@ -11,25 +9,43 @@ const firebaseConfig = {
     measurementId: "G-DKHTH767TD"
   };
   
-  // Init Firebase App
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
   
-  // Basic login handler
-  function login() {
-    const email = prompt("Enter your email:");
-    const password = prompt("Enter your password:");
-    auth.signInWithEmailAndPassword(email, password)
-      .then(user => {
-        document.getElementById("submit-form").style.display = "block";
-      })
-      .catch(error => {
-        alert("Login failed: " + error.message);
-      });
+  // 📣 Auth UI logic
+  auth.onAuthStateChanged(user => {
+    const authStatus = document.getElementById("auth-status");
+    const formSection = document.getElementById("submit-form");
+  
+    if (!authStatus || !formSection) return;
+  
+    if (user) {
+      authStatus.innerHTML = `
+        <p>Welcome, ${user.displayName || user.email}</p>
+        <button id="logout-btn">Logout</button>
+      `;
+      formSection.style.display = "block";
+      document.getElementById("logout-btn").onclick = () => auth.signOut();
+    } else {
+      authStatus.innerHTML = `
+        <button id="google-login-btn" style="background:#4285F4;color:white;padding:10px 15px;border:none;border-radius:5px;">
+          Sign in with Google
+        </button>
+      `;
+      document.getElementById("google-login-btn").onclick = googleLogin;
+      formSection.style.display = "none";
+    }
+  });
+  
+  function googleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => {
+      alert("Login failed: " + err.message);
+    });
   }
   
-  // Submit Event Handler
+  // 📝 Form submission
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("eventForm");
     if (form) {
@@ -40,14 +56,10 @@ const firebaseConfig = {
         const description = form.description.value;
   
         try {
-          await db.collection("events").add({
-            title,
-            datetime,
-            description
-          });
+          await db.collection("events").add({ title, datetime, description });
           alert("Event submitted!");
           form.reset();
-          loadEvents(); // Refresh the event list
+          loadEvents();
         } catch (err) {
           alert("Error submitting event: " + err.message);
         }
@@ -57,21 +69,27 @@ const firebaseConfig = {
     loadEvents();
   });
   
-  // Load and display events
+  // 📅 Load events from Firestore
   async function loadEvents() {
     const container = document.getElementById("events-container");
-    const snapshot = await db.collection("events").orderBy("datetime").get();
-    container.innerHTML = "";
-    snapshot.forEach(doc => {
-      const e = doc.data();
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <h3>${e.title}</h3>
-        <p><strong>Date:</strong> ${new Date(e.datetime).toLocaleString()}</p>
-        <p>${e.description}</p>
-        <hr/>
-      `;
-      container.appendChild(div);
-    });
+    if (!container) return;
+  
+    try {
+      const snapshot = await db.collection("events").orderBy("datetime").get();
+      container.innerHTML = "";
+      snapshot.forEach(doc => {
+        const e = doc.data();
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <h3>${e.title}</h3>
+          <p><strong>Date:</strong> ${new Date(e.datetime).toLocaleString()}</p>
+          <p>${e.description}</p>
+          <hr/>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      container.innerHTML = "<p>Failed to load events.</p>";
+    }
   }
   

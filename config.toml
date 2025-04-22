@@ -78,3 +78,7 @@ buildFuture = false
     name       = "Contact"
     url        = "/contact/"
     weight     = 7
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true

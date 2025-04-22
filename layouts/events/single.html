@@ -1,13 +1,90 @@
 {{ define "main" }}
-<main>
-  {{ .Content }}
+<main class="main-content">
+  <article class="post-single">
+    <header class="post-header">
+      <h1 class="post-title">{{ .Title }}</h1>
+    </header>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js"></script>
-
-  <!-- Your custom JS -->
-  <script src="/js/events.js"></script>
+    <div class="post-content">
+      {{ .Content }}
+      <div id="auth-status"></div>
+    </div>
+  </article>
 </main>
+
+<!-- ✅ Must be loaded before any usage -->
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+
+<!-- ✅ Then your custom logic -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2JqSDeOgNOdMHCfHqaC78Rgr-l7LqIkU",
+      authDomain: "this-is-us-events.firebaseapp.com",
+      projectId: "this-is-us-events",
+      storageBucket: "this-is-us-events.firebasestorage.app",
+      messagingSenderId: "215038360222",
+      appId: "1:215038360222:web:98677c77158d282c9ad98f",
+      measurementId: "G-DKHTH767TD"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    const providers = {
+      google: new firebase.auth.GoogleAuthProvider(),
+    };
+
+    function renderAuthUI(user) {
+      const el = document.getElementById("auth-status");
+      if (!el) return;
+
+      if (user && !user.isAnonymous) {
+        el.innerHTML = `
+          <p>Welcome, ${user.displayName || user.email}</p>
+          <button id="logout-btn" class="btn btn--primary">Logout</button>
+        `;
+        document.getElementById("logout-btn").onclick = () => auth.signOut();
+      } else {
+        el.innerHTML = `
+          <p><strong>Sign in to submit your event</strong></p>
+          <button onclick="signInWith('google')" class="btn btn--primary">Google</button>
+          <button onclick="signInEmail()" class="btn btn--primary">Email</button>
+        `;
+      }
+    }
+
+    window.signInWith = function (provider) {
+      auth.signInWithPopup(providers[provider]).catch(err =>
+        alert("Login failed: " + err.message)
+      );
+    };
+
+    window.signInEmail = function () {
+      const email = prompt("Email:");
+      const password = prompt("Password:");
+      if (!email || !password) return;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(err => {
+          if (err.code === 'auth/user-not-found') {
+            if (confirm("No account found. Create one?")) {
+              auth.createUserWithEmailAndPassword(email, password)
+                .catch(e => alert("Signup failed: " + e.message));
+            }
+          } else {
+            alert("Login failed: " + err.message);
+          }
+        });
+    };
+
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        await auth.signInAnonymously();
+      }
+      renderAuthUI(user);
+    });
+  });
+</script>
 {{ end }}
