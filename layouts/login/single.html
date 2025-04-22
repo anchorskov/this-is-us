@@ -7,11 +7,12 @@
 
     <div class="post-content">
       {{ .Content }}
+      <div id="auth-box"></div>
     </div>
   </article>
 </main>
 
-<!-- Firebase SDK -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
 
@@ -33,13 +34,34 @@
     if (!box) return;
 
     box.innerHTML = `
-      <p>Login or Create an Account</p>
-      <button onclick="signInWithGoogle()" class="btn btn--primary">Continue with Google</button>
-      <hr/>
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
-      <button onclick="loginEmail()" class="btn">Sign In</button>
-      <button onclick="signupEmail()" class="btn btn--primary">Create Account</button>
+      <div class="pa4 measure center br3 shadow-1 bg-washed-blue">
+        <h2 class="f4 fw6 tc mb4">Sign in or Create Account</h2>
+
+        <button onclick="signInWithGoogle()" class="f6 link dim br3 ph3 pv2 mb3 dib white bg-dark-blue w-100">
+          Continue with Google
+        </button>
+
+        <div class="mb3">
+          <label class="db fw6 lh-copy f6" for="email">Email</label>
+          <input class="pa2 input-reset ba b--black-20 bg-white w-100" type="email" id="email" name="email">
+        </div>
+
+        <div class="mb3">
+          <label class="db fw6 lh-copy f6" for="password">Password</label>
+          <input class="pa2 input-reset ba b--black-20 bg-white w-100" type="password" id="password" name="password">
+        </div>
+
+        <button onclick="loginEmail()" class="f6 link dim br3 ph3 pv2 mb2 dib white bg-blue w-100">
+          Sign In
+        </button>
+        <button onclick="signupEmail()" class="f6 link dim br3 ph3 pv2 dib white bg-green w-100">
+          Create Account
+        </button>
+
+        <p class="tc mt3">
+          <a href="/events" class="link dim blue">← Back to Events</a>
+        </p>
+      </div>
     `;
 
     window.signInWithGoogle = function () {
@@ -60,7 +82,9 @@
     window.signupEmail = function () {
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password).then(() => {
+      auth.createUserWithEmailAndPassword(email, password).then(userCred => {
+        userCred.user.sendEmailVerification();
+        alert("Verification email sent! Please check your inbox.");
         window.location.href = "/events";
       }).catch(err => alert("Signup failed: " + err.message));
     };

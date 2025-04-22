@@ -2,9 +2,7 @@
 title: "Events"
 ---
 
-## Events Page
-
-<div id="auth-status">Loading login UI…</div>
+<div id="auth-status"></div>
 
 <script>
   const firebaseConfig = {
@@ -16,6 +14,7 @@ title: "Events"
     appId: "1:215038360222:web:98677c77158d282c9ad98f",
     measurementId: "G-DKHTH767TD"
   };
+
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
 
@@ -25,7 +24,7 @@ title: "Events"
 
     if (user) {
       el.innerHTML = `
-        <p>Welcome, ${user.displayName || user.email}</p>
+        <p>Hello, ${user.displayName || user.email}</p>
         <button id="logout-btn">Logout</button>
       `;
       document.getElementById("logout-btn").onclick = () => auth.signOut();

@@ -7,16 +7,23 @@
 
     <div class="post-content">
       {{ .Content }}
-      <div id="auth-status"></div>
+      <div id="greeting"></div>
+      <div id="event-form" style="display: none;">
+        <h3>Submit a New Event</h3>
+        <form id="eventForm">
+          <input name="title" placeholder="Event Title" required />
+          <input name="datetime" type="datetime-local" required />
+          <textarea name="description" placeholder="Event Description" required></textarea>
+          <button type="submit">Submit Event</button>
+        </form>
+      </div>
     </div>
   </article>
 </main>
 
-<!-- ✅ Must be loaded before any usage -->
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
 
-<!-- ✅ Then your custom logic -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const firebaseConfig = {
@@ -25,65 +32,30 @@
       projectId: "this-is-us-events",
       storageBucket: "this-is-us-events.firebasestorage.app",
       messagingSenderId: "215038360222",
-      appId: "1:215038360222:web:98677c77158d282c9ad98f",
-      measurementId: "G-DKHTH767TD"
+      appId: "1:215038360222:web:98677c77158d282c9ad98f"
     };
-
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    const providers = {
-      google: new firebase.auth.GoogleAuthProvider(),
-    };
+    const greet = document.getElementById("greeting");
+    const form = document.getElementById("event-form");
 
-    function renderAuthUI(user) {
-      const el = document.getElementById("auth-status");
-      if (!el) return;
-
-      if (user && !user.isAnonymous) {
-        el.innerHTML = `
-          <p>Welcome, ${user.displayName || user.email}</p>
-          <button id="logout-btn" class="btn btn--primary">Logout</button>
-        `;
-        document.getElementById("logout-btn").onclick = () => auth.signOut();
-      } else {
-        el.innerHTML = `
-          <p><strong>Sign in to submit your event</strong></p>
-          <button onclick="signInWith('google')" class="btn btn--primary">Google</button>
-          <button onclick="signInEmail()" class="btn btn--primary">Email</button>
-        `;
-      }
-    }
-
-    window.signInWith = function (provider) {
-      auth.signInWithPopup(providers[provider]).catch(err =>
-        alert("Login failed: " + err.message)
-      );
-    };
-
-    window.signInEmail = function () {
-      const email = prompt("Email:");
-      const password = prompt("Password:");
-      if (!email || !password) return;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .catch(err => {
-          if (err.code === 'auth/user-not-found') {
-            if (confirm("No account found. Create one?")) {
-              auth.createUserWithEmailAndPassword(email, password)
-                .catch(e => alert("Signup failed: " + e.message));
-            }
-          } else {
-            alert("Login failed: " + err.message);
-          }
-        });
-    };
-
-    auth.onAuthStateChanged(async (user) => {
+    auth.onAuthStateChanged(user => {
       if (!user) {
-        await auth.signInAnonymously();
+        auth.signInAnonymously();
+        greet.innerHTML = "<p>Welcome.</p>";
+      } else if (user.isAnonymous) {
+        greet.innerHTML = "<p>Welcome.</p>";
+        form.style.display = "none";
+      } else {
+        greet.innerHTML = `<p>Hello, ${user.displayName || user.email}</p>`;
+        form.style.display = "block";
       }
-      renderAuthUI(user);
+    });
+
+    document.getElementById("eventForm")?.addEventListener("submit", e => {
+      e.preventDefault();
+      alert("Form submitted (backend wiring not implemented here).");
     });
   });
 </script>

@@ -38,6 +38,11 @@ buildFuture = false
 [menu]
 
   [[menu.main]]
+  name = "Login"
+  url = "/login"
+  weight = 99
+
+  [[menu.main]]
     identifier = "home"
     name       = "Home"
     url        = "/"
