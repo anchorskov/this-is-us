@@ -1,0 +1,29 @@
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const checkFirebase = setInterval(() => {
+        if (typeof firebase !== "undefined" && firebase.auth) {
+          clearInterval(checkFirebase);
+  
+          firebase.auth().onAuthStateChanged(user => {
+            const loginLink = document.querySelector('a[href="/login"]');
+  
+            if (loginLink) {
+              if (user && user.emailVerified) {
+                loginLink.textContent = "Logout";
+                loginLink.href = "#logout";
+                loginLink.onclick = (e) => {
+                  e.preventDefault();
+                  firebase.auth().signOut().then(() => location.reload());
+                };
+              } else {
+                loginLink.textContent = "Login";
+                loginLink.href = "/login";
+                loginLink.onclick = null;
+              }
+            }
+          });
+        }
+      }, 300);
+    });
+  </script>
+  
