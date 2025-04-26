@@ -5,21 +5,15 @@
           clearInterval(checkFirebase);
   
           firebase.auth().onAuthStateChanged(user => {
-            const loginLink = document.querySelector('a[href="/login"]');
-  
-            if (loginLink) {
-              if (user && user.emailVerified) {
-                loginLink.textContent = "Logout";
-                loginLink.href = "#logout";
-                loginLink.onclick = (e) => {
-                  e.preventDefault();
-                  firebase.auth().signOut().then(() => location.reload());
-                };
-              } else {
-                loginLink.textContent = "Login";
-                loginLink.href = "/login";
-                loginLink.onclick = null;
-              }
+            const createEventLink = document.querySelector('a[href="/events/create/"]');
+            if (!createEventLink) return;
+
+            if (!user || !user.emailVerified) {
+              createEventLink.classList.add("pointer-events-none", "o-50");
+              createEventLink.title = "Login to create events";
+            } else {
+              createEventLink.classList.remove("pointer-events-none", "o-50");
+              createEventLink.title = "Create a new event";
             }
           });
         }

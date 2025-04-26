@@ -1,0 +1,25 @@
+{{ define "main" }}
+<main class="main-content">
+  <article class="post-single">
+    <header class="post-header">
+      <h1 class="post-title">{{ .Title }}</h1>
+    </header>
+
+    <div class="post-content">
+      {{ .Content }}
+    </div>
+  </article>
+</main>
+
+<!-- Firebase + Leaflet -->
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Firebase Config & Logic -->
+<script src="/js/firebase-config.js"></script>
+<script src="/js/events-create.js"></script>
+{{ end }}

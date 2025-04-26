@@ -1,0 +1,25 @@
+<!-- layouts/partials/extend_head.html -->
+
+{{- /* Extend PaperMod head section */ -}}
+
+<!-- Custom additional styles if needed -->
+<link rel="stylesheet" href="/css/custom.css">
+
+<!-- Example: Firebase SDKs (if used) -->
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+
+<!-- Custom JavaScript -->
+<script src="/js/firebase-config.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "/login?redirect=/events";
+      }
+    });
+  });
+</script>

@@ -1,3 +1,8 @@
+disableKinds = ["RSS", "sitemap", "taxonomy", "term"]
+
+[menus]
+  main = []
+
 baseURL = "https://this-is-us.org/"
 languageCode = "en-us"
 title = "This is US"
@@ -22,7 +27,6 @@ buildFuture = false
   ShowWordCount = true
   UseHugoToc = true
 
-  # Optional branding
   subtitle = "Reclaiming our voice. Standing together."
   keywords = ["community", "justice", "voices", "podcast"]
 
@@ -30,60 +34,65 @@ buildFuture = false
     disableScrollBarStyle = false
     customCSS = ["css/custom.css"]
 
-#[params.socialIcons]
-#  [[params.socialIcons]]
-#    name = "twitter"
-#    url  = "https://twitter.com/YOUR_HANDLE"
+  [params.firebase]
+    useCDN = true
+    enableAuth = true
+    enableStorage = true
+    enableFirestore = true
+    mapZoomDefault = 4
+    mapCenterLat = 39.5
+    mapCenterLng = -98.35
+    enableZipZoom = true
 
-[menu]
+[[menu.main]]
+  identifier = "home"
+  name = "Home"
+  url = "/"
+  weight = 1
 
-  [[menu.main]]
-  name = "Login"
-  url = "/login"
-  weight = 99
+[[menu.main]]
+  identifier = "about"
+  name = "Our Why"
+  url = "/about/"
+  weight = 2
 
-  [[menu.main]]
-    identifier = "home"
-    name       = "Home"
-    url        = "/"
-    weight     = 1
+[[menu.main]]
+  identifier = "events"
+  name = "Events"
+  url = "/events/"
+  weight = 3
 
-  [[menu.main]]
-    identifier = "about"
-    name       = "Our Why"
-    url        = "/about/"
-    weight     = 2
+[[menu.main]]
+  identifier = "create-event"
+  name = "Create Event"
+  url = "/events/create/"
+  weight = 4
 
-  [[menu.main]]
-    identifier = "events"
-    name       = "Events"
-    url        = "/events/"
-    weight     = 3
+[[menu.main]]
+  identifier = "voices"
+  name = "Voices"
+  url = "/voices/"
+  weight = 5
 
-  [[menu.main]]
-    identifier = "voices"
-    name       = "Voices"
-    url        = "/voices/"
-    weight     = 4
+[[menu.main]]
+  identifier = "learn"
+  name = "Learn"
+  url = "/learn/"
+  weight = 6
 
-  [[menu.main]]
-    identifier = "learn"
-    name       = "Learn"
-    url        = "/learn/"
-    weight     = 5
+[[menu.main]]
+  identifier = "podcast"
+  name = "Podcast"
+  url = "/podcast/"
+  weight = 7
 
-  [[menu.main]]
-    identifier = "podcast"
-    name       = "Podcast"
-    url        = "/podcast/"
-    weight     = 6
+[[menu.main]]
+  identifier = "contact"
+  name = "Contact"
+  url = "/contact/"
+  weight = 8
 
-  [[menu.main]]
-    identifier = "contact"
-    name       = "Contact"
-    url        = "/contact/"
-    weight     = 7
-[markup]
+  [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true

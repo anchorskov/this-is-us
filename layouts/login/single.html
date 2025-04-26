@@ -1,80 +1,62 @@
 {{ define "main" }}
-<main class="main-content">
-  <article class="post-single">
-    <header class="post-header">
-      <h1 class="post-title">{{ .Title }}</h1>
-    </header>
+<main class="main-content flex items-center justify-center vh-100">
+  <div class="pa4 br3 shadow-1 bg-washed-blue mw6 center">
+    <h1 class="f3 tc mb4">Sign In or Create Account</h1>
 
-    <div class="post-content">
-      {{ .Content }}
-      <div id="auth-box"></div>
+    <div id="login-ui">
+      <button onclick="signInWithGoogle()" class="f6 link dim br3 ph4 pv3 mb3 dib white bg-blue w-100">
+        Continue with Google
+      </button>
+
+      <div class="mv3">
+        <input id="email" type="email" placeholder="Email" class="input-reset ba b--black-20 pa2 mb2 w-100">
+        <input id="password" type="password" placeholder="Password" class="input-reset ba b--black-20 pa2 mb2 w-100">
+      </div>
+
+      <button onclick="emailLogin()" class="f6 link dim br3 ph4 pv3 mb2 dib white bg-green w-100">Sign In</button>
+      <button onclick="emailSignup()" class="f6 link dim br3 ph4 pv3 mb2 dib white bg-dark-green w-100">Create Account</button>
     </div>
-  </article>
+  </div>
 </main>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
 <script src="/js/firebase-config.js"></script>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    const box = document.getElementById("auth-box");
-    if (!box) return;
+  function signInWithGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(() => {
+      const params = new URLSearchParams(window.location.search);
+      window.location.href = params.get("redirect") || "/events";
+    }).catch(err => alert(err.message));
+  }
 
-    box.innerHTML = `
-      <div class="pa4 measure center br3 shadow-1 bg-washed-blue">
-        <h2 class="f4 fw6 tc mb4">Sign in or Create Account</h2>
-        <button onclick="signInWithGoogle()" class="f6 link dim br3 ph3 pv2 mb3 dib white bg-dark-blue w-100">
-          Continue with Google
-        </button>
-        <div class="mb3">
-          <label class="db fw6 lh-copy f6" for="email">Email</label>
-          <input class="pa2 input-reset ba b--black-20 bg-white w-100" type="email" id="email" name="email">
-        </div>
-        <div class="mb3">
-          <label class="db fw6 lh-copy f6" for="password">Password</label>
-          <input class="pa2 input-reset ba b--black-20 bg-white w-100" type="password" id="password" name="password">
-        </div>
-        <button onclick="loginEmail()" class="f6 link dim br3 ph3 pv2 mb2 dib white bg-blue w-100">
-          Sign In
-        </button>
-        <button onclick="signupEmail()" class="f6 link dim br3 ph3 pv2 dib white bg-green w-100">
-          Create Account
-        </button>
-        <p class="tc mt3">
-          <a href="/events" class="link dim blue">← Back to Events</a>
-        </p>
-      </div>
-    `;
+  function emailLogin() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = params.get("redirect") || "/events";
+      })
+      .catch(err => alert(err.message));
+  }
 
-    window.signInWithGoogle = function () {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).then(() => {
-        window.location.href = "/events";
-      }).catch(err => alert(err.message));
-    };
-
-    window.loginEmail = function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.signInWithEmailAndPassword(email, password).then(() => {
-        window.location.href = "/events";
-      }).catch(err => alert("Login failed: " + err.message));
-    };
-
-    window.signupEmail = function () {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      auth.createUserWithEmailAndPassword(email, password).then(userCred => {
+  function emailSignup() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCred) => {
         userCred.user.sendEmailVerification();
-        alert("Verification email sent!");
-        window.location.href = "/events";
-      }).catch(err => alert("Signup failed: " + err.message));
-    };
-  });
+        alert("Account created! Verification email sent.");
+        const params = new URLSearchParams(window.location.search);
+        window.location.href = params.get("redirect") || "/events";
+      })
+      .catch(err => alert(err.message));
+  }
 </script>
 {{ end }}
