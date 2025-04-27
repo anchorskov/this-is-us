@@ -1,0 +1,13 @@
+{{ define "main" }}
+<article class="post-single">
+  <header class="post-header">
+    <h1 class="post-title">{{ .Title }}</h1>
+  </header>
+
+  <div class="post-content">
+    {{ .Content }}
+  </div>
+</article>
+
+<!-- Optional: Move Firebase scripts to extend_footer.html later for cleanliness -->
+{{ end }}

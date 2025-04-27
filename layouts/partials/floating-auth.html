@@ -1,0 +1,25 @@
+<!-- layouts/partials/floating-auth.html -->
+<div id="floating-auth" style="display:none; position:fixed; bottom:1rem; right:1rem; z-index:1000;">
+    <a href="/login/" class="button">Login</a>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Example: Show the floating auth button after 3 seconds
+        setTimeout(() => {
+            const auth = document.getElementById("floating-auth");
+            if (auth) {
+                auth.style.display = "block";
+            }
+        }, 3000);
+    });
+</script>
+
+<!-- You can customize this to connect to Firebase or real auth later -->
+
+
+<!-- layouts/partials/site-scripts.html -->
+<script>
+  console.log("Site scripts loaded correctly.");
+  // You can add custom site-wide JavaScript here later
+</script>
