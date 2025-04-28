@@ -1,6 +1,6 @@
 ---
 title: "Create Event"
-layout: "events-create"
+layout: "create"
 url: "/events/create/"
 ---
 
