@@ -1,25 +1,29 @@
-<!-- Firebase core -->
-<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth.js"></script>
+<!-- Firebase core (UMD “compat” builds) -->
+<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth-compat.js"></script>
 
 <!-- FirebaseUI -->
 <link  href="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.css" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.js"></script>
 
-<!-- Your project’s config (keep this file out of Git) -->
+<!-- Your project’s config -->
 <script src="/js/firebase-config.js"></script>
 
 <script>
-  // Initialize Firebase
+  // Initialize Firebase using the global compat builds
   firebase.initializeApp(window.firebaseConfig);
 
   // Set up FirebaseUI
   const uiConfig = {
-    signInOptions: [ firebase.auth.EmailAuthProvider.PROVIDER_ID ],
-    callbacks: { signInSuccessWithAuthResult: () => false }
+    signInOptions: [
+      firebase.auth.EmailAuthProvider.PROVIDER_ID
+    ],
+    callbacks: {
+      signInSuccessWithAuthResult: () => false
+    }
   };
   const ui = new firebaseui.auth.AuthUI(firebase.auth());
 </script>
 
-<!-- Auth logic: only load after Firebase SDK & UI are ready -->
+<!-- Auth logic -->
 <script src="/js/firebase-auth.js"></script>
