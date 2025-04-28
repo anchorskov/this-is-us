@@ -1,0 +1,23 @@
+<!-- Firebase core -->
+<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth.js"></script>
+
+<!-- FirebaseUI -->
+<link  href="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.css" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.js"></script>
+
+<!-- Your project’s config (keep this file out of Git) -->
+<script src="/js/firebase-config.js"></script>
+
+<script>
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Set up FirebaseUI
+  const uiConfig = {
+    signInOptions: [ firebase.auth.EmailAuthProvider.PROVIDER_ID ],
+    callbacks: { signInSuccessWithAuthResult: () => false }
+  };
+  const ui = new firebaseui.auth.AuthUI(firebase.auth());
+</script>
+
