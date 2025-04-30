@@ -3,7 +3,7 @@ title: "This Is US: In Perilous Times"
 description: "Reclaiming our voice. Standing together. Truth. Courage. Unity."
 ---
 
-# 🎧 This Is US  
+# This Is US  
 **In Perilous Times**  
 A project for reflection, resistance, and repair.
 

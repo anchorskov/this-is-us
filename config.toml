@@ -1,98 +1,106 @@
 disableKinds = ["RSS", "sitemap", "taxonomy", "term"]
 
-[menus]
-  main = []
+baseURL       = "https://this-is-us.org/"
+languageCode  = "en-us"
+title         = "This is US"
+theme         = "PaperMod"
 
-baseURL = "https://this-is-us.org/"
-languageCode = "en-us"
-title = "This is US"
-theme = "PaperMod"
-
-buildDrafts = false
-buildFuture = false
+buildDrafts   = false
+buildFuture   = false
 
 [pagination]
   pagerSize = 10
 
 [params]
-  author = "The Integrity Project"
-  description = "Reclaiming our voice. Standing together."
-  defaultTheme = "auto"
-  disableScrollToTop = false
-  ShowReadingTime = true
-  ShowShareButtons = true
-  ShowPostNavLinks = true
-  ShowCodeCopyButtons = true
-  ShowBreadCrumbs = true
-  ShowWordCount = true
-  UseHugoToc = true
-
-  subtitle = "Reclaiming our voice. Standing together."
-  keywords = ["community", "justice", "voices", "podcast"]
+  author               = "The Integrity Project"
+  description          = "Reclaiming our voice. Standing together."
+  defaultTheme         = "auto"
+  disableScrollToTop   = false
+  ShowReadingTime      = true
+  ShowShareButtons     = true
+  ShowPostNavLinks     = true
+  ShowCodeCopyButtons  = true
+  ShowBreadCrumbs      = true
+  ShowWordCount        = true
+  UseHugoToc           = true
+  subtitle             = "Reclaiming our voice. Standing together."
+  keywords             = ["community", "justice", "voices", "podcast"]
 
   [params.assets]
     disableScrollBarStyle = false
-    customCSS = ["css/custom.css"]
+    customCSS            = ["css/custom.css"]
 
   [params.firebase]
-    useCDN = true
-    enableAuth = true
-    enableStorage = true
-    enableFirestore = true
+    useCDN         = true
+    enableAuth     = true
+    enableStorage  = true
+    enableFirestore= true
     mapZoomDefault = 4
-    mapCenterLat = 39.5
-    mapCenterLng = -98.35
-    enableZipZoom = true
+    mapCenterLat   = 39.5
+    mapCenterLng   = -98.35
+    enableZipZoom  = true
 
+# --------------------------------------------------
+# Main navigation menu
+# --------------------------------------------------
 [[menu.main]]
   identifier = "home"
-  name = "Home"
-  url = "/"
-  weight = 1
+  name       = "Home"
+  url        = "/"
+  weight     = 1
 
 [[menu.main]]
   identifier = "about"
-  name = "Our Why"
-  url = "/about/"
-  weight = 2
+  name       = "Our Why"
+  url        = "/about/"
+  weight     = 2
 
 [[menu.main]]
   identifier = "events"
-  name = "Events"
-  url = "/events/"
-  weight = 3
+  name       = "Events"
+  url        = "/events/"
+  weight     = 3
 
 [[menu.main]]
   identifier = "create-event"
-  name = "Create Event"
-  url = "/events/create/"
-  weight = 4
+  name       = "Create Event"
+  url        = "/events/create/"
+  weight     = 4
+
+[[menu.main]]
+  identifier = "donate"
+  name       = "Donate"
+  url        = "/donate/"
+  weight     = 5
 
 [[menu.main]]
   identifier = "voices"
-  name = "Voices"
-  url = "/voices/"
-  weight = 5
+  name       = "Voices"
+  url        = "/voices/"
+  weight     = 6
 
 [[menu.main]]
   identifier = "learn"
-  name = "Learn"
-  url = "/learn/"
-  weight = 6
+  name       = "Learn"
+  url        = "/learn/"
+  weight     = 7
 
 [[menu.main]]
   identifier = "podcast"
-  name = "Podcast"
-  url = "/podcast/"
-  weight = 7
+  name       = "Podcast"
+  url        = "/podcast/"
+  weight     = 8
 
 [[menu.main]]
   identifier = "contact"
-  name = "Contact"
-  url = "/contact/"
-  weight = 8
+  name       = "Contact"
+  url        = "/contact/"
+  weight     = 9
 
-  [markup]
+# --------------------------------------------------
+# Allow raw HTML (for your Anedot iframe embed)
+# --------------------------------------------------
+[markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
