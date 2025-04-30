@@ -1,29 +1,47 @@
-<!-- Firebase core (UMD “compat” builds) -->
-<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth-compat.js"></script>
-
-<!-- FirebaseUI -->
-<link  href="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.css" rel="stylesheet"/>
-<script src="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.js"></script>
-
-<!-- Your project’s config -->
-<script src="/js/firebase-config.js"></script>
+<!-- layouts/partials/firebase-init.html -->
 
 <script>
-  // Initialize Firebase using the global compat builds
-  firebase.initializeApp(window.firebaseConfig);
-
-  // Set up FirebaseUI
-  const uiConfig = {
-    signInOptions: [
-      firebase.auth.EmailAuthProvider.PROVIDER_ID
-    ],
-    callbacks: {
-      signInSuccessWithAuthResult: () => false
+    console.log("🔥 firebase-init partial loaded");
+  </script>
+  
+  <!-- 1) Firebase core (UMD “compat” builds) -->
+  <script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth-compat.js"></script>
+  
+  <!-- 2) FirebaseUI -->
+  <link
+    href="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.css"
+    rel="stylesheet"
+  />
+  <script src="https://www.gstatic.com/firebasejs/ui/6.0.0/firebase-ui-auth.js"></script>
+  
+  <!-- 3) Your project’s config -->
+  <script src="/js/firebase-config.js"></script>
+  
+  <!-- 4) Inline FirebaseUI setup -->
+  <script>
+    if (typeof firebaseui !== 'undefined') {
+      var uiConfig = {
+        signInOptions: [
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          firebase.auth.EmailAuthProvider.PROVIDER_ID
+        ],
+        callbacks: {
+          signInSuccessWithAuthResult: function() {
+            return false;
+          }
+        }
+      };
+      window.uiConfig = uiConfig;
+      window.ui = new firebaseui.auth.AuthUI(firebase.auth());
     }
-  };
-  const ui = new firebaseui.auth.AuthUI(firebase.auth());
-</script>
-
-<!-- Auth logic -->
-<script src="/js/firebase-auth.js"></script>
+  </script>
+  
+  <!-- 5) Containers for auth UI -->
+  <div id="auth-container" style="display:none;"></div>
+  <div id="form-container" style="display:none;"></div>
+  <div id="firebaseui-auth-container"></div>
+  
+  <!-- 6) Your auth logic (initAuthUI) -->
+  <script src="/js/firebase-auth.js"></script>
+  

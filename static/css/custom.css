@@ -31,3 +31,12 @@ nav.menu a {
 nav.menu a:hover {
   background-color: #444;
 }
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+  font: inherit;
+}

@@ -1,6 +1,6 @@
 ---
 title: "Events Hub"
-layout: "events-hub"
+layout: "events/list"
 url: "/events/hub"
 ---
 

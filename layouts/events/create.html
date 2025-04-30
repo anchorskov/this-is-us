@@ -1,0 +1,25 @@
+{{ define "main" }}
+  {{ partial "firebase-init.html" . }}
+
+  <article class="prose mx-auto">
+    <h1>{{ .Title }}</h1>
+
+    <!-- LOGIN PROMPT + UI WIDGET -->
+    <div id="auth-container"
+         class="flex flex-column items-center justify-center">
+      {{ .Content }}
+      <!-- ← FirebaseUI injects here -->
+      <div id="firebaseui-auth-container" class="mt-2"></div>
+    </div>
+
+    <!-- EVENT FORM (hidden until login) -->
+    <div id="form-container" style="display:none" class="mt-4">
+      <form name="create-event" method="POST" data-netlify="true">
+        <p><label>Title: <input type="text" name="title" required></label></p>
+        <p><label>Date:  <input type="date" name="date" required></label></p>
+        <p><label>Details:<textarea name="details" rows="4"></textarea></label></p>
+        <p><button type="submit">Submit Event</button></p>
+      </form>
+    </div>
+  </article>
+{{ end }}

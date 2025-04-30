@@ -4,4 +4,4 @@ layout: "events/create"
 url: "/events/create/"
 ---
 
-<p>Please <a href="#" id="login-link">log in</a> to create an event.</p>
+<p>Please <button id="login-link" class="link-button">log in</button> to create an event.</p>

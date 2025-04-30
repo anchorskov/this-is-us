@@ -1,20 +1,22 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("floating-auth");
-    if (!container || typeof firebase === "undefined") return;
-  
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        container.innerHTML = `
-          <button class="auth-btn" onclick="window.location.href='/login'">Login</button>
-        `;
-      } else {
-        container.innerHTML = `
-          <span class="mr2">👋 ${user.displayName || user.email}</span>
-          <button class="auth-btn logout" onclick="firebase.auth().signOut().then(() => location.reload())">
-            Logout
-          </button>
-        `;
-      }
-    });
+  const authContainer = document.getElementById("auth-container");
+  const formContainer = document.getElementById("form-container");
+  const loginLink = document.getElementById("login-link");
+
+  // When link clicked, render FirebaseUI
+  loginLink.addEventListener("click", e => {
+    e.preventDefault();
+    ui.start("#auth-container", uiConfig);
   });
-  
+
+  // Monitor auth state
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      authContainer.style.display = "none";
+      formContainer.style.display = "block";
+    } else {
+      authContainer.style.display = "block";
+      formContainer.style.display = "none";
+    }
+  });
+});

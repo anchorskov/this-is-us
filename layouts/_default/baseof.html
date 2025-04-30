@@ -1,10 +1,9 @@
 {{- if lt hugo.Version "0.146.0" }}
-{{- errorf "=> hugo v0.146.0 or greater is required for hugo-PaperMod to build " }}
+  {{- errorf "=> hugo v0.146.0 or greater is required for hugo-PaperMod to build " }}
 {{- end -}}
 
 <!DOCTYPE html>
 <html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
-
 <head>
   {{- partial "head.html" . }}
   {{- partial "extend_head.html" . }}
@@ -18,16 +17,27 @@
     dark
   {{- end -}}
 " id="top">
-  {{- partialCached "header.html" . .Page }}
 
-  {{- partial "floating-auth.html" . }}
+  <!-- 1) Initialize Firebase & UI on every page -->
+  {{ partial "firebase-init.html" . }}
 
+  <!-- 2) Site header -->
+  {{ partialCached "header.html" . .Page }}
+
+  <!-- 3) Floating Login/Logout button -->
+  {{ partial "floating-auth.html" . }}
+
+  <!-- 4) Page content -->
   <main class="main">
-    {{- block "main" . }}{{ end }}
+    {{ block "main" . }}{{ end }}
   </main>
 
-  {{- partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
-  {{- partial "extend_footer.html" . }}
-  {{- partial "site-scripts.html" . }}
+  <!-- 5) Footer -->
+  {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
+  {{ partial "extend_footer.html" . }}
+
+  <!-- 6) Site-wide scripts (including firebase-auth.js) -->
+  {{ partial "site-scripts.html" . }}
+
 </body>
 </html>
