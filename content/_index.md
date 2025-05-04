@@ -38,7 +38,7 @@ This is about who we are. And who we refuse to become.
 ---
 
 🚀 **Support the Movement**  
-[Donate on GoFundMe](https://www.gofundme.com/f/fuel-upacs-fight-for-liberty-and-fairness)  
+[Donate/Support This is US ](/donate/)  
 [Subscribe on Substack](https://jimskovgard.substack.com)  
 [Visit U-PAC.org](https://u-pac.org)
 
