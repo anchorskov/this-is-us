@@ -74,28 +74,34 @@ buildFuture   = false
   weight     = 5
 
 [[menu.main]]
+  identifier = "volunteer"
+  name       = "Volunteer"
+  url        = "/volunteer/"
+  weight     = 6
+
+[[menu.main]]
   identifier = "voices"
   name       = "Voices"
   url        = "/voices/"
-  weight     = 6
+  weight     = 7
 
 [[menu.main]]
   identifier = "learn"
   name       = "Learn"
   url        = "/learn/"
-  weight     = 7
+  weight     = 8
 
 [[menu.main]]
   identifier = "podcast"
   name       = "Podcast"
   url        = "/podcast/"
-  weight     = 8
+  weight     = 9
 
 [[menu.main]]
   identifier = "contact"
   name       = "Contact"
   url        = "/contact/"
-  weight     = 9
+  weight     = 10
 
 # --------------------------------------------------
 # Allow raw HTML (for your Anedot iframe embed)

@@ -1,0 +1,17 @@
+name               = "this-is-us-events"
+main               = "src/index.mjs"
+compatibility_date = "2025-05-05"
+
+[[d1_databases]]
+binding              = "EVENTS_DB"
+database_name        = "events_db"
+database_id          = "b5814930-2779-4bfb-8052-24ee419e09fd"
+preview_database_id  = "1624450c-f228-4802-8a76-9c65f29295fa"
+
+[[r2_buckets]]
+binding             = "EVENT_PDFS"
+bucket_name         = "event-pdfs-bucket"
+preview_bucket_name = "event-pdfs-bucket-preview"
+
+[triggers]
+crons = ["0 1 * * *"]

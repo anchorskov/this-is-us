@@ -1,0 +1,10 @@
+-- Migration number: 0001 	 2025-05-05T12:07:43.590Z
+CREATE TABLE events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  name TEXT       NOT NULL,
+  date DATE       NOT NULL,
+  location TEXT   NOT NULL,
+  pdf_url TEXT    NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
