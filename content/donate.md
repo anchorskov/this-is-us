@@ -21,20 +21,33 @@ draft: false
 
 <div id="disclaimer">
   <ol>
-    <li>I am seeking election to the US Senate as a Republican.</li>
-    <li>I am seeking election to the US House as a Democrat.</li>
-    <li>I am currently registered as a Republican and may change parties or become an independent at any time.</li>    
-    <li>All contributions follow FEC limits.</li>
-    <li>No foreign national may contribute.</li>
-    <li>Your contributions are not tax deductible.</li>
-    <li>I will file and report every penny to the FEC.</li>
-    <li>I will account for all funds here and at fec.gov.</li>
-    <li>
-            Online donations incur a 4% + $0.50 processing fee. To avoid this fee, I accept campaign contribution by check payable to: 
-        <em>Skovgard for Senate, 5685 Hanly, Mills, WY 82604</em>.
-    </li>
-
-  </ol>
+  <li>
+    I considered seeking the Republican nomination for US Senate,  
+    only to realize decisions and debate would devolve into us‑vs-them.
+  </li>
+  <li>
+    I considered seeking the Democratic nomination for US House,  
+    only to realize decisions and debate would devolve into us‑vs-them.
+  </li>
+  <li>
+    I decided to run as an independent—unattached to any party—  
+    so we can unite around our shared future rather than our old divides.
+  </li>
+   <li>
+   This is Us.
+  </li>
+  </li>
+  <li>All contributions follow FEC limits.</li>
+  <li>No foreign national may contribute.</li>
+  <li>Your contributions are not tax deductible.</li>
+  <li>  I will file, report, and account for every penny with the Federal Election Commission (reports available at fec.gov).
+  </li>
+  <li>
+    Online donations incur a 4% + $0.50 processing fee. To avoid this fee,  
+    I accept campaign contributions by check payable to:  
+    <em>Skovgard for Senate, 5685 Hanly, Mills, WY 82604</em>.
+  </li>
+</ol>
   <button id="agree-btn">
     I agree to the terms outlined above — select here to proceed to donation page
   </button>
