@@ -6,7 +6,7 @@ description: "Reclaiming our voice. Standing together. Truth. Courage. Unity."
 # —our future, not divided.  
 **In Perilous Times**  
 A project for reflection, resistance, and repair.
-
+<!-- updated to reflect FEC rules -->
 > “We are not left. We are not right. We are us.”  
 > We don’t burn the house down to fix it—we restore what’s worth saving.
 
