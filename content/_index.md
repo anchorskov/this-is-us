@@ -1,5 +1,5 @@
 ---
-title: "This Is US: United and decided"
+title: "This Is US: United and decided "
 description: "Reclaiming our voice. Standing together. Truth. Courage. Unity."
 ---
 

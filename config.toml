@@ -104,7 +104,7 @@ buildFuture   = false
   weight     = 10
 
 # --------------------------------------------------
-# Allow raw HTML (for your Anedot iframe embed)
+# Allow raw HTML (for your Anedot iframe embed )
 # --------------------------------------------------
 [markup]
   [markup.goldmark]
