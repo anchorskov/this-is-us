@@ -1,50 +1,59 @@
 <!-- layouts/partials/floating-auth.html -->
 
-<div id="floating-auth" style="display:none; position:fixed; bottom:1rem; right:1rem; z-index:1000;">
-    <button id="auth-btn" class="auth-btn"></button>
-  </div>
-  
-  <script>
-    // ← This will appear in your browser console
-    console.log("🔥 floating-auth partial script loaded");
-  
-    (function(){
-        const container = document.getElementById("floating-auth");
-        const btn       = document.getElementById("auth-btn");
-        if (!container
-            || typeof firebase === "undefined"
-            || typeof firebaseui === "undefined") {
-        console.log("⚠️ floating-auth: skipping, firebase not ready");
-        return;
+<div id="floating-auth" style="
+  display: none;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+">
+  <button id="auth-btn" class="auth-btn">...</button>
+</div>
+
+<script>
+  console.log("🔥 floating-auth partial script loaded");
+
+  (function () {
+    const container = document.getElementById("floating-auth");
+    const btn = document.getElementById("auth-btn");
+
+    if (!container || typeof firebase === "undefined" || !firebase.auth) {
+      console.log("⚠️ Firebase not ready, skipping floating-auth");
+      return;
     }
-  
+
+    // Ensure DOM is loaded before manipulating
+    document.addEventListener("DOMContentLoaded", function () {
       setTimeout(() => {
         container.style.display = "block";
         console.log("🔲 floating-auth: shown");
-      }, 3000);
-  
+      }, 2000);
+
       firebase.auth().onAuthStateChanged(user => {
         if (user) {
-          console.log("👤 User is signed in:", user.email);
+          console.log("👤 Logged in:", user.email || user.phoneNumber);
           btn.textContent = "Logout";
           btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
         } else {
-          console.log("🔒 No user, showing Login");
+          console.log("🔒 Not signed in");
           btn.textContent = "Login";
-          btn.onclick = () => ui.start("#firebaseui-auth-container", uiConfig);
+          btn.onclick = () => {
+            location.href = "/login/";
+          };
         }
       });
-    })();
-  </script>
-  
-  <style>
-    .auth-btn {
-      background: var(--tertiary);
-      border: none;
-      border-radius: var(--radius);
-      padding: 0.5em 1em;
-      cursor: pointer;
-      font: inherit;
-    }
-  </style>
-  
+    });
+  })();
+</script>
+
+<style>
+  .auth-btn {
+    background: var(--tertiary, #1f2937);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+</style>

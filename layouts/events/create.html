@@ -1,25 +1,74 @@
 {{ define "main" }}
-  {{ partial "firebase-init.html" . }}
+{{ partial "firebase-init.html" . }}
 
-  <article class="prose mx-auto">
-    <h1>{{ .Title }}</h1>
+<article class="prose mx-auto">
+  <h1>{{ .Title }}</h1>
 
-    <!-- LOGIN PROMPT + UI WIDGET -->
-    <div id="auth-container"
-         class="flex flex-column items-center justify-center">
-      {{ .Content }}
-      <!-- ← FirebaseUI injects here -->
-      <div id="firebaseui-auth-container" class="mt-2"></div>
-    </div>
+  <!-- LOGIN PROMPT + UI WIDGET -->
+  <div id="auth-container" class="flex flex-column items-center justify-center">
+    <p>Please log in to create an event.</p>
+    <div id="firebaseui-auth-container" class="mt-2"></div>
+  </div>
 
-    <!-- EVENT FORM (hidden until login) -->
-    <div id="form-container" style="display:none" class="mt-4">
-      <form name="create-event" method="POST" data-netlify="true">
-        <p><label>Title: <input type="text" name="title" required></label></p>
-        <p><label>Date:  <input type="date" name="date" required></label></p>
-        <p><label>Details:<textarea name="details" rows="4"></textarea></label></p>
-        <p><button type="submit">Submit Event</button></p>
-      </form>
-    </div>
-  </article>
+  <!-- EVENT FORM (hidden until login) -->
+  <div id="form-container" style="display:none;" class="mt-4">
+    <h2>Welcome! Submit your event details:</h2>
+    <form name="create-event" method="POST" data-netlify="true">
+      <p><label>Title: <input type="text" name="title" required></label></p>
+      <p><label>Date:  <input type="date" name="date" required></label></p>
+      <p><label>Details:<textarea name="details" rows="4"></textarea></label></p>
+      <p><button type="submit">Submit Event</button></p>
+    </form>
+    <button id="logout-btn" style="margin-top:1rem;">Logout</button>
+  </div>
+</article>
+
+<!-- FirebaseUI Scripts -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase.js"></script>
+<script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
+<link rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css" />
+
+<script src="/js/firebase-config.js"></script>
+<script src="/js/firebase-ui-config.js"></script>
+
+<script>
+    console.log("📌 Auth Check for Create Event");
+  
+    const ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(firebase.auth());
+  
+    document.addEventListener("DOMContentLoaded", () => {
+      const authContainer  = document.getElementById("auth-container");
+      const formContainer  = document.getElementById("form-container");
+      const logoutBtn      = document.getElementById("logout-btn");
+  
+      // Attach logout click listener — always
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", () => {
+          firebase.auth().signOut().then(() => {
+            alert("Logged out.");
+            location.reload();
+          }).catch(err => {
+            console.error("Logout error:", err);
+          });
+        });
+      }
+  
+      // Auth state handler
+      firebase.auth().onAuthStateChanged(user => {
+        if (user && (user.emailVerified || user.phoneNumber)) {
+          console.log("✅ Authenticated:", user.email || user.phoneNumber);
+          if (authContainer) authContainer.style.display = "none";
+          if (formContainer) formContainer.style.display = "block";
+          if (logoutBtn) logoutBtn.style.display = "inline-block";
+        } else {
+          console.log("🔒 No user or not verified. Showing login.");
+          if (authContainer) authContainer.style.display = "block";
+          if (formContainer) formContainer.style.display = "none";
+          if (logoutBtn) logoutBtn.style.display = "none";
+          ui.start("#firebaseui-auth-container", window.uiConfig);
+        }
+      });
+    });
+  </script>
+  
 {{ end }}

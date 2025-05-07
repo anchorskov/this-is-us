@@ -1,7 +1,9 @@
 ---
 title: "Create Event"
-layout: "events/create"
 url: "/events/create/"
+slug: "create-event"
+layout: single
+draft: false
 ---
 
-<p>Please <button id="login-link" class="link-button">log in</button> to create an event.</p>
+<!-- Everything important is now handled in the layout. -->
