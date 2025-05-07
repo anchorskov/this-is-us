@@ -22,8 +22,7 @@ draft: false
 <div id="disclaimer">
   <ol>
     <li>
-      I am seeking the Republican nomination for US Senate  
-    </li>
+    I’m running to secure Wyoming’s Republican nomination for the U.S. Senate—focused on our shared future.</li>
     <li>This is Us is my platform .</li>
     <li>All contributions follow FEC limits.</li>
     <li>No foreign national may contribute.</li>
