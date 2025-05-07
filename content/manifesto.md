@@ -170,11 +170,6 @@ This is our moment. This is our vow.
 We choose courage. We choose each other.
 **This Is Us.**
 
-## V. A Call to Action – This Is Us, Now and Forward
-
-This is not just a document. It is a starting point.  
-We’ve named the problem. We’ve reclaimed our values. We’ve chosen our path. Now we must act—not tomorrow, not next election, but now...
-
 ---
 
 > 📄 [**Download the Manifesto (PDF)**](/files/this-is-us-manifesto.pdf)
