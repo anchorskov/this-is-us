@@ -21,22 +21,31 @@ draft: false
 
 <div id="disclaimer">
   <ol>
-    <li>
-    I’m running to secure Wyoming’s Republican nomination for the U.S. Senate—focused on our shared future.</li>
-    <li>This is Us is my platform .</li>
+    <li>I’m running to secure Wyoming’s Republican nomination for the U.S. Senate—focused on our shared future.</li>
+    <li>This Is Us is my platform.</li>
     <li>All contributions follow FEC limits.</li>
     <li>No foreign national may contribute.</li>
-    <li>Your contributions are not tax deductible.</li>
-    <li>
-      I will file, report, and account for every penny with the Federal Election Commission  
-      (reports available at fec.gov).
-    </li>
-    <li>
-      Online donations incur a 4% + $0.50 processing fee. To avoid this fee, I accept checks payable to  
-      <em>Skovgard for Senate, 5685 Hanly, Mills, WY 82604</em>.
-    </li>
+    <li>Your contributions are not tax deductible.</li>
+    <li>I will file, report, and account for every penny with the Federal Election Commission (reports available at fec.gov).</li>
   </ol>
 
+  <h3>Contribution Rules</h3>
+  <ul>
+    <li>I am a U.S. citizen or lawfully admitted permanent resident (i.e., green card holder).</li>
+    <li>This contribution is made from my own funds, and funds are not being provided to me by another person or entity for the purpose of making this contribution.</li>
+    <li>I am at least eighteen years old.</li>
+    <li>I am not a federal contractor.</li>
+    <li>I am making this contribution with my own personal credit card and not with a corporate or business credit card or a card issued to another person.</li>
+  </ul>
+
+  <p><strong>By proceeding with this transaction, you agree to the contribution rules above.</strong></p>
+
+  <p><em>Contributions or gifts are not tax deductible.</em></p>
+
+  <p>The maximum amount an individual may contribute is $3,500 per election. Your contribution (up to $3,500) will be designated for the primary election. The next $3,500 will be designated for the general election.</p>
+
+  <p><em>Federal law requires us to use our best efforts to collect and report the name, address, occupation, and employer of individuals whose contribution exceeds $200 in an election cycle.</em></p>
+<p>Online donations incur a 4% + $0.50 processing fee. To avoid this fee, send a check payable to <em>Skovgard for Senate, 5685 Hanly, Mills, WY 82604</em>.</p>
   <button id="agree-btn">
     I agree to the terms above — select here to proceed to donation page
   </button>
