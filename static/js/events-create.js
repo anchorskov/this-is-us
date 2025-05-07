@@ -85,43 +85,45 @@ function renderForm(user) {
   // Submit logic
   document.getElementById("eventForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+  
     const title = document.getElementById("title").value;
     const datetime = document.getElementById("datetime").value;
     const description = document.getElementById("description").value;
-    const lat = parseFloat(document.getElementById("lat").value);
-    const lng = parseFloat(document.getElementById("lng").value);
+    const lat = document.getElementById("lat").value;
+    const lng = document.getElementById("lng").value;
     const file = document.getElementById("eventPdf").files[0];
-
-    if (!title || !datetime || !description || isNaN(lat) || isNaN(lng)) {
-      return alert("All fields and a location are required.");
+  
+    if (!title || !datetime || !description || !lat || !lng || !file) {
+      return alert("All fields including a PDF and map location are required.");
     }
-
+  
+    if (file.type !== "application/pdf" || file.size > 5 * 1024 * 1024) {
+      return alert("Only PDF files under 5MB allowed.");
+    }
+  
+    const formData = new FormData();
+    formData.append("name", title);
+    formData.append("date", datetime);
+    formData.append("location", `${lat},${lng}`);
+    formData.append("file", file);
+  
     try {
-      let pdfUrl = null;
-      if (file) {
-        if (file.type !== "application/pdf" || file.size > 5 * 1024 * 1024) {
-          return alert("Only PDF files under 5MB allowed.");
-        }
-        const ref = storage.ref().child(`events/${Date.now()}_${file.name}`);
-        const snap = await ref.put(file);
-        pdfUrl = await snap.ref.getDownloadURL();
-      }
-
-      await db.collection("events").add({
-        title,
-        datetime,
-        description,
-        location: { lat, lng },
-        pdfUrl,
-        createdBy: auth.currentUser.uid,
-        createdAt: new Date()
+      const res = await fetch("/api/events/create", {
+        method: "POST",
+        body: formData
       });
-
-      alert("Event submitted successfully!");
-      window.location.href = "/events/discover";
-
+  
+      const result = await res.json();
+  
+      if (!res.ok) throw new Error(result.error || "Unknown error");
+  
+      alert("✅ Event submitted successfully!");
+      window.location.href = "/events/hub/";
+  
     } catch (err) {
+      console.error("Event submit failed:", err);
       alert("Error: " + err.message);
     }
   });
+  
 }
