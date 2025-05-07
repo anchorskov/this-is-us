@@ -5,6 +5,8 @@ slug: "donate"
 draft: false
 ---
 
+<!-- updated to reflect FEC rules -->
+
 {{< rawhtml >}}
 <style>
   /* full‑screen layout */
