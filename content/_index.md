@@ -1,9 +1,9 @@
 ---
-title: "This Is US: In Perilous Times"
+title: "This Is US: United and decided"
 description: "Reclaiming our voice. Standing together. Truth. Courage. Unity."
 ---
 
-# This Is US  
+# —our future, not divided.  
 **In Perilous Times**  
 A project for reflection, resistance, and repair.
 
@@ -20,10 +20,11 @@ New episodes exploring power, fear, identity, and democracy.
 
 ---
 
-🧠 **Learn. Question. Share.**  
-📝 [Explore the latest writing](/learn/)  
-📣 [Submit your voice](/voices/)  
-📬 [Contact & collaborate](/contact/)
+📌 **Start Here**  
+Understand what brought us together—and where we’re going.  
+🔍 [Why We Exist](/about/)  
+📜 [Read the Manifesto](/manifesto/)  
+📬 [Contact & Collaborate](/contact/)
 
 ---
 
@@ -38,13 +39,13 @@ This is about who we are. And who we refuse to become.
 ---
 
 🚀 **Support the Movement**  
-[Donate/Support This is US ](/donate/)  
+[Donate/Support This Is US](/donate/)  
 [Subscribe on Substack](https://jimskovgard.substack.com)  
-[Visit U-PAC.org](https://u-pac.org)
+[Visit U‑PAC.org](https://u-pac.org)
 
 ---
 
 This is not political marketing.  
 This is civic survival.  
+This is integrity in motion.  
 **This is US.**
-
