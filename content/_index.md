@@ -27,14 +27,14 @@ Understand what brought us together—and where we’re going.
 📬 [Contact & Collaborate](/contact/)
 
 ---
-
 🌱 **The Mission**  
-We believe in liberty for persons, not just citizens.  
-We believe the Constitution is a promise—to everyone under its protection.  
-We believe the most patriotic thing you can do… is think.
+**We believe in liberty and justice for all.**  
+**We defend the Constitution and its promise—to everyone under its protection.**  
+**We know the most patriotic thing you can do… is think.**
 
 This is not about partisanship.  
-This is about who we are. And who we refuse to become.
+This is about who we are—  
+And who we refuse to become.
 
 ---
 
