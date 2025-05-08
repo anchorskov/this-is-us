@@ -8,3 +8,11 @@
 
 <!-- Custom Meta Tags -->
 <meta name="theme-color" content="#2e2e33">
+
+<!-- Leaflet (only used on event form page) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+
+{{ if eq .Page.RelPermalink "/events/create/" }}
+  <script src="/js/events-create.js" defer></script>
+{{ end }}
