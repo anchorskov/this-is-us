@@ -2,7 +2,7 @@
 title: "Create Event"
 url: "/events/create/"
 slug: "create-event"
-layout: single
+layout: create
 draft: false
 ---
 

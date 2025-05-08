@@ -1,31 +1,44 @@
-// static/js/firebase-ui-config.js
-
 console.log("🔥 Firebase UI config loaded");
 
-// Only run if Firebase is loaded
-if (typeof firebase !== "undefined" && firebase.auth) {
-  window.uiConfig = {
-    signInSuccessUrl: "/events/create/",
+if (typeof firebase === "undefined") {
+  console.error("❌ Firebase not initialized. Aborting uiConfig setup.");
+} else {
+  const auth = firebase.auth();
 
+  window.uiConfig = {
     signInOptions: [
-      firebase.auth.EmailAuthProvider.PROVIDER_ID,
+      { provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: true },
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.PhoneAuthProvider.PROVIDER_ID
     ],
-
+    signInFlow: "popup",
     tosUrl: "/manifesto/",
     privacyPolicyUrl: "/about/",
-
     callbacks: {
-      signInSuccessWithAuthResult: function (authResult, redirectUrl) {
-        console.log("✅ User signed in:", authResult.user);
-        return true; // Redirect to signInSuccessUrl
+      signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+        const user = authResult.user;
+        window.currentUser = user;
+        console.log("✅ FirebaseUI login complete:", {
+          uid: user?.uid,
+          email: user?.email,
+          phone: user?.phoneNumber,
+          verified: user?.emailVerified,
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const target = params.get("redirect") || "/events/create/";
+        console.log("🚀 Redirecting user to:", target);
+
+        // Delay to ensure auth state is synced
+        setTimeout(() => {
+          window.location.href = target;
+        }, 500);
+
+        return false; // Prevent auto-redirect
       },
       uiShown: function () {
         console.log("🧩 FirebaseUI shown");
       }
     }
   };
-} else {
-  console.warn("⚠️ Firebase not loaded — skipping UI config.");
 }

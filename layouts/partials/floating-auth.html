@@ -1,49 +1,50 @@
-<!-- layouts/partials/floating-auth.html -->
-
-<div id="floating-auth" style="
-  display: none;
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1000;
-">
+<div id="floating-auth" style="display:none; position:fixed; top:1rem; right:1rem; z-index:1000;">
   <button id="auth-btn" class="auth-btn">...</button>
 </div>
 
 <script>
   console.log("🔥 floating-auth partial script loaded");
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("floating-auth");
     const btn = document.getElementById("auth-btn");
 
     if (!container || typeof firebase === "undefined" || !firebase.auth) {
-      console.log("⚠️ Firebase not ready, skipping floating-auth");
+      console.warn("⚠️ Firebase not ready, skipping floating-auth");
       return;
     }
 
-    // Ensure DOM is loaded before manipulating
-    document.addEventListener("DOMContentLoaded", function () {
-      setTimeout(() => {
-        container.style.display = "block";
-        console.log("🔲 floating-auth: shown");
-      }, 2000);
+    // Show after short delay for smoother load
+    setTimeout(() => {
+      container.style.display = "block";
+      console.log("🔲 floating-auth: shown");
+    }, 1500);
 
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          console.log("👤 Logged in:", user.email || user.phoneNumber);
-          btn.textContent = "Logout";
-          btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
-        } else {
-          console.log("🔒 Not signed in");
-          btn.textContent = "Login";
-          btn.onclick = () => {
-            location.href = "/login/";
-          };
-        }
-      });
+    firebase.auth().onAuthStateChanged(user => {
+      window.currentUser = user || null;
+
+      if (user) {
+        console.log("👤 Logged in:", user.email || user.phoneNumber);
+        btn.textContent = "Logout";
+        btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
+      } else {
+        console.log("🔒 Not signed in");
+        btn.textContent = "Login";
+        btn.onclick = () => {
+          // Prefer local FirebaseUI container
+          const container = document.querySelector("#firebaseui-auth-container");
+          if (container && typeof window.ui !== "undefined" && typeof window.uiConfig !== "undefined") {
+            console.log("▶️ Launching FirebaseUI login");
+            window.ui.start("#firebaseui-auth-container", window.uiConfig);
+          } else {
+            console.warn("⚠️ No FirebaseUI available → redirecting to login-enabled page");
+            const redirectTo = encodeURIComponent(window.location.pathname);
+            location.href = `/events/create?redirect=${redirectTo}`;
+          }
+        };
+      }
     });
-  })();
+  });
 </script>
 
 <style>

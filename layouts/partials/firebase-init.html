@@ -11,7 +11,25 @@
 <link href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css" rel="stylesheet" />
 <script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
 
-<!-- 3) Your project config and UI logic -->
+<!-- 3) Project configuration -->
 <script src="/js/firebase-config.js"></script>
 <script src="/js/firebase-ui-config.js"></script>
 <script src="/js/firebase-auth.js"></script>
+
+<!-- Optional early check -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof firebase !== "undefined") {
+      firebase.auth().onAuthStateChanged((user) => {
+        window.currentUser = user || null;
+        if (user) {
+          console.log("🟢 firebase-init: Logged in as", user.email || user.phoneNumber);
+        } else {
+          console.log("🔴 firebase-init: No user signed in");
+        }
+      });
+    } else {
+      console.warn("⚠️ Firebase not loaded yet in firebase-init");
+    }
+  });
+</script>

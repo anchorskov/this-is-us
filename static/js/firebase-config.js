@@ -1,6 +1,5 @@
-// static/js/firebase-config.js
+console.log("🔥 Firebase config loading...");
 
-// 1) Your Firebase project configuration
 window.firebaseConfig = {
   apiKey: "AIzaSyB2JqSDeOgNOdMHCfHqaC78Rgr-l7LqIkU",
   authDomain: "this-is-us-events.firebaseapp.com",
@@ -11,5 +10,7 @@ window.firebaseConfig = {
   measurementId: "G-DKHTH767TD"
 };
 
-// 2) Initialize Firebase so `firebase.auth()` and FirebaseUI will work
-firebase.initializeApp(window.firebaseConfig);
+if (!firebase.apps.length) {
+  firebase.initializeApp(window.firebaseConfig);
+  console.log("✅ Firebase initialized (config loaded)");
+}
