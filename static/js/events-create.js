@@ -1,4 +1,6 @@
-// events-create.js (Refactored)
+// events-create.js (ES Module Compatible)
+import { createZipSearchBox } from './leafletzipsearch.js';
+
 console.log("🔥 events-create.js loaded");
 
 if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
@@ -102,6 +104,7 @@ function initMap() {
   }
 
   map.on('click', e => setMarker(e.latlng.lat, e.latlng.lng));
+  createZipSearchBox(map, setMarker);
 
   return { map, setMarker };
 }
@@ -110,7 +113,6 @@ function bindAddressSearch(setMarker) {
   $("#searchAddress").addEventListener("click", async () => {
     const address = $("#address").value.trim();
     if (!address) return alert("Please enter an address.");
-
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
       const data = await res.json();

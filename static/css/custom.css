@@ -72,3 +72,34 @@ label {
   margin-bottom: 0.5rem;
   color: #333;
 }
+/* Leaflet Zip Search Control */
+.leaflet-control-custom {
+  background-color: white;
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 14px;
+  z-index: 1000;
+}
+
+.leaflet-control-custom input[type="text"] {
+  width: 100px;
+  padding: 4px 6px;
+  margin-right: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.leaflet-control-custom button {
+  padding: 4px 10px;
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.leaflet-control-custom button:hover {
+  background-color: #0056b3;
+}

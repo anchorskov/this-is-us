@@ -1,5 +1,4 @@
 ---
-title: "Create Event"
 url: "/events/create/"
 slug: "create-event"
 layout: create

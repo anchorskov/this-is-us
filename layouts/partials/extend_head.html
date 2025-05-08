@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
 
+<!-- Load event form script only for create page -->
 {{ if eq .Page.RelPermalink "/events/create/" }}
-  <script src="/js/events-create.js" defer></script>
+  <script type="module" src="{{ "js/events-create.js" | relURL }}"></script>
 {{ end }}
