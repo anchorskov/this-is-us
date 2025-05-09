@@ -44,6 +44,8 @@ nav.menu a:hover {
 input[type="text"],
 input[type="datetime-local"],
 input[type="file"],
+input[type="email"],
+input[type="tel"],
 textarea,
 select {
   width: 100%;
@@ -102,4 +104,56 @@ label {
 
 .leaflet-control-custom button:hover {
   background-color: #0056b3;
+}
+/* Inline spinner for buttons */
+.spinner-border {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: text-bottom;
+  border: 0.15em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spinner-border 0.75s linear infinite;
+}
+
+@keyframes spinner-border {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+/* Consistent button style for form actions */
+button,
+input[type="submit"],
+.button-style {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-block;
+  width: 100%;
+  color: white;
+}
+
+button.bg-green,
+.button-green {
+  background-color: #28a745;
+}
+
+button.bg-green:hover,
+.button-green:hover {
+  background-color: #218838;
+}
+
+button.bg-dark-blue,
+.button-dark-blue {
+  background-color: #0056b3;
+}
+
+button.bg-dark-blue:hover,
+.button-dark-blue:hover {
+  background-color: #003f88;
 }

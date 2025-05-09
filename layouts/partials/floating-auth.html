@@ -9,41 +9,46 @@
     const container = document.getElementById("floating-auth");
     const btn = document.getElementById("auth-btn");
 
+    // Check Firebase loaded
     if (!container || typeof firebase === "undefined" || !firebase.auth) {
       console.warn("⚠️ Firebase not ready, skipping floating-auth");
       return;
     }
 
-    // Show after short delay for smoother load
-    setTimeout(() => {
-      container.style.display = "block";
-      console.log("🔲 floating-auth: shown");
-    }, 1500);
+    // Defer until FirebaseAuth is stable
+    const waitForAuth = () => {
+      if (!firebase.auth) return setTimeout(waitForAuth, 100);
+      firebase.auth().onAuthStateChanged(user => {
+        window.currentUser = user || null;
 
-    firebase.auth().onAuthStateChanged(user => {
-      window.currentUser = user || null;
+        if (user) {
+          console.log("👤 Logged in:", user.email || user.phoneNumber);
+          btn.textContent = "Logout";
+          btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
+        } else {
+          console.log("🔒 Not signed in");
+          btn.textContent = "Login";
+          btn.onclick = () => {
+            const container = document.querySelector("#firebaseui-auth-container");
+            if (container && window.ui && window.uiConfig) {
+              console.log("▶️ Launching FirebaseUI login");
+              window.ui.start("#firebaseui-auth-container", window.uiConfig);
+            } else {
+              console.warn("⚠️ No FirebaseUI found → redirect fallback");
+              const redirectTo = encodeURIComponent(window.location.pathname);
+              location.href = `/events/create?redirect=${redirectTo}`;
+            }
+          };
+        }
 
-      if (user) {
-        console.log("👤 Logged in:", user.email || user.phoneNumber);
-        btn.textContent = "Logout";
-        btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
-      } else {
-        console.log("🔒 Not signed in");
-        btn.textContent = "Login";
-        btn.onclick = () => {
-          // Prefer local FirebaseUI container
-          const container = document.querySelector("#firebaseui-auth-container");
-          if (container && typeof window.ui !== "undefined" && typeof window.uiConfig !== "undefined") {
-            console.log("▶️ Launching FirebaseUI login");
-            window.ui.start("#firebaseui-auth-container", window.uiConfig);
-          } else {
-            console.warn("⚠️ No FirebaseUI available → redirecting to login-enabled page");
-            const redirectTo = encodeURIComponent(window.location.pathname);
-            location.href = `/events/create?redirect=${redirectTo}`;
-          }
-        };
-      }
-    });
+        setTimeout(() => {
+          container.style.display = "block";
+          console.log("🔲 floating-auth: shown");
+        }, 1000);
+      });
+    };
+
+    waitForAuth();
   });
 </script>
 

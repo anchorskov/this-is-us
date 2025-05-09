@@ -1,11 +1,13 @@
 ---
 title: "Events"
-layout: "events"
+layout: "events/discover"
 url: "/events/"
 ---
 
+<!-- Optional: Keep an intro -->
 <div class="tc pa4">
   <h2 class="f2">This is US – Events</h2>
-  <p>Explore or create local community events.</p>
-  <a href="/events/hub" class="f5 link dim br3 ph4 pv3 mb3 dib white bg-blue">Go to Events Hub</a>
+  <p>Explore community events by entering your ZIP code.</p>
 </div>
+
+<!-- ZIP Input and results area are rendered by layout -->

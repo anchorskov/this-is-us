@@ -54,6 +54,10 @@ router.post("/api/events/create", async (request, env) => {
   const date = form.get("date");
   const location = form.get("location");
   const file = form.get("file");
+  const description = form.get("description") || "";
+  const userId = form.get("userId") || "anonymous";
+  const lat = form.get("lat");
+  const lng = form.get("lng");
   if (!name || !date || !location || !file) {
     return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
   }
@@ -61,9 +65,9 @@ router.post("/api/events/create", async (request, env) => {
   await env.EVENT_PDFS.put(key, file.stream());
   const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
   await env.EVENTS_DB.prepare(
-    `INSERT INTO events (user_id, name, date, location, pdf_url)
-     VALUES (?, ?, ?, ?, ?)`
-  ).bind(1, name, date, location, pdf_url).run();
+    `INSERT INTO events (user_id, name, date, location, pdf_url, lat, lng)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).bind(userId, name, date, location, pdf_url, lat, lng).run();
   return new Response(JSON.stringify({ success: true }), { status: 201 });
 });
 router.all("*", () => new Response("Not found", { status: 404 }));
