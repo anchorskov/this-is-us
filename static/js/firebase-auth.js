@@ -19,7 +19,18 @@ if (typeof firebase === "undefined" || typeof firebaseui === "undefined") {
   auth.onAuthStateChanged(user => {
     window.currentUser = user || null;
     console.log("🔄 Auth state changed:", user?.email || "Not signed in");
-  });
+  
+    const loginPrompt = document.getElementById("login-prompt");
+    const authContainer = document.getElementById("firebaseui-auth-container");
+  
+    if (user && (user.emailVerified || user.phoneNumber)) {
+      if (loginPrompt) loginPrompt.style.display = "none";
+      if (authContainer) authContainer.style.display = "none";
+    } else {
+      if (loginPrompt) loginPrompt.style.display = "block";
+      if (authContainer) authContainer.style.display = "block";
+    }
+  });  
 
   window.uiConfig = {
     signInOptions: [
