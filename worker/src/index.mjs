@@ -5,9 +5,9 @@ const router = Router();
 router.get('/api/events', async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
     `SELECT id, name, date, location, pdf_url
-       FROM events
-      WHERE date >= date('now')
-      ORDER BY date`
+     FROM events
+     WHERE date >= date('now')
+     ORDER BY date`
   ).all();
   return new Response(JSON.stringify(results), {
     headers: { 'Content-Type': 'application/json' }
@@ -25,57 +25,69 @@ router.post('/api/events/create', async (request, env) => {
   const userId = form.get('userId') || 'anonymous';
   const lat = form.get('lat');
   const lng = form.get('lng');
+  const sponsor = form.get('sponsor') || '';
+  const contact_email = form.get('contact_email') || '';
+  const contact_phone = form.get('contact_phone') || '';
 
-  // ✅ Check required fields
+  console.log("📝 Incoming event submission:", {
+    userId, name, date, location, description, lat, lng, sponsor, contact_email, contact_phone,
+    file: file ? file.name : "No file"
+  });
+
   if (!name || !date || !location || !file) {
+    console.warn("⚠️ Missing required fields", { name, date, location, file });
     return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
   }
 
-  // ✅ Upload PDF to R2
-  const key = `event-${crypto.randomUUID()}.pdf`;
-  await env.EVENT_PDFS.put(key, file.stream());
+  try {
+    const key = `event-${crypto.randomUUID()}.pdf`;
+    await env.EVENT_PDFS.put(key, file.stream());
+    const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
 
-  const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
+    console.log(`📄 PDF uploaded to R2: ${pdf_url}`);
 
-  // ✅ Insert into database with all fields
-  await env.EVENTS_DB.prepare(
-    `INSERT INTO events (user_id, name, date, location, pdf_url, lat, lng)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  ).bind(userId, name, date, location, pdf_url, lat, lng).run();
+    await env.EVENTS_DB.prepare(
+      `INSERT INTO events (
+        user_id, name, date, location, pdf_url, lat, lng,
+        sponsor, contact_email, contact_phone
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      userId, name, date, location, pdf_url, lat, lng,
+      sponsor, contact_email, contact_phone
+    ).run();
 
-  return new Response(JSON.stringify({ success: true }), { status: 201 });
+    console.log("✅ Event saved to database");
+
+    return new Response(JSON.stringify({ success: true }), { status: 201 });
+  } catch (err) {
+    console.error("❌ Error submitting event:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
 });
 
 // 404 fallback
 router.all('*', () => new Response('Not found', { status: 404 }));
 
 export default {
-  // HTTP entrypoint
   async fetch(request, env, ctx) {
     return router.fetch(request, env, ctx);
   },
 
-  // Cron entrypoint with R2 cleanup and DB cleanup
   async scheduled(event, env, ctx) {
-    // Find expired events (older than 1 day after the event)
     const { results: expiredEvents } = await env.EVENTS_DB.prepare(
       `SELECT id, pdf_url FROM events WHERE date < date('now','-1 day')`
     ).all();
 
-    // Delete associated PDFs from R2
     for (const ev of expiredEvents) {
       try {
         const url = new URL(ev.pdf_url);
-        // URL path is /<bucket>/<key>
-        const parts = url.pathname.split('/');
-        const key = parts.slice(2).join('/');
+        const key = url.pathname.split('/').slice(2).join('/');
         await env.EVENT_PDFS.delete(key);
       } catch (e) {
-        console.error(`Failed to delete PDF for event ID ${ev.id}:`, e);
+        console.error(`🧨 Failed to delete R2 asset for expired event ID ${ev.id}:`, e);
       }
     }
 
-    // Remove expired events from the database
     await env.EVENTS_DB.prepare(
       `DELETE FROM events WHERE date < date('now','-1 day')`
     ).run();

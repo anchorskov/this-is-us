@@ -114,26 +114,37 @@ function renderPreview(data) {
     const flyerURL = data.file ? URL.createObjectURL(data.file) : "";
   
     container.innerHTML = `
-      <div class="bg-light-gray pa3 br3 shadow-1">
-        <h3 class="f4">Preview Your Event</h3>
-        <p><strong>Title:</strong> ${data.title}</p>
-        <p><strong>Date & Time:</strong> ${formattedDate}</p>
-        <p><strong>Description:</strong> ${data.description}</p>
-        <p><strong>Address:</strong> ${data.address}</p>
-        ${data.sponsor ? `<p><strong>Sponsor:</strong> ${data.sponsor}</p>` : ""}
-        ${data.contactEmail ? `<p><strong>Email:</strong> ${data.contactEmail}</p>` : ""}
-        ${data.contactPhone ? `<p><strong>Phone:</strong> ${data.contactPhone}</p>` : ""}
-        <div class="mt3">
-          <p><strong>Flyer Preview:</strong></p>
-          <iframe style="width:100%; height:300px; border:1px solid #ddd;" src="${flyerURL}"></iframe>
+    <div class="bg-white dark:bg-neutral-900 dark:text-gray-100 pa4 br3 shadow-2">
+        <h3 class="f3 mb3">🎯 Event Preview</h3>
+
+        <ul class="list pl0 mb4">
+        <li class="mb2"><strong>Title:</strong> ${data.title}</li>
+        <li class="mb2"><strong>Date & Time:</strong> ${formattedDate}</li>
+        <li class="mb2"><strong>Description:</strong><br>${data.description}</li>
+        <li class="mb2"><strong>Address:</strong> ${data.address}</li>
+        ${data.sponsor ? `<li class="mb2"><strong>Sponsor:</strong> ${data.sponsor}</li>` : ""}
+        ${data.contactEmail ? `<li class="mb2"><strong>Email:</strong> ${data.contactEmail}</li>` : ""}
+        ${data.contactPhone ? `<li class="mb2"><strong>Phone:</strong> ${data.contactPhone}</li>` : ""}
+        </ul>
+
+        <div class="mb4">
+        <p class="mb2"><strong>Flyer Preview:</strong></p>
+        <iframe
+            class="br2"
+            style="width:100%; height:300px; border:1px solid #bbb;"
+            src="${flyerURL}">
+        </iframe>
         </div>
-        <div class="mt3 flex justify-between">
-          <button id="cancelPreview" class="f6 br2 ph3 pv2 dib bg-light-red white">✖ Cancel</button>
-          <button id="editForm" class="f6 br2 ph3 pv2 dib bg-mid-gray white">← Back to Edit</button>
-          <button id="confirmSubmit" class="f6 br2 ph3 pv2 dib bg-green white">✅ Confirm & Submit</button>
+
+        <div class="flex justify-between">
+        <button id="cancelPreview" class="f6 br2 ph3 pv2 dib bg-red white hover-bg-dark-red">
+            ✖ Cancel
+        </button>
+        <button id="confirmSubmit" class="f6 br2 ph3 pv2 dib bg-green white hover-bg-dark-green">
+            ✅ Confirm & Submit
+        </button>
         </div>
-      </div>
-    `;
+    </div>`;
   
     document.getElementById("cancelPreview").onclick = () => {
       document.querySelector("#eventForm").style.display = "block";
@@ -154,43 +165,66 @@ function renderPreview(data) {
       }
     };
   
-    document.getElementById("confirmSubmit").onclick = async () => {
-      const submitBtn = document.getElementById("confirmSubmit");
-      submitBtn.disabled = true;
-      toggleLoading(true, "#confirmSubmit");
-  
-      try {
-        // 🔎 Duplicate check before actual submission
-        const existsRes = await fetch(`/api/events/check-duplicate?title=${encodeURIComponent(data.title)}&datetime=${encodeURIComponent(data.datetime)}`);
-        const exists = await existsRes.json();
-  
-        if (exists?.duplicate) {
-          showError("⚠️ This event is already scheduled.");
-          submitBtn.disabled = false;
-          toggleLoading(false, "#confirmSubmit");
+    setTimeout(() => {
+        const editBtn = document.getElementById("editForm");
+        const confirmBtn = document.getElementById("confirmSubmit");
+    
+        if (!editBtn || !confirmBtn) {
+          console.error("❌ Could not find preview buttons in DOM");
           return;
         }
-  
-        const result = await submitEvent(formDataCache);
-        if (result.ok) {
-          showSuccess("🎉 Event has been scheduled!");
-          document.getElementById("pdfPreview").style.display = "none";
-          document.querySelector("#eventForm").reset();
+    
+        editBtn.onclick = () => {
           document.querySelector("#eventForm").style.display = "block";
           document.querySelector("#event-preview").style.display = "none";
-  
-          if (window._leafletMap) {
-            window._leafletMap.setView([39.5, -98.35], 4);
-            if (window._markerGroup) window._markerGroup.clearLayers();
+    
+          // Restore map marker and zoom if available
+          if (window._leafletMap && window._markerGroup && data.lat && data.lng) {
+            const lat = parseFloat(data.lat);
+            const lng = parseFloat(data.lng);
+            window._markerGroup.clearLayers();
+            L.marker([lat, lng]).addTo(window._markerGroup);
+            window._leafletMap.setView([lat, lng], 14);
           }
-        }
-      } catch (err) {
-        showError("❌ Submission failed: " + err.message);
-        submitBtn.disabled = false;
-      } finally {
-        toggleLoading(false, "#confirmSubmit");
-      }
-    };
-  }
-  
-  
+        };
+    
+        confirmBtn.onclick = async () => {
+          const submitBtn = document.getElementById("confirmSubmit");
+          submitBtn.disabled = true;
+          toggleLoading(true, "#confirmSubmit");
+    
+          try {
+            // 🔎 Check for duplicates first
+            const existsRes = await fetch(`/api/events/check-duplicate?title=${encodeURIComponent(data.title)}&datetime=${encodeURIComponent(data.datetime)}`);
+            const exists = await existsRes.json();
+    
+            if (exists?.duplicate) {
+              showError("⚠️ This event is already scheduled.");
+              submitBtn.disabled = false;
+              toggleLoading(false, "#confirmSubmit");
+              return;
+            }
+    
+            // ✅ Submit event
+            const result = await submitEvent(formDataCache);
+            if (result.ok) {
+              showSuccess("🎉 Event has been scheduled!");
+              document.getElementById("pdfPreview").style.display = "none";
+              document.querySelector("#eventForm").reset();
+              document.querySelector("#eventForm").style.display = "block";
+              document.querySelector("#event-preview").style.display = "none";
+    
+              if (window._leafletMap) {
+                window._leafletMap.setView([39.5, -98.35], 4);
+                if (window._markerGroup) window._markerGroup.clearLayers();
+              }
+            }
+          } catch (err) {
+            showError("❌ Submission failed: " + err.message);
+            submitBtn.disabled = false;
+          } finally {
+            toggleLoading(false, "#confirmSubmit");
+          }
+        };
+      }, 0); 
+    }

@@ -40,9 +40,9 @@ var router = t();
 router.get("/api/events", async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
     `SELECT id, name, date, location, pdf_url
-       FROM events
-      WHERE date >= date('now')
-      ORDER BY date`
+     FROM events
+     WHERE date >= date('now')
+     ORDER BY date`
   ).all();
   return new Response(JSON.stringify(results), {
     headers: { "Content-Type": "application/json" }
@@ -58,25 +58,60 @@ router.post("/api/events/create", async (request, env) => {
   const userId = form.get("userId") || "anonymous";
   const lat = form.get("lat");
   const lng = form.get("lng");
+  const sponsor = form.get("sponsor") || "";
+  const contact_email = form.get("contact_email") || "";
+  const contact_phone = form.get("contact_phone") || "";
+  console.log("\u{1F4DD} Incoming event submission:", {
+    userId,
+    name,
+    date,
+    location,
+    description,
+    lat,
+    lng,
+    sponsor,
+    contact_email,
+    contact_phone,
+    file: file ? file.name : "No file"
+  });
   if (!name || !date || !location || !file) {
+    console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file });
     return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
   }
-  const key = `event-${crypto.randomUUID()}.pdf`;
-  await env.EVENT_PDFS.put(key, file.stream());
-  const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
-  await env.EVENTS_DB.prepare(
-    `INSERT INTO events (user_id, name, date, location, pdf_url, lat, lng)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  ).bind(userId, name, date, location, pdf_url, lat, lng).run();
-  return new Response(JSON.stringify({ success: true }), { status: 201 });
+  try {
+    const key = `event-${crypto.randomUUID()}.pdf`;
+    await env.EVENT_PDFS.put(key, file.stream());
+    const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
+    console.log(`\u{1F4C4} PDF uploaded to R2: ${pdf_url}`);
+    await env.EVENTS_DB.prepare(
+      `INSERT INTO events (
+        user_id, name, date, location, pdf_url, lat, lng,
+        sponsor, contact_email, contact_phone
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      userId,
+      name,
+      date,
+      location,
+      pdf_url,
+      lat,
+      lng,
+      sponsor,
+      contact_email,
+      contact_phone
+    ).run();
+    console.log("\u2705 Event saved to database");
+    return new Response(JSON.stringify({ success: true }), { status: 201 });
+  } catch (err) {
+    console.error("\u274C Error submitting event:", err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
 });
 router.all("*", () => new Response("Not found", { status: 404 }));
 var src_default = {
-  // HTTP entrypoint
   async fetch(request, env, ctx) {
     return router.fetch(request, env, ctx);
   },
-  // Cron entrypoint with R2 cleanup and DB cleanup
   async scheduled(event, env, ctx) {
     const { results: expiredEvents } = await env.EVENTS_DB.prepare(
       `SELECT id, pdf_url FROM events WHERE date < date('now','-1 day')`
@@ -84,11 +119,10 @@ var src_default = {
     for (const ev of expiredEvents) {
       try {
         const url = new URL(ev.pdf_url);
-        const parts = url.pathname.split("/");
-        const key = parts.slice(2).join("/");
+        const key = url.pathname.split("/").slice(2).join("/");
         await env.EVENT_PDFS.delete(key);
       } catch (e) {
-        console.error(`Failed to delete PDF for event ID ${ev.id}:`, e);
+        console.error(`\u{1F9E8} Failed to delete R2 asset for expired event ID ${ev.id}:`, e);
       }
     }
     await env.EVENTS_DB.prepare(
@@ -115,7 +149,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// .wrangler/tmp/bundle-dbXGvV/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-yOxU4u/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default
 ];
@@ -146,7 +180,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-dbXGvV/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-yOxU4u/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
