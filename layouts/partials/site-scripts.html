@@ -1,5 +1,18 @@
 <!-- layouts/partials/site-scripts.html -->
+
 <script>
   console.log("✅ Site scripts loaded correctly.");
-  // Add any additional JS here, but NOT Firebase again!
+
+  // Only override EVENTS_API_URL when running Hugo’s dev server on localhost
+  (function() {
+    const devHosts = ["localhost", "127.0.0.1"];
+    const { hostname, port } = window.location;
+    // Hugo default port is 1313, but we only care about the hostname here
+    if (devHosts.includes(hostname)) {
+      window.EVENTS_API_URL = "http://127.0.0.1:8787/api/events/create";
+      console.log("🐛 Dev override: EVENTS_API_URL →", window.EVENTS_API_URL);
+    }
+    // In production (this-is-us.org), EVENTS_API_URL stays undefined
+    // and submit-event.js will fall back to "/api/events/create"
+  })();
 </script>

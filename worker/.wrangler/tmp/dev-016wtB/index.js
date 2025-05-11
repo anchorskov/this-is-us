@@ -48,6 +48,10 @@ router.get("/api/events", async (request, env) => {
     headers: { "Content-Type": "application/json" }
   });
 });
+router.get("/_debug/schema", async (_, env) => {
+  const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
+  return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+});
 router.post("/api/events/create", async (request, env) => {
   const form = await request.formData();
   const name = form.get("name");
@@ -79,16 +83,30 @@ router.post("/api/events/create", async (request, env) => {
     return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
   }
   try {
+    const buffer = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
+    const pdf_hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    const { results: dup } = await env.EVENTS_DB.prepare(
+      `SELECT id FROM events WHERE pdf_hash = ?`
+    ).bind(pdf_hash).all();
+    if (dup.length) {
+      console.warn("\u26A0\uFE0F Duplicate PDF detected, aborting upload", { pdf_hash });
+      return new Response(
+        JSON.stringify({ error: "Duplicate PDF", duplicate: true }),
+        { status: 409, headers: { "Content-Type": "application/json" } }
+      );
+    }
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
     const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
     console.log(`\u{1F4C4} PDF uploaded to R2: ${pdf_url}`);
-    await env.EVENTS_DB.prepare(
-      `INSERT INTO events (
-        user_id, name, date, location, pdf_url, lat, lng,
-        sponsor, contact_email, contact_phone
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(
+    await env.EVENTS_DB.prepare(`
+      INSERT INTO events (
+        user_id, name, date, location, pdf_url,
+        lat, lng, sponsor, contact_email,
+        contact_phone, pdf_hash
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
       userId,
       name,
       date,
@@ -98,7 +116,8 @@ router.post("/api/events/create", async (request, env) => {
       lng,
       sponsor,
       contact_email,
-      contact_phone
+      contact_phone,
+      pdf_hash
     ).run();
     console.log("\u2705 Event saved to database");
     return new Response(JSON.stringify({ success: true }), { status: 201 });
@@ -110,7 +129,24 @@ router.post("/api/events/create", async (request, env) => {
 router.all("*", () => new Response("Not found", { status: 404 }));
 var src_default = {
   async fetch(request, env, ctx) {
-    return router.fetch(request, env, ctx);
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": request.headers.get("Origin") || "*",
+      "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type"
+    };
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: corsHeaders });
+    }
+    const response = await router.fetch(request, env, ctx);
+    const newHeaders = new Headers(response.headers);
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      newHeaders.set(key, value);
+    });
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: newHeaders
+    });
   },
   async scheduled(event, env, ctx) {
     const { results: expiredEvents } = await env.EVENTS_DB.prepare(
@@ -149,7 +185,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// .wrangler/tmp/bundle-yOxU4u/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-lC601Z/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default
 ];
@@ -180,7 +216,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-yOxU4u/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-lC601Z/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

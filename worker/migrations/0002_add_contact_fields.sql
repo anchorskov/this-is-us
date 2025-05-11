@@ -1,0 +1,6 @@
+-- Migration number: 0002 	 2025-05-06T01:59:36.409Z
+ALTER TABLE events ADD COLUMN sponsor TEXT;
+ALTER TABLE events ADD COLUMN contact_email TEXT;
+ALTER TABLE events ADD COLUMN contact_phone TEXT;
+ALTER TABLE events ADD COLUMN lat REAL;
+ALTER TABLE events ADD COLUMN lng REAL;

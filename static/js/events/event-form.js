@@ -1,25 +1,54 @@
 // static/js/events/event-form.js
-import { submitEvent } from './submit-event.js';
-import { initMap, bindAddressSearch } from './event-map.js';
-import { bindPdfPreview, showSuccess, showError, toggleLoading } from './ui-feedback.js';
-import { isValidEmail, isValidPhone, isFutureDate, areRequiredFieldsPresent } from './validation-utils.js';
 
+import { initMap, bindAddressSearch } from './event-map.js';
+import { bindPdfPreview, showError, toggleLoading, showSuccess } from './ui-feedback.js';
+import { renderPreview } from './preview-renderer.js';
+import { submitEvent } from './submit-event.js';
+import {
+  isValidEmail,
+  isValidPhone,
+  isFutureDate,
+  areRequiredFieldsPresent,
+} from './validation-utils.js';
+
+// ——————————————————————————————————————————
+// Form state
+// ——————————————————————————————————————————
 let formDataCache = {};
 
+/**
+ * Render the blank form into the DOM and wire up map, preview, and logic.
+ * @param {Object} user  Authenticated user object
+ */
+ // static/js/events/event-form.js
+
 export function renderForm(user) {
-  const container = document.querySelector("#event-form");
+  const container = document.querySelector('#event-form');
   if (!container) return;
+
+  // 1) Inject HTML
   container.innerHTML = getFormHTML();
 
-  const successBox = document.querySelector("#success-message");
-  if (successBox) successBox.style.display = "none";
-
-  const { setMarker } = initMap();
-  bindAddressSearch(setMarker);
+  // 2) Initialize map & PDF preview, and guard the Next button
+  const { map, setMarker } = initMap();
   bindPdfPreview();
+
+  // disable Next until we have coords
+  const nextBtn = document.querySelector('#previewEvent');
+  if (nextBtn) nextBtn.disabled = true;
+  document.addEventListener('locationSet', () => {
+    if (nextBtn) nextBtn.disabled = false;
+  });
+
+  bindAddressSearch(setMarker);
+
+  // 3) Wire form logic
   bindFormLogic(user);
 }
 
+/**
+ * HTML template for the form.
+ */
 function getFormHTML() {
   return `
     <div class="w-100 flex items-center justify-center pa5" style="background-color: #f7f7f7;">
@@ -29,7 +58,7 @@ function getFormHTML() {
           <label for="title" class="db mb2 fw6">Event Title</label>
           <input type="text" id="title" required class="input-reset ba b--black-20 pa2 mb3 w-100">
 
-          <label for="datetime" class="db mb2 fw6">Event Date & Time</label>
+          <label for="datetime" class="db mb2 fw6">Event Date &amp; Time</label>
           <input type="datetime-local" id="datetime" required class="input-reset ba b--black-20 pa2 mb3 w-100">
 
           <label for="description" class="db mb2 fw6">Description</label>
@@ -37,7 +66,12 @@ function getFormHTML() {
 
           <label for="address" class="db mb2 fw6">Event Address or ZIP Code</label>
           <input type="text" id="address" class="input-reset ba b--black-20 pa2 w-100 mb2">
-          <button type="button" id="searchAddress" class="f6 link dim br2 ph3 pv2 mb3 dib white bg-dark-blue w-100">🔍 Search Address</button>
+          <button type="button" id="searchAddress" class="f6 link dim br2 ph3 pv2 mb1 dib white bg-dark-blue w-100" title="Enter an address, then click me or click on the map">
+            🔍 Search Address
+          </button>
+          <small class="f7 gray mb3">
+            Enter an address and click 🔍, or click directly on the map below to set your location.
+          </small>
 
           <label for="sponsor" class="db mb2 fw6">Sponsoring Organization (optional)</label>
           <input type="text" id="sponsor" class="input-reset ba b--black-20 pa2 mb3 w-100">
@@ -48,183 +82,139 @@ function getFormHTML() {
           <label for="contactPhone" class="db mb2 fw6">Contact Phone (optional)</label>
           <input type="tel" id="contactPhone" class="input-reset ba b--black-20 pa2 mb3 w-100">
 
-          <div id="map" class="br2 mb2" style="height: 300px; border: 1px solid #ccc;"></div>
-          <p id="locationConfirmation" class="mt2 f6 dark-gray"></p>
+          <div id="map" class="br2 mb3" style="height: 300px; border: 1px solid #ccc;"></div>
 
           <label for="eventPdf" class="db mb2 fw6">Attach PDF Flyer</label>
           <input type="file" id="eventPdf" accept="application/pdf" class="input-reset ba b--black-20 pa2 mb3 w-100">
           <iframe id="pdfPreview" class="mb3" style="width:100%; height:300px; border:1px solid #ddd; display:none;"></iframe>
 
-          <input type="hidden" id="lat"><input type="hidden" id="lng">
+          <input type="hidden" id="lat">
+          <input type="hidden" id="lng">
 
-          <button type="button" id="previewEvent" class="f5 link dim br3 ph3 pv3 mb2 dib white bg-green w-100">Next → Preview</button>
+          <button type="button" id="previewEvent" class="f5 link dim br3 ph3 pv3 mb2 dib white bg-green w-100" disabled>
+            Next → Preview
+          </button>
         </form>
 
-        <div id="success-message" class="dn tc bg-washed-green dark-green pa3 br3 mt3">✅ Event submitted successfully!</div>
         <div id="event-preview" class="dn mt4"></div>
       </div>
-    </div>`;
+    </div>
+  `;
 }
 
+/**
+ * Wire up preview & submit handling.
+ * @param {Object} user
+ */
 function bindFormLogic(user) {
-  const form = document.querySelector("#eventForm");
-  const previewBtn = document.querySelector("#previewEvent");
+  const previewBtn = document.querySelector('#previewEvent');
+  if (!previewBtn) return;
 
-  previewBtn.addEventListener("click", () => {
-    const $ = id => document.getElementById(id);
+  // Preview step uses the authenticated user's ID
+  previewBtn.addEventListener('click', () => handlePreview(user));
 
-    const values = {
-      title: $("title").value.trim(),
-      datetime: $("datetime").value,
-      description: $("description").value.trim(),
-      address: $("address").value.trim(),
-      sponsor: $("sponsor").value.trim(),
-      contactEmail: $("contactEmail").value.trim(),
-      contactPhone: $("contactPhone").value.trim(),
-      lat: $("lat").value,
-      lng: $("lng").value,
-      file: $("eventPdf").files[0],
-    };
-
-    if (!areRequiredFieldsPresent([values.title, values.datetime, values.description, values.lat, values.lng]) || !values.file) {
-      return showError("Please complete all required fields.");
+  // Delegate confirmSubmit click for dynamic preview content
+  document.addEventListener('click', async (e) => {
+    if (e.target && e.target.id === 'confirmSubmit') {
+      await handleSubmit();
     }
-
-    // Convert to UTC for precision
-    const eventDateUTC = new Date(values.datetime).toISOString();
-    if (!isFutureDate(eventDateUTC)) return showError("Date must be in future.");
-
-    if (values.contactEmail && !isValidEmail(values.contactEmail)) return showError("Invalid email.");
-    if (values.contactPhone && !isValidPhone(values.contactPhone)) return showError("Invalid phone.");
-
-    formDataCache = { ...values, datetime: eventDateUTC, userId: user.uid };
-    renderPreview(formDataCache);
-    form.style.display = "none";
-    document.querySelector("#event-preview").style.display = "block";
   });
 }
 
-function renderPreview(data) {
-    const container = document.querySelector("#event-preview");
-  
-    const formattedDate = new Date(data.datetime).toLocaleString(undefined, {
-      timeZoneName: 'short'
-    });
-  
-    const flyerURL = data.file ? URL.createObjectURL(data.file) : "";
-  
-    container.innerHTML = `
-    <div class="bg-white dark:bg-neutral-900 dark:text-gray-100 pa4 br3 shadow-2">
-        <h3 class="f3 mb3">🎯 Event Preview</h3>
+/**
+ * Gather, validate, map to Worker schema, and show preview.
+ * @param {Object} user
+ */
+function handlePreview(user) {
+  const $ = (id) => document.getElementById(id);
+  const values = {
+    title: $('title').value.trim(),
+    datetime: $('datetime').value,
+    description: $('description').value.trim(),
+    address: $('address').value.trim(),
+    sponsor: $('sponsor').value.trim(),
+    contactEmail: $('contactEmail').value.trim(),
+    contactPhone: $('contactPhone').value.trim(),
+    lat: $('lat').value,
+    lng: $('lng').value,
+    file: $('eventPdf').files[0],
+  };
 
-        <ul class="list pl0 mb4">
-        <li class="mb2"><strong>Title:</strong> ${data.title}</li>
-        <li class="mb2"><strong>Date & Time:</strong> ${formattedDate}</li>
-        <li class="mb2"><strong>Description:</strong><br>${data.description}</li>
-        <li class="mb2"><strong>Address:</strong> ${data.address}</li>
-        ${data.sponsor ? `<li class="mb2"><strong>Sponsor:</strong> ${data.sponsor}</li>` : ""}
-        ${data.contactEmail ? `<li class="mb2"><strong>Email:</strong> ${data.contactEmail}</li>` : ""}
-        ${data.contactPhone ? `<li class="mb2"><strong>Phone:</strong> ${data.contactPhone}</li>` : ""}
-        </ul>
+  // Ensure required fields and a PDF are present
+  if (
+    !areRequiredFieldsPresent([
+      values.title,
+      values.datetime,
+      values.description,
+      values.address,
+      values.lat,
+      values.lng,
+    ]) ||
+    !values.file
+  ) {
+    return showError('Please complete all required fields.');
+  }
 
-        <div class="mb4">
-        <p class="mb2"><strong>Flyer Preview:</strong></p>
-        <iframe
-            class="br2"
-            style="width:100%; height:300px; border:1px solid #bbb;"
-            src="${flyerURL}">
-        </iframe>
-        </div>
+  // Convert to ISO and validate
+  const isoDate = new Date(values.datetime).toISOString();
+  if (!isFutureDate(isoDate)) return showError('Date must be in the future.');
+  if (values.contactEmail && !isValidEmail(values.contactEmail))
+    return showError('Invalid email.');
+  if (values.contactPhone && !isValidPhone(values.contactPhone))
+    return showError('Invalid phone.');
 
-        <div class="flex justify-between">
-        <button id="cancelPreview" class="f6 br2 ph3 pv2 dib bg-red white hover-bg-dark-red">
-            ✖ Cancel
-        </button>
-        <button id="confirmSubmit" class="f6 br2 ph3 pv2 dib bg-green white hover-bg-dark-green">
-            ✅ Confirm & Submit
-        </button>
-        </div>
-    </div>`;
-  
-    document.getElementById("cancelPreview").onclick = () => {
-      document.querySelector("#eventForm").style.display = "block";
-      document.querySelector("#event-preview").style.display = "none";
-    };
-  
-    document.getElementById("editForm").onclick = () => {
-      document.querySelector("#eventForm").style.display = "block";
-      document.querySelector("#event-preview").style.display = "none";
-  
-      // Restore map zoom and marker
-      if (window._leafletMap && window._markerGroup && data.lat && data.lng) {
-        const lat = parseFloat(data.lat);
-        const lng = parseFloat(data.lng);
-        window._markerGroup.clearLayers();
-        L.marker([lat, lng]).addTo(window._markerGroup);
-        window._leafletMap.setView([lat, lng], 14);
-      }
-    };
-  
-    setTimeout(() => {
-        const editBtn = document.getElementById("editForm");
-        const confirmBtn = document.getElementById("confirmSubmit");
-    
-        if (!editBtn || !confirmBtn) {
-          console.error("❌ Could not find preview buttons in DOM");
-          return;
-        }
-    
-        editBtn.onclick = () => {
-          document.querySelector("#eventForm").style.display = "block";
-          document.querySelector("#event-preview").style.display = "none";
-    
-          // Restore map marker and zoom if available
-          if (window._leafletMap && window._markerGroup && data.lat && data.lng) {
-            const lat = parseFloat(data.lat);
-            const lng = parseFloat(data.lng);
-            window._markerGroup.clearLayers();
-            L.marker([lat, lng]).addTo(window._markerGroup);
-            window._leafletMap.setView([lat, lng], 14);
-          }
-        };
-    
-        confirmBtn.onclick = async () => {
-          const submitBtn = document.getElementById("confirmSubmit");
-          submitBtn.disabled = true;
-          toggleLoading(true, "#confirmSubmit");
-    
-          try {
-            // 🔎 Check for duplicates first
-            const existsRes = await fetch(`/api/events/check-duplicate?title=${encodeURIComponent(data.title)}&datetime=${encodeURIComponent(data.datetime)}`);
-            const exists = await existsRes.json();
-    
-            if (exists?.duplicate) {
-              showError("⚠️ This event is already scheduled.");
-              submitBtn.disabled = false;
-              toggleLoading(false, "#confirmSubmit");
-              return;
-            }
-    
-            // ✅ Submit event
-            const result = await submitEvent(formDataCache);
-            if (result.ok) {
-              showSuccess("🎉 Event has been scheduled!");
-              document.getElementById("pdfPreview").style.display = "none";
-              document.querySelector("#eventForm").reset();
-              document.querySelector("#eventForm").style.display = "block";
-              document.querySelector("#event-preview").style.display = "none";
-    
-              if (window._leafletMap) {
-                window._leafletMap.setView([39.5, -98.35], 4);
-                if (window._markerGroup) window._markerGroup.clearLayers();
-              }
-            }
-          } catch (err) {
-            showError("❌ Submission failed: " + err.message);
-            submitBtn.disabled = false;
-          } finally {
-            toggleLoading(false, "#confirmSubmit");
-          }
-        };
-      }, 0); 
-    }
+  // Map our UI fields to the Worker’s expected keys
+  formDataCache = {
+    userId: user.uid,
+    name: values.title,
+    date: isoDate,
+    description: values.description,
+    location: values.address,
+    sponsor: values.sponsor,
+    contact_email: values.contactEmail,
+    contact_phone: values.contactPhone,
+    lat: values.lat,
+    lng: values.lng,
+    file: values.file,
+  };
+
+  // Show preview
+  renderPreview(formDataCache);
+
+  // Toggle visibility
+  $('eventForm').style.display = 'none';
+  $('event-preview').style.display = 'block';
+}
+
+/**
+ * Submit the event to the Worker and handle UI feedback.
+ */
+async function handleSubmit() {
+  toggleLoading(true, '#confirmSubmit', 'Submitting…');
+
+  const { ok, message } = await submitEvent(formDataCache);
+
+  toggleLoading(false, '#confirmSubmit', '✅ Confirm & Submit');
+  if (ok) {
+    showSuccess('🎉 Event has been scheduled!');
+    resetForm();
+  } else {
+    showError(message);
+  }
+}
+
+/**
+ * Reset both form and preview for another entry.
+ */
+function resetForm() {
+  const form = document.querySelector('#eventForm');
+  const preview = document.querySelector('#event-preview');
+  if (form) {
+    form.reset();
+    form.style.display = 'block';
+  }
+  if (preview) {
+    preview.innerHTML = '';
+    preview.style.display = 'none';
+  }
+}

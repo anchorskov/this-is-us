@@ -1,28 +1,35 @@
-import { showSuccess, showError, toggleLoading } from './ui-feedback.js';
+// static/js/events/submit-event.js
 
-export async function submitEvent(formDataCache) {
-  toggleLoading(true, "#confirmSubmit");
+// ——————————————————————————————————————————
+// Configuration
+// ——————————————————————————————————————————
+const API_URL = window.EVENTS_API_URL || "/api/events/create";
+
+/**
+ * Submit event data (including the PDF file) to our Worker.
+ * @param {Object} payload  Plain JS object with keys matching D1 columns,
+ *                          and including a `file: File` property.
+ * @returns {Promise<{ok: boolean, message: string}>}
+ */
+export async function submitEvent(payload) {
+  // Build FormData for streaming upload
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(payload)) {
+    formData.append(key, value);
+  }
 
   try {
-    const formData = new FormData();
-    for (const key in formDataCache) {
-      formData.append(key, formDataCache[key]);
-    }
-
-    const res = await fetch("/api/events/create", {
+    const res = await fetch(API_URL, {
       method: "POST",
-      body: formData
+      body: formData,
     });
+    const body = await res.json();
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || "Submission failed");
-
-    showSuccess("✅ Event submitted successfully!");
-    return { ok: true };
+    return {
+      ok: res.ok && body.success === true,
+      message: body.error || (res.ok ? "Event submitted." : "Submission failed."),
+    };
   } catch (err) {
-    showError(err);
-    return { ok: false, error: err };
-  } finally {
-    toggleLoading(false, "#confirmSubmit");
+    return { ok: false, message: err.message };
   }
 }
