@@ -39,7 +39,7 @@ var g = r("image/webp");
 var router = t();
 router.get("/api/events", async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
-    `SELECT id, name, date, location, pdf_url
+    `SELECT id, name, date, location, pdf_url, lat, lng
      FROM events
      WHERE date >= date('now')
      ORDER BY date`
@@ -65,22 +65,10 @@ router.post("/api/events/create", async (request, env) => {
   const sponsor = form.get("sponsor") || "";
   const contact_email = form.get("contact_email") || "";
   const contact_phone = form.get("contact_phone") || "";
-  console.log("\u{1F4DD} Incoming event submission:", {
-    userId,
-    name,
-    date,
-    location,
-    description,
-    lat,
-    lng,
-    sponsor,
-    contact_email,
-    contact_phone,
-    file: file ? file.name : "No file"
-  });
+  console.log("\u{1F4DD} Incoming event submission:", { userId, name, date, location, lat, lng, description, sponsor, contact_email, contact_phone, file: file ? file.name : "No file" });
   if (!name || !date || !location || !file) {
     console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file });
-    return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+    return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
   try {
     const buffer = await file.arrayBuffer();
@@ -104,8 +92,8 @@ router.post("/api/events/create", async (request, env) => {
       INSERT INTO events (
         user_id, name, date, location, pdf_url,
         lat, lng, sponsor, contact_email,
-        contact_phone, pdf_hash
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        contact_phone, pdf_hash, description
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       userId,
       name,
@@ -117,13 +105,14 @@ router.post("/api/events/create", async (request, env) => {
       sponsor,
       contact_email,
       contact_phone,
-      pdf_hash
+      pdf_hash,
+      description
     ).run();
     console.log("\u2705 Event saved to database");
-    return new Response(JSON.stringify({ success: true }), { status: 201 });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: { "Content-Type": "application/json" } });
   } catch (err) {
     console.error("\u274C Error submitting event:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 });
 router.all("*", () => new Response("Not found", { status: 404 }));
@@ -139,9 +128,7 @@ var src_default = {
     }
     const response = await router.fetch(request, env, ctx);
     const newHeaders = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      newHeaders.set(key, value);
-    });
+    Object.entries(corsHeaders).forEach(([key, val]) => newHeaders.set(key, val));
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -185,7 +172,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// .wrangler/tmp/bundle-lC601Z/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-dE9bYe/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default
 ];
@@ -216,7 +203,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-lC601Z/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-dE9bYe/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

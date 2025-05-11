@@ -3,10 +3,10 @@
 import { Router } from 'itty-router';
 const router = Router();
 
-// GET /api/events
+// GET /api/events - include lat & lng for mapping
 router.get('/api/events', async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
-    `SELECT id, name, date, location, pdf_url
+    `SELECT id, name, date, location, pdf_url, lat, lng
      FROM events
      WHERE date >= date('now')
      ORDER BY date`
@@ -15,11 +15,14 @@ router.get('/api/events', async (request, env) => {
     headers: { 'Content-Type': 'application/json' }
   });
 });
+
+// Debug schema
 router.get('/_debug/schema', async (_, env) => {
   const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
   return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
 });
-// POST /api/events/create
+
+// POST /api/events/create - handles event creation
 router.post('/api/events/create', async (request, env) => {
   const form = await request.formData();
   const name           = form.get('name');
@@ -34,25 +37,22 @@ router.post('/api/events/create', async (request, env) => {
   const contact_email  = form.get('contact_email')     || '';
   const contact_phone  = form.get('contact_phone')     || '';
 
-  console.log("📝 Incoming event submission:", {
-    userId, name, date, location, description, lat, lng, sponsor, contact_email, contact_phone,
-    file: file ? file.name : "No file"
-  });
+  console.log("📝 Incoming event submission:", { userId, name, date, location, lat, lng, description, sponsor, contact_email, contact_phone, file: file ? file.name : "No file" });
 
   if (!name || !date || !location || !file) {
     console.warn("⚠️ Missing required fields", { name, date, location, file });
-    return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400 });
+    return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
   }
 
   try {
     // Compute SHA‑256 hash of the PDF for deduplication
-    const buffer    = await file.arrayBuffer();
-    const hashBuf   = await crypto.subtle.digest('SHA-256', buffer);
-    const pdf_hash  = Array.from(new Uint8Array(hashBuf))
+    const buffer   = await file.arrayBuffer();
+    const hashBuf  = await crypto.subtle.digest('SHA-256', buffer);
+    const pdf_hash = Array.from(new Uint8Array(hashBuf))
                          .map(b => b.toString(16).padStart(2, '0'))
                          .join('');
 
-    // Check for existing PDF by hash
+    // Check for duplicate PDF
     const { results: dup } = await env.EVENTS_DB.prepare(
       `SELECT id FROM events WHERE pdf_hash = ?`
     ).bind(pdf_hash).all();
@@ -73,25 +73,25 @@ router.post('/api/events/create', async (request, env) => {
 
     console.log(`📄 PDF uploaded to R2: ${pdf_url}`);
 
-    // Insert into D1, including the pdf_hash
+    // Insert into D1 with coordinates
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location, pdf_url,
         lat, lng, sponsor, contact_email,
-        contact_phone, pdf_hash
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        contact_phone, pdf_hash, description
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       userId, name, date, location, pdf_url,
       lat, lng, sponsor, contact_email,
-      contact_phone, pdf_hash
+      contact_phone, pdf_hash, description
     ).run();
 
     console.log("✅ Event saved to database");
 
-    return new Response(JSON.stringify({ success: true }), { status: 201 });
+    return new Response(JSON.stringify({ success: true }), { status: 201, headers: { 'Content-Type': 'application/json' } });
   } catch (err) {
     console.error("❌ Error submitting event:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 });
 
@@ -100,26 +100,19 @@ router.all('*', () => new Response('Not found', { status: 404 }));
 
 export default {
   async fetch(request, env, ctx) {
-    // Set up CORS headers for both preflight and actual responses
     const corsHeaders = {
       'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
       'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
 
-    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Route it
     const response = await router.fetch(request, env, ctx);
-
-    // Merge CORS headers into the actual response
     const newHeaders = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      newHeaders.set(key, value);
-    });
+    Object.entries(corsHeaders).forEach(([key, val]) => newHeaders.set(key, val));
 
     return new Response(response.body, {
       status: response.status,
