@@ -1,0 +1,56 @@
+{{ define "head" }}
+  {{ partial "head.html" . }}
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
+{{ end }}
+
+{{ define "main" }}
+  <script>console.log("👉 using custom events/section.html")</script>
+  <!-- Render the intro from _index.md -->
+  {{ .Content }}
+
+  <article class="prose mx-auto">
+    <h1 class="f2 tc">🧭 Find Events Near You</h1>
+
+    <!-- Controls: ZIP search, zoom, and view toggle -->
+    <div class="flex justify-center items-center mt4 space-x-2">
+      <input
+        id="zip-input"
+        type="text"
+        placeholder="Enter ZIP"
+        class="pa2 ba b--black-20 br2"
+      />
+      <button id="zip-search" class="pa2 bg-blue white br2 hover-bg-dark-blue">
+        Search
+      </button>
+      <button id="zip-zoom" class="pa2 bg-green white br2 hover-bg-dark-green">
+        Zoom to ZIP
+      </button>
+      <button id="view-toggle" class="pa2 bg-dark-blue white br2 hover-bg-blue-dark">
+        Select List View
+      </button>
+    </div>
+
+    <!-- Leaflet map -->
+    <div
+      id="map"
+      class="my4"
+      style="height:70vh;"
+      role="application"
+      aria-label="Upcoming events map"
+    ></div>
+
+    <!-- Card list (hidden until “Select List View”) -->
+    <div id="events-list" style="display:none;" class="pa4" aria-label="List of upcoming events"></div>
+  </article>
+{{ end }}
+
+{{ define "scripts" }}
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Combined map + cards logic -->
+  <script src="{{ "js/events/hub.js" | relURL }}"></script>
+{{ end }}

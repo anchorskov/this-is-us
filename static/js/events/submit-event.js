@@ -3,7 +3,10 @@
 // ——————————————————————————————————————————
 // Configuration
 // ——————————————————————————————————————————
-const API_URL = window.EVENTS_API_URL || "/api/events/create";
+// Base API root (set by site-scripts.html):
+const API_ROOT = (window.EVENTS_API_URL || "/api").replace(/\/$/, '');
+// Endpoint for creating events:
+const CREATE_URL = `${API_ROOT}/events/create`;
 
 /**
  * Submit event data (including the PDF file) to our Worker.
@@ -19,11 +22,19 @@ export async function submitEvent(payload) {
   }
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(CREATE_URL, {
       method: "POST",
       body: formData,
     });
-    const body = await res.json();
+
+    // Attempt to parse JSON, fall back to text
+    let body;
+    try {
+      body = await res.json();
+    } catch {
+      const text = await res.text();
+      body = { success: res.ok, error: text };
+    }
 
     return {
       ok: res.ok && body.success === true,

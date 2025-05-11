@@ -1,0 +1,8 @@
+<article class="bg-white br2 pa3 mb4 shadow-1">
+  <h3 class="f4 mb2">
+    <a href="{{ .Permalink }}" class="link dim">{{ .Name }}</a>
+  </h3>
+  <time datetime="{{ .Date }}">{{ .Date.Format "Jan 2, 2006" }}</time>
+  <p class="mt2">{{ .Location }}</p>
+  <a class="link blue mt3 db" href="{{ .PDF }}">Details →</a>
+</article>

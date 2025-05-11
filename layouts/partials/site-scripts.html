@@ -3,16 +3,27 @@
 <script>
   console.log("✅ Site scripts loaded correctly.");
 
-  // Only override EVENTS_API_URL when running Hugo’s dev server on localhost
+  // Determine the base URL for the Events API
   (function() {
     const devHosts = ["localhost", "127.0.0.1"];
-    const { hostname, port } = window.location;
-    // Hugo default port is 1313, but we only care about the hostname here
+    const { hostname } = window.location;
+
     if (devHosts.includes(hostname)) {
-      window.EVENTS_API_URL = "http://127.0.0.1:8787/api/events/create";
+      // In local development, point to Wrangler dev on port 8787
+      window.EVENTS_API_URL = "http://127.0.0.1:8787/api";
       console.log("🐛 Dev override: EVENTS_API_URL →", window.EVENTS_API_URL);
+    } else {
+      // In production, use the relative API path
+      window.EVENTS_API_URL = "/api";
+      console.log("🌐 Production: EVENTS_API_URL →", window.EVENTS_API_URL);
     }
-    // In production (this-is-us.org), EVENTS_API_URL stays undefined
-    // and submit-event.js will fall back to "/api/events/create"
   })();
 </script>
+
+<!-- Load Leaflet for interactive maps -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+{{ if and (eq .Section "events") (eq .Kind "section") }}
+  <!-- Load Events Hub logic only on the Events section index page -->
+  <script src="{{ "js/events/hub.js" | relURL }}"></script>
+{{ end }}

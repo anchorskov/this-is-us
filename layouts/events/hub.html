@@ -1,0 +1,28 @@
+{{ define "head" }}
+  {{ partial "head.html" . }}
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <!-- TimelineJS CSS -->
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"/>
+{{ end }}
+
+{{ define "main" }}
+<article class="prose mx-auto">
+  <h1>Our Upcoming Events</h1>
+
+  <!-- Map container -->
+  <div id="map" style="height: 500px; margin-bottom: 2rem;" role="application" aria-label="Upcoming events map"></div>
+
+  <!-- Timeline container -->
+  <div id="timeline-embed" aria-label="Event timeline"></div>
+</article>
+{{ end }}
+
+{{ define "scripts" }}
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- TimelineJS JS -->
+  <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+  <!-- Events hub logic -->
+  <script src="{{ "js/events/hub.js" | relURL }}"></script>
+{{ end }}

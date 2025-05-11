@@ -13,6 +13,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
 
+<!-- TimelineJS3 -->
+<link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"/>
+<script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+
 <!-- Load refactored event module only for create page -->
 {{ if eq .Page.RelPermalink "/events/create/" }}
   <script type="module" src="{{ "js/events/index.js" | relURL }}"></script>

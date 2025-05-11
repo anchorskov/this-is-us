@@ -1,47 +1,65 @@
-# ──────────────────────────────────────────────────────────────────────────────
 # Python test & coverage artifacts
-# ──────────────────────────────────────────────────────────────────────────────
 .coverage
 htmlcov/
 .pytest_cache/
 .mypy_cache/
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Python packaging build dirs
-# ──────────────────────────────────────────────────────────────────────────────
 build/
 dist/
 *.egg-info/
-venv/
 
-# ──────────────────────────────────────────────────────────────────────────────
-# JetBrains IDEs (PyCharm, WebStorm, etc.)
-# ──────────────────────────────────────────────────────────────────────────────
+# Virtual environments
+venv/
+env/
+.venv/
+
+# JetBrains IDEs
 .idea/
 *.iml
 
-# ──────────────────────────────────────────────────────────────────────────────
 # VSCode workspace
-# ──────────────────────────────────────────────────────────────────────────────
 *.code-workspace
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Log files
-# ──────────────────────────────────────────────────────────────────────────────
-npm-debug.log*
-yarn-error.log*
+# Node modules
+node_modules/
+worker/node_modules/
 
-# ──────────────────────────────────────────────────────────────────────────────
 # Hugo build artifacts & cache
-# ──────────────────────────────────────────────────────────────────────────────
 public/
 resources/
-hugo.toml.bak
+.hugo_cache/
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Hugo dev backups & analysis
-# ──────────────────────────────────────────────────────────────────────────────
+# Hugo temporary & backup files
+hugo.toml.bak
 content_bak/
 layouts_bak/
 partial_calls.txt
 content/test.md
+
+# Local databases & caches
+d1-local/
+r2-local/
+worker/d1-local/
+
+# Worker test PDF
+worker/dummy.pdf
+
+# Environment files
+.env
+*.env
+
+# Logs and temporary files
+npm-debug.log*
+yarn-error.log*
+*.log
+*.tmp
+
+# OS & editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Bundled archives
+*.zip
