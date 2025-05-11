@@ -30,17 +30,28 @@ export function renderForm(user) {
   container.innerHTML = getFormHTML();
 
   // 2) Initialize map & PDF preview, and guard the Next button
-  const { map, setMarker } = initMap();
-  bindPdfPreview();
+const { map, setMarker: originalSetMarker } = initMap();
+bindPdfPreview();
 
-  // disable Next until we have coords
-  const nextBtn = document.querySelector('#previewEvent');
-  if (nextBtn) nextBtn.disabled = true;
-  document.addEventListener('locationSet', () => {
-    if (nextBtn) nextBtn.disabled = false;
-  });
+// Wrap setMarker so it also fires our “locationSet” event
+const setMarker = (...args) => {
+  originalSetMarker(...args);
+  document.dispatchEvent(new Event('locationSet'));
+};
 
-  bindAddressSearch(setMarker);
+// Track preview availability
+const nextBtn = document.querySelector('#previewEvent');
+let canPreview = false;
+
+document.addEventListener('locationSet', () => {
+  canPreview = true;
+  nextBtn.setAttribute('aria-disabled', 'false');
+  nextBtn.classList.remove('opacity-50');
+});
+
+// Use our wrapped setMarker
+bindAddressSearch(setMarker);
+
 
   // 3) Wire form logic
   bindFormLogic(user);
@@ -91,9 +102,15 @@ function getFormHTML() {
           <input type="hidden" id="lat">
           <input type="hidden" id="lng">
 
-          <button type="button" id="previewEvent" class="f5 link dim br3 ph3 pv3 mb2 dib white bg-green w-100" disabled>
-            Next → Preview
+          <button 
+            type="button" 
+            id="previewEvent" 
+            class="f5 link dim br3 ph3 pv3 mb2 dib white bg-green w-100 opacity-50" 
+            aria-disabled="true"
+          >
+            Next → Preview
           </button>
+
         </form>
 
         <div id="event-preview" class="dn mt4"></div>
@@ -110,8 +127,17 @@ function bindFormLogic(user) {
   const previewBtn = document.querySelector('#previewEvent');
   if (!previewBtn) return;
 
-  // Preview step uses the authenticated user's ID
-  previewBtn.addEventListener('click', () => handlePreview(user));
+  // If they click before selecting a location, show a warning.
+  previewBtn.addEventListener('click', () => {
+    const isDisabled = previewBtn.getAttribute('aria-disabled') === 'true';
+    if (isDisabled) {
+      showError(
+        'Please select a location first: search an address or click on the map.'
+      );
+    } else {
+      handlePreview(user);
+    }
+  });
 
   // Delegate confirmSubmit click for dynamic preview content
   document.addEventListener('click', async (e) => {
@@ -120,6 +146,7 @@ function bindFormLogic(user) {
     }
   });
 }
+
 
 /**
  * Gather, validate, map to Worker schema, and show preview.
