@@ -37,6 +37,18 @@ var g = r("image/webp");
 
 // src/index.mjs
 var router = t();
+router.get("/api/events/pdf/:key", async (request, env) => {
+  const { key } = request.params;
+  const obj = await env.EVENT_PDFS.get(key, { allowScripting: true });
+  if (!obj) return new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      "Content-Type": obj.httpMetadata.contentType || "application/pdf",
+      "Cache-Control": "public, max-age=31536000"
+    }
+  });
+});
 router.get("/api/events", async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
     `SELECT id, name, date, location, pdf_url, lat, lng
@@ -86,8 +98,9 @@ router.post("/api/events/create", async (request, env) => {
     }
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
-    const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/${env.EVENT_PDFS.bucketName}/${key}`;
-    console.log(`\u{1F4C4} PDF uploaded to R2: ${pdf_url}`);
+    const origin = new URL(request.url).origin;
+    const pdf_url = `${origin}/api/events/pdf/${key}`;
+    console.log(`\u{1F4C4} PDF uploaded, accessible at: ${pdf_url}`);
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location, pdf_url,

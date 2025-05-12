@@ -3,6 +3,20 @@
 import { Router } from 'itty-router';
 const router = Router();
 
+// Serve PDF files via Worker to avoid cross-origin issues
+router.get('/api/events/pdf/:key', async (request, env) => {
+  const { key } = request.params;
+  const obj = await env.EVENT_PDFS.get(key, { allowScripting: true });
+  if (!obj) return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      'Content-Type': obj.httpMetadata.contentType || 'application/pdf',
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  });
+});
+
 // GET /api/events - include lat & lng for mapping
 router.get('/api/events', async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
@@ -68,10 +82,11 @@ router.post('/api/events/create', async (request, env) => {
     // Upload to R2
     const key     = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
-    const pdf_url = `https://${env.EVENT_PDFS.accountId}.r2.cloudflarestorage.com/` +
-                    `${env.EVENT_PDFS.bucketName}/${key}`;
+    // Serve via Worker route instead of direct R2 URL
+    const origin = new URL(request.url).origin;
+    const pdf_url = `${origin}/api/events/pdf/${key}`;
 
-    console.log(`📄 PDF uploaded to R2: ${pdf_url}`);
+    console.log(`📄 PDF uploaded, accessible at: ${pdf_url}`);
 
     // Insert into D1 with coordinates
     await env.EVENTS_DB.prepare(`
