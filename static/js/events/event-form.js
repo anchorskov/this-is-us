@@ -206,6 +206,7 @@ function handlePreview(user) {
   };
 
   // Show preview
+  console.log("🛰️ Preview coords:", formDataCache.lat, formDataCache.lng);
   renderPreview(formDataCache);
 
   // Toggle visibility
@@ -217,11 +218,25 @@ function handlePreview(user) {
  * Submit the event to the Worker and handle UI feedback.
  */
 async function handleSubmit() {
+  // 0) Ensure we actually have coords
+  if (!formDataCache.lat || !formDataCache.lng) {
+    showError('Cannot submit: no location set. Please pick an address or click on the map.');
+    return;
+  }
+
+  // 1) Log payload coords for debugging
+  console.log('📤 Submitting event with coords:', formDataCache.lat, formDataCache.lng);
+
+  // 2) Show loading state
   toggleLoading(true, '#confirmSubmit', 'Submitting…');
 
+  // 3) Perform the POST
   const { ok, message } = await submitEvent(formDataCache);
 
+  // 4) Tear down loading state
   toggleLoading(false, '#confirmSubmit', '✅ Confirm & Submit');
+
+  // 5) Success vs. error handling
   if (ok) {
     showSuccess('🎉 Event has been scheduled!');
     resetForm();
