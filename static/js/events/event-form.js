@@ -1,15 +1,45 @@
 // static/js/events/event-form.js
 
 import { initMap, bindAddressSearch } from './event-map.js';
-import { bindPdfPreview, showError, toggleLoading, showSuccess } from './ui-feedback.js';
+import { bindPdfPreview, showError, showSuccessModal, toggleLoading } from './ui-feedback.js';
 import { renderPreview } from './preview-renderer.js';
 import { submitEvent } from './submit-event.js';
 import {
   isValidEmail,
   isValidPhone,
-  isFutureDate,
   areRequiredFieldsPresent,
 } from './validation-utils.js';
+
+// ——————————————————————————————————————————
+// Submit handler
+// ——————————————————————————————————————————
+async function handleSubmit() {
+  // 0) Block if preview hasn’t run
+  if (!formDataCache || !formDataCache.date) {
+    return showError('Please click Next → Preview first.');
+  }
+
+  const confirmBtn = document.getElementById('confirmSubmit');
+  toggleLoading(true, confirmBtn, 'Submitting…');
+
+  try {
+    const { ok, id, message } = await submitEvent(formDataCache);
+    console.log('handleSubmit: got response', { ok, id, message });
+    if (ok) {
+      showSuccessModal(() => {
+        window.location.href = `/events?highlight=${id}`;
+      });
+      resetForm();
+    } else {
+      showError(message);
+    }
+  } catch (err) {
+    console.error('Unexpected error during submission:', err);
+    showError('An unexpected error occurred. Please try again.');
+  } finally {
+    toggleLoading(false, confirmBtn, '✅ Confirm & Submit');
+  }
+}
 
 // ——————————————————————————————————————————
 // Form state
@@ -20,42 +50,50 @@ let formDataCache = {};
  * Render the blank form into the DOM and wire up map, preview, and logic.
  * @param {Object} user  Authenticated user object
  */
- // static/js/events/event-form.js
-
 export function renderForm(user) {
   const container = document.querySelector('#event-form');
   if (!container) return;
 
-  // 1) Inject HTML
+  // 1) Inject HTML and hide the success modal
   container.innerHTML = getFormHTML();
 
-  // 2) Initialize map & PDF preview, and guard the Next button
-const { map, setMarker: originalSetMarker } = initMap();
-bindPdfPreview();
+  // DEBUG
+  console.log('renderForm: HTML injected, about to hide successModal');
 
-// Wrap setMarker so it also fires our “locationSet” event
-const setMarker = (...args) => {
-  originalSetMarker(...args);
-  document.dispatchEvent(new Event('locationSet'));
-};
+  // 1a) Prevent choosing past dates by setting the local min
+  const dateInput = document.getElementById('datetime');
+  if (dateInput) {
+    const now = new Date();
+    // Shift into local timezone, then to ISO string
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    dateInput.min = local.toISOString().slice(0, 16);
+  }
 
-// Track preview availability
-const nextBtn = document.querySelector('#previewEvent');
-let canPreview = false;
+  // 1b) Hide the success modal
+  document.getElementById('successModal')?.classList.add('dn');
 
-document.addEventListener('locationSet', () => {
-  canPreview = true;
-  nextBtn.setAttribute('aria-disabled', 'false');
-  nextBtn.classList.remove('opacity-50');
-});
+  // 2) Initialize map & PDF preview
+  const { map, setMarker: originalSetMarker } = initMap();
+  bindPdfPreview();
 
-// Use our wrapped setMarker
-bindAddressSearch(setMarker);
+  // 3) Wrap setMarker → fires locationSet
+  const setMarker = (...args) => {
+    originalSetMarker(...args);
+    document.dispatchEvent(new Event('locationSet'));
+  };
+  bindAddressSearch(setMarker);
 
+  // 4) Enable Next→Preview on locationSet
+  const nextBtn = document.getElementById('previewEvent');
+  document.addEventListener('locationSet', () => {
+    nextBtn.setAttribute('aria-disabled', 'false');
+    nextBtn.classList.remove('opacity-50');
+  });
 
-  // 3) Wire form logic
+  // 5) Wire up preview & confirm
   bindFormLogic(user);
 }
+
 
 /**
  * HTML template for the form.
@@ -110,53 +148,82 @@ function getFormHTML() {
           >
             Next → Preview
           </button>
-
         </form>
 
         <div id="event-preview" class="dn mt4"></div>
+      </div>
+    </div>
+
+    <!-- Success Modal (hidden by default) -->
+    <div
+      id="successModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <div class="bg-white pa4 br3 shadow-1 w-90 mw6 tc" style="max-width: 90%; margin: auto; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <h3 class="f3 mb3">Success!</h3>
+        <p class="mb4">Your event has been created.</p>
+        <button 
+          id="viewEventBtn" 
+          class="f5 link dim br3 ph3 pv2 white bg-blue"
+        >
+          View on Map
+        </button>
       </div>
     </div>
   `;
 }
 
 /**
- * Wire up preview & submit handling.
- * @param {Object} user
+ * Wire up Preview & Confirm handling.
  */
 function bindFormLogic(user) {
-  const previewBtn = document.querySelector('#previewEvent');
+  const previewBtn = document.getElementById('previewEvent');
   if (!previewBtn) return;
 
-  // If they click before selecting a location, show a warning.
   previewBtn.addEventListener('click', () => {
     const isDisabled = previewBtn.getAttribute('aria-disabled') === 'true';
     if (isDisabled) {
-      showError(
-        'Please select a location first: search an address or click on the map.'
-      );
+      showError('Please select a location first: search an address or click on the map.');
     } else {
       handlePreview(user);
-    }
-  });
-
-  // Delegate confirmSubmit click for dynamic preview content
-  document.addEventListener('click', async (e) => {
-    if (e.target && e.target.id === 'confirmSubmit') {
-      await handleSubmit();
+      bindConfirm(); // attach Confirm click only once
     }
   });
 }
 
+/**
+ * After renderPreview() toggles into the preview pane, wire the Confirm button.
+ */
+function bindConfirm() {
+  const confirmBtn = document.getElementById('confirmSubmit');
+  if (!confirmBtn) return;
+
+  confirmBtn.addEventListener('click', async () => {
+    await handleSubmit();
+  }, { once: true });
+}
 
 /**
  * Gather, validate, map to Worker schema, and show preview.
  * @param {Object} user
  */
 function handlePreview(user) {
-  const $ = (id) => document.getElementById(id);
+  const $ = id => document.getElementById(id);
+
+  // 1) Gather & trim values
   const values = {
     title: $('title').value.trim(),
-    datetime: $('datetime').value,
+    datetime: $('datetime').value.trim(),
     description: $('description').value.trim(),
     address: $('address').value.trim(),
     sponsor: $('sponsor').value.trim(),
@@ -167,90 +234,103 @@ function handlePreview(user) {
     file: $('eventPdf').files[0],
   };
 
-  // Ensure required fields and a PDF are present
+  // 2) Required fields + PDF
   if (
     !areRequiredFieldsPresent([
-      values.title,
-      values.datetime,
-      values.description,
-      values.address,
-      values.lat,
-      values.lng,
+      values.title, values.datetime, values.description,
+      values.address, values.lat, values.lng
     ]) ||
     !values.file
   ) {
     return showError('Please complete all required fields.');
   }
 
-  // Convert to ISO and validate
-  const isoDate = new Date(values.datetime).toISOString();
-  if (!isFutureDate(isoDate)) return showError('Date must be in the future.');
-  if (values.contactEmail && !isValidEmail(values.contactEmail))
-    return showError('Invalid email.');
-  if (values.contactPhone && !isValidPhone(values.contactPhone))
-    return showError('Invalid phone.');
+// 3) Date validation
+const dateInput = document.getElementById('datetime');
+// Clear any prior custom error
+dateInput.setCustomValidity('');
 
-  // Map our UI fields to the Worker’s expected keys
-  formDataCache = {
-    userId: user.uid,
-    name: values.title,
-    date: isoDate,
-    description: values.description,
-    location: values.address,
-    sponsor: values.sponsor,
-    contact_email: values.contactEmail,
-    contact_phone: values.contactPhone,
-    lat: values.lat,
-    lng: values.lng,
-    file: values.file,
-  };
+const raw = values.datetime.trim();
 
-  // Show preview
-  console.log("🛰️ Preview coords:", formDataCache.lat, formDataCache.lng);
-  renderPreview(formDataCache);
-
-  // Toggle visibility
-  $('eventForm').style.display = 'none';
-  $('event-preview').style.display = 'block';
+// 3a) Required
+if (!raw) {
+  dateInput.setCustomValidity('Please enter an event date & time.');
+  dateInput.reportValidity();
+  dateInput.focus();
+  return;
 }
 
-/**
- * Submit the event to the Worker and handle UI feedback.
- */
-async function handleSubmit() {
-  // 0) Ensure we actually have coords
-  if (!formDataCache.lat || !formDataCache.lng) {
-    showError('Cannot submit: no location set. Please pick an address or click on the map.');
-    return;
-  }
+// 3b) Well‑formed
+const dateObj = new Date(raw);
+if (isNaN(dateObj.getTime())) {
+  dateInput.setCustomValidity('That date/time is not valid.');
+  dateInput.reportValidity();
+  dateInput.focus();
+  return;
+}
 
-  // 1) Log payload coords for debugging
-  console.log('📤 Submitting event with coords:', formDataCache.lat, formDataCache.lng);
+// 3c) Future-only
+if (dateObj <= new Date()) {
+  dateInput.setCustomValidity('Date must be in the future.');
+  dateInput.reportValidity();
+  dateInput.focus();
+  return;
+}
 
-  // 2) Show loading state
-  toggleLoading(true, '#confirmSubmit', 'Submitting…');
+// 3d) All good: clear error and format for payload
+dateInput.setCustomValidity('');
+const isoDate = dateObj.toISOString();
 
-  // 3) Perform the POST
-  const { ok, message } = await submitEvent(formDataCache);
+// 4) Optional contact validations (still using showError)
+if (values.contactEmail && !isValidEmail(values.contactEmail)) {
+  return showError('Invalid email address.');
+}
+if (values.contactPhone && !isValidPhone(values.contactPhone)) {
+  return showError('Invalid phone number.');
+}
 
-  // 4) Tear down loading state
-  toggleLoading(false, '#confirmSubmit', '✅ Confirm & Submit');
 
-  // 5) Success vs. error handling
-  if (ok) {
-    showSuccess('🎉 Event has been scheduled!');
-    resetForm();
-  } else {
-    showError(message);
-  }
+  // 5) Map to payload schema
+  formDataCache = {
+    userId:        user.uid,
+    name:          values.title,
+    date:          isoDate,
+    description:   values.description,
+    location:      values.address,
+    sponsor:       values.sponsor,
+    contact_email: values.contactEmail,
+    contact_phone: values.contactPhone,
+    lat:           values.lat,
+    lng:           values.lng,
+    file:          values.file,
+  };
+
+  // 6) Render preview & swap views
+  console.log('🛰️ Preview coords:', formDataCache.lat, formDataCache.lng);
+  renderPreview(formDataCache);
+  $('eventForm').style.display     = 'none';
+  $('event-preview').style.display = 'block';
 }
 
 /**
  * Reset both form and preview for another entry.
  */
 function resetForm() {
-  const form = document.querySelector('#eventForm');
-  const preview = document.querySelector('#event-preview');
+  // Hide success modal & clear cache
+  console.log('resetForm: hiding successModal');
+  document.getElementById('successModal')?.classList.add('dn');
+  formDataCache = {};
+
+  // Reset Next→Preview state
+  const nextBtn = document.getElementById('previewEvent');
+  if (nextBtn) {
+    nextBtn.setAttribute('aria-disabled', 'true');
+    nextBtn.classList.add('opacity-50');
+  }
+
+  // Reset form & preview pane
+  const form = document.getElementById('eventForm');
+  const preview = document.getElementById('event-preview');
   if (form) {
     form.reset();
     form.style.display = 'block';

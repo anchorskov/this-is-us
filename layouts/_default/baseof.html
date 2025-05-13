@@ -1,12 +1,11 @@
-{{- if lt hugo.Version "0.146.0" }}
-  {{- errorf "=> hugo v0.146.0 or greater is required for hugo-PaperMod to build " }}
-{{- end -}}
-
 <!DOCTYPE html>
 <html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
 <head>
   {{- partial "head.html" . }}
   {{- partial "extend_head.html" . }}
+
+  <!-- 1) Initialize Firebase & UI as early as possible -->
+  {{ partial "firebase-init.html" . }}
 </head>
 
 <body class="
@@ -17,9 +16,6 @@
     dark
   {{- end -}}
 " id="top">
-
-  <!-- 1) Initialize Firebase & UI on every page -->
-  {{ partial "firebase-init.html" . }}
 
   <!-- 2) Site header -->
   {{ partialCached "header.html" . .Page }}
@@ -36,7 +32,7 @@
   {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
   {{ partial "extend_footer.html" . }}
 
-  <!-- 6) Site-wide scripts (including firebase-auth.js) -->
+  <!-- 6) Site-wide scripts (including firebase-auth.js config) -->
   {{ partial "site-scripts.html" . }}
 
 </body>

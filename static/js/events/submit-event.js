@@ -1,5 +1,7 @@
 // static/js/events/submit-event.js
 
+import { safeFetch } from '../utils/safe-fetch.js';
+
 // ——————————————————————————————————————————
 // Configuration
 // ——————————————————————————————————————————
@@ -11,36 +13,35 @@ const CREATE_URL = `${API_ROOT}/events/create`;
 /**
  * Submit event data (including the PDF file) to our Worker.
  * @param {Object} payload  Plain JS object with keys matching D1 columns,
- *                          and including a `file: File` property.
- * @returns {Promise<{ok: boolean, message: string}>}
+ *                          including a `file: File` property.
+ * @returns {Promise<{ok: boolean, id?: string, message?: string}>}
  */
 export async function submitEvent(payload) {
   // Build FormData for streaming upload
   const formData = new FormData();
-  for (const [key, value] of Object.entries(payload)) {
+  Object.entries(payload).forEach(([key, value]) => {
     formData.append(key, value);
-  }
+  });
 
   try {
-    const res = await fetch(CREATE_URL, {
-      method: "POST",
+    // Use safeFetch for uniform HTTP/status parsing and JSON handling
+    const body = await safeFetch(CREATE_URL, {
+      method: 'POST',
       body: formData,
     });
 
-    // Attempt to parse JSON, fall back to text
-    let body;
-    try {
-      body = await res.json();
-    } catch {
-      const text = await res.text();
-      body = { success: res.ok, error: text };
+    // Worker returns { success: true, id: "<newId>" }
+    if (body.success === true) {
+      return { ok: true, id: body.id };
+    } else {
+      // Our Worker signaled a problem
+      return {
+        ok: false,
+        message: body.error || 'Submission failed.',
+      };
     }
-
-    return {
-      ok: res.ok && body.success === true,
-      message: body.error || (res.ok ? "Event submitted." : "Submission failed."),
-    };
   } catch (err) {
+    // Network failure or non-2xx status routed here
     return { ok: false, message: err.message };
   }
 }

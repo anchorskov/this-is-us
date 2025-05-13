@@ -3,9 +3,16 @@
 // ——————————————————————————————————————————
 // Simple DOM selector
 // ——————————————————————————————————————————
-function $(selector) {
-    return document.querySelector(selector);
-  }
+/**
+ * Accept either a selector string or an Element.
+ * If passed a string, runs querySelector; otherwise returns the element.
+ */
+function $(elOrSelector) {
+  return (typeof elOrSelector === 'string')
+    ? document.querySelector(elOrSelector)
+    : elOrSelector;
+}
+
   
   // ——————————————————————————————————————————
   // Toast Notifications
@@ -102,4 +109,23 @@ function $(selector) {
       }
     });
   }
-  
+  /**
+ * Show our success modal and wire the View button.
+ * @param {Function} onView callback when they click “View on Map”
+ */
+export function showSuccessModal(onView) {
+  const modal = document.getElementById('successModal');
+  if (!modal) return;
+  // show it
+  modal.style.display = 'flex';
+  // wire up close via backdrop click
+  modal.addEventListener('click', e => {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+  // wire up the View button
+  const viewBtn = document.getElementById('viewEventBtn');
+  viewBtn.onclick = () => {
+    onView();
+    modal.style.display = 'none';
+  };
+}

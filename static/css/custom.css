@@ -157,3 +157,8 @@ button.bg-dark-blue:hover,
 .button-dark-blue:hover {
   background-color: #003f88;
 }
+#successModal {
+  display: none;
+}
+#successModal.fixed { display: flex !important; }
+.bg-black-50 { background-color: rgba(0,0,0,0.5); }
