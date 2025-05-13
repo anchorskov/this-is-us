@@ -21,18 +21,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       let events = [];
-      if (res.status === 400) {
-        console.warn('⚠️ API returned 400 Bad Request; treating as no events.');
-      } else if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      } else {
+        if (res.status === 400 || res.status === 404) {
+            console.warn(`⚠️ API returned ${res.status}; treating as no events.`);
+        } else if (!res.ok) {
+            throw new Error(`HTTP ${res.status}`);
+        } else {
         try {
-          events = await res.json();
-          console.log('🔍 Fetched events:', events);
+            events = await res.json();
+            console.log('🔍 Fetched events:', events);
         } catch {
-          console.warn('⚠️ Invalid JSON response; no events will be shown.');
+            console.warn('⚠️ Invalid JSON response; no events will be shown.');
         }
-      }
+     }
 
       // Initialize Leaflet map
       const map = L.map(mapEl).setView([43.0, -107.5], 6);
