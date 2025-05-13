@@ -1,21 +1,19 @@
 <!-- layouts/partials/site-scripts.html -->
-
 <script>
   console.log("✅ Site scripts loaded correctly.");
 
-  // Determine the base URL for the Events API
   (function() {
-    const devHosts = ["localhost", "127.0.0.1"];
-    const { hostname } = window.location;
+    const host = window.location.hostname;
+    const port = window.location.port;
 
-    if (devHosts.includes(hostname)) {
-      // In local development, point to Wrangler dev on port 8787
-      window.EVENTS_API_URL = "http://127.0.0.1:8787/api";
-      console.log("🐛 Dev override: EVENTS_API_URL →", window.EVENTS_API_URL);
+    if (host === 'localhost' && port === '1313') {
+      // During local dev, point to production API to test live data
+      window.EVENTS_API_URL = "https://this-is-us.org/api";
+      console.log("🐛 Dev override →", window.EVENTS_API_URL);
     } else {
-      // In production, use the relative API path
+      // In production on this-is-us.org, use relative path
       window.EVENTS_API_URL = "/api";
-      console.log("🌐 Production: EVENTS_API_URL →", window.EVENTS_API_URL);
+      console.log("🌐 Using API →", window.EVENTS_API_URL);
     }
   })();
 </script>
@@ -24,6 +22,6 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 {{ if and (eq .Section "events") (eq .Kind "section") }}
-  <!-- Load Events Hub logic only on the Events section index page -->
+  <!-- Include Events Hub script only on the Events page -->
   <script src="{{ "js/events/hub.js" | relURL }}"></script>
 {{ end }}
