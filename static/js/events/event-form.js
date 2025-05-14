@@ -164,12 +164,26 @@ function getFormHTML() {
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.75);
+        display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 1000;
       "
     >
-      <div class="bg-white pa4 br3 shadow-1 w-90 mw6 tc" style="max-width: 90%; margin: auto; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <div
+        class="pa4 br3 shadow-2 w-90 mw6 tc"
+        style="
+          background-color: #ffffff;
+          opacity: 1;
+          padding: 2rem;
+          border-radius: 1rem;
+          box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
+          z-index: 1001;
+          max-width: 500px;
+          width: 90%;
+        "
+      >
         <h3 class="f3 mb3">Success!</h3>
         <p class="mb4">Your event has been created.</p>
         <button 
@@ -290,20 +304,21 @@ if (values.contactPhone && !isValidPhone(values.contactPhone)) {
 }
 
 
-  // 5) Map to payload schema
-  formDataCache = {
-    userId:        user.uid,
-    name:          values.title,
-    date:          isoDate,
-    description:   values.description,
-    location:      values.address,
-    sponsor:       values.sponsor,
-    contact_email: values.contactEmail,
-    contact_phone: values.contactPhone,
-    lat:           values.lat,
-    lng:           values.lng,
-    file:          values.file,
-  };
+ // 5) Map to payload schema (keys must match preview-renderer)
+formDataCache = {
+  userId:       user.uid,
+  title:        values.title,
+  datetime:     isoDate,
+  description:  values.description,
+  address:      values.address,
+  sponsor:      values.sponsor,
+  contactEmail: values.contactEmail,
+  contactPhone: values.contactPhone,
+  lat:          values.lat,
+  lng:          values.lng,
+  file:         values.file,
+};
+
 
   // 6) Render preview & swap views
   console.log('🛰️ Preview coords:', formDataCache.lat, formDataCache.lng);
