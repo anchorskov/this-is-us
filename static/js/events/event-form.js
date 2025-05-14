@@ -207,89 +207,89 @@ function handlePreview(user) {
 
   // 1) Gather & trim values
   const values = {
-    title: $('title').value.trim(),
-    datetime: $('datetime').value.trim(),
-    description: $('description').value.trim(),
-    address: $('address').value.trim(),
-    sponsor: $('sponsor').value.trim(),
+    title:        $('title').value.trim(),
+    datetime:     $('datetime').value.trim(),
+    description:  $('description').value.trim(),
+    address:      $('address').value.trim(),
+    sponsor:      $('sponsor').value.trim(),
     contactEmail: $('contactEmail').value.trim(),
     contactPhone: $('contactPhone').value.trim(),
-    lat: $('lat').value,
-    lng: $('lng').value,
-    file: $('eventPdf').files[0],
+    lat:          $('lat').value,
+    lng:          $('lng').value,
+    file:         $('eventPdf').files[0],
   };
 
   // 2) Required fields + PDF
   if (
     !areRequiredFieldsPresent([
-      values.title, values.datetime, values.description,
-      values.address, values.lat, values.lng
+      values.title,
+      values.datetime,
+      values.description,
+      values.address,
+      values.lat,
+      values.lng,
     ]) ||
     !values.file
   ) {
     return showError('Please complete all required fields.');
   }
 
-// 3) Date validation
-const dateInput = document.getElementById('datetime');
-// Clear any prior custom error
-dateInput.setCustomValidity('');
+  // 3) Date validation
+  const dateInput = document.getElementById('datetime');
+  dateInput.setCustomValidity(''); // clear any prior error
 
-const raw = values.datetime.trim();
+  // 3a) Required
+  if (!values.datetime) {
+    dateInput.setCustomValidity('Please enter an event date & time.');
+    dateInput.reportValidity();
+    dateInput.focus();
+    return;
+  }
 
-// 3a) Required
-if (!raw) {
-  dateInput.setCustomValidity('Please enter an event date & time.');
-  dateInput.reportValidity();
-  dateInput.focus();
-  return;
-}
+  // 3b) Well‑formed
+  const dateObj = new Date(values.datetime);
+  if (isNaN(dateObj.getTime())) {
+    dateInput.setCustomValidity('That date/time is not valid.');
+    dateInput.reportValidity();
+    dateInput.focus();
+    return;
+  }
 
-// 3b) Well‑formed
-const dateObj = new Date(raw);
-if (isNaN(dateObj.getTime())) {
-  dateInput.setCustomValidity('That date/time is not valid.');
-  dateInput.reportValidity();
-  dateInput.focus();
-  return;
-}
+  // 3c) Future‑only
+  if (dateObj <= new Date()) {
+    dateInput.setCustomValidity('Date must be in the future.');
+    dateInput.reportValidity();
+    dateInput.focus();
+    return;
+  }
 
-// 3c) Future-only
-if (dateObj <= new Date()) {
-  dateInput.setCustomValidity('Date must be in the future.');
-  dateInput.reportValidity();
-  dateInput.focus();
-  return;
-}
+  // Clear the custom validity now that it's valid
+  dateInput.setCustomValidity('');
+  const isoDate = dateObj.toISOString();
 
-// 3d) All good: clear error and format for payload
-dateInput.setCustomValidity('');
-const isoDate = dateObj.toISOString();
+  // 4) Optional contact validations
+  if (values.contactEmail && !isValidEmail(values.contactEmail)) {
+    return showError('Invalid email address.');
+  }
+  if (values.contactPhone && !isValidPhone(values.contactPhone)) {
+    return showError('Invalid phone number.');
+  }
 
-// 4) Optional contact validations (still using showError)
-if (values.contactEmail && !isValidEmail(values.contactEmail)) {
-  return showError('Invalid email address.');
-}
-if (values.contactPhone && !isValidPhone(values.contactPhone)) {
-  return showError('Invalid phone number.');
-}
-
-
- // 5) Map to payload schema (keys must match preview-renderer)
-formDataCache = {
-  userId:       user.uid,
-  title:        values.title,
-  datetime:     isoDate,
-  description:  values.description,
-  address:      values.address,
-  sponsor:      values.sponsor,
-  contactEmail: values.contactEmail,
-  contactPhone: values.contactPhone,
-  lat:          values.lat,
-  lng:          values.lng,
-  file:         values.file,
-};
-
+  // 5) Map to payload schema for D1 and preview-renderer
+  //    Use the same keys your Worker and D1 expect
+  formDataCache = {
+    user_id:        user.uid,
+    name:           values.title,
+    date:           isoDate,
+    description:    values.description,
+    location:       values.address,
+    sponsor:        values.sponsor,
+    contact_email:  values.contactEmail,
+    contact_phone:  values.contactPhone,
+    lat:            values.lat,
+    lng:            values.lng,
+    file:           values.file,
+  };
 
   // 6) Render preview & swap views
   console.log('🛰️ Preview coords:', formDataCache.lat, formDataCache.lng);

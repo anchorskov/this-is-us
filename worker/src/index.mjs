@@ -39,23 +39,32 @@ router.get('/_debug/schema', async (_, env) => {
 // POST /api/events/create - handles event creation
 router.post('/api/events/create', async (request, env) => {
   const form = await request.formData();
-  const name           = form.get('name');
-  const date           = form.get('date');
-  const location       = form.get('location');
-  const file           = form.get('file');
-  const description    = form.get('description')       || '';
-  const userId         = form.get('userId')            || 'anonymous';
-  const lat            = form.get('lat');
-  const lng            = form.get('lng');
-  const sponsor        = form.get('sponsor')           || '';
-  const contact_email  = form.get('contact_email')     || '';
-  const contact_phone  = form.get('contact_phone')     || '';
 
-  console.log("📝 Incoming event submission:", { userId, name, date, location, lat, lng, description, sponsor, contact_email, contact_phone, file: file ? file.name : "No file" });
+  // accept either camelCase or snake_case field names
+  const userId        = form.get('userId')            ?? form.get('user_id')            ?? 'anonymous';
+  const name          = form.get('name');
+  const date          = form.get('date');
+  const location      = form.get('location');
+  const file          = form.get('file');
+  const description   = form.get('description')       || '';
+  const lat           = form.get('lat');
+  const lng           = form.get('lng');
+  const sponsor       = form.get('sponsor')           || '';
+  const contactEmail = form.get('contactEmail') ?? form.get('contact_email') ?? '';
+  const contactPhone = form.get('contactPhone') ?? form.get('contact_phone') ?? '';
+
+  console.log("📝 Incoming event submission:", {
+    userId, name, date, location, lat, lng,
+    description, sponsor, contactEmail, contactPhone,
+    file: file?.name
+  });
 
   if (!name || !date || !location || !file) {
     console.warn("⚠️ Missing required fields", { name, date, location, file });
-    return new Response(JSON.stringify({ error: 'Missing fields' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: 'Missing fields' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   try {
@@ -73,16 +82,18 @@ router.post('/api/events/create', async (request, env) => {
 
     if (dup.length) {
       console.warn("⚠️ Duplicate PDF detected, aborting upload", { pdf_hash });
-      return new Response(
-        JSON.stringify({ error: 'Duplicate PDF', duplicate: true }),
-        { status: 409, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({
+        error: 'Duplicate PDF',
+        duplicate: true
+      }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
     // Upload to R2
-    const key     = `event-${crypto.randomUUID()}.pdf`;
+    const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
-    // Serve via Worker route instead of direct R2 URL
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
 
@@ -97,16 +108,22 @@ router.post('/api/events/create', async (request, env) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       userId, name, date, location, pdf_url,
-      lat, lng, sponsor, contact_email,
-      contact_phone, pdf_hash, description
+      lat, lng, sponsor, contactEmail,
+      contactPhone, pdf_hash, description
     ).run();
 
     console.log("✅ Event saved to database");
 
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (err) {
     console.error("❌ Error submitting event:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 });
 
@@ -116,7 +133,7 @@ router.all('*', () => new Response('Not found', { status: 404 }));
 export default {
   async fetch(request, env, ctx) {
     const corsHeaders = {
-      'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+      'Access-Control-Allow-Origin':  request.headers.get('Origin') || '*',
       'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
@@ -130,9 +147,9 @@ export default {
     Object.entries(corsHeaders).forEach(([key, val]) => newHeaders.set(key, val));
 
     return new Response(response.body, {
-      status: response.status,
+      status:     response.status,
       statusText: response.statusText,
-      headers: newHeaders
+      headers:    newHeaders
     });
   },
 

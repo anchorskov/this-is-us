@@ -66,21 +66,36 @@ router.get("/_debug/schema", async (_, env) => {
 });
 router.post("/api/events/create", async (request, env) => {
   const form = await request.formData();
+  const userId = form.get("userId") ?? form.get("user_id") ?? "anonymous";
   const name = form.get("name");
   const date = form.get("date");
   const location = form.get("location");
   const file = form.get("file");
   const description = form.get("description") || "";
-  const userId = form.get("userId") || "anonymous";
   const lat = form.get("lat");
   const lng = form.get("lng");
   const sponsor = form.get("sponsor") || "";
-  const contact_email = form.get("contact_email") || "";
-  const contact_phone = form.get("contact_phone") || "";
-  console.log("\u{1F4DD} Incoming event submission:", { userId, name, date, location, lat, lng, description, sponsor, contact_email, contact_phone, file: file ? file.name : "No file" });
+  const contactEmail = form.get("contactEmail") ?? form.get("contact_email") ?? "";
+  const contactPhone = form.get("contactPhone") ?? form.get("contact_phone") ?? "";
+  console.log("\u{1F4DD} Incoming event submission:", {
+    userId,
+    name,
+    date,
+    location,
+    lat,
+    lng,
+    description,
+    sponsor,
+    contactEmail,
+    contactPhone,
+    file: file?.name
+  });
   if (!name || !date || !location || !file) {
     console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file });
-    return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Missing fields" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
   }
   try {
     const buffer = await file.arrayBuffer();
@@ -91,10 +106,13 @@ router.post("/api/events/create", async (request, env) => {
     ).bind(pdf_hash).all();
     if (dup.length) {
       console.warn("\u26A0\uFE0F Duplicate PDF detected, aborting upload", { pdf_hash });
-      return new Response(
-        JSON.stringify({ error: "Duplicate PDF", duplicate: true }),
-        { status: 409, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({
+        error: "Duplicate PDF",
+        duplicate: true
+      }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" }
+      });
     }
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
@@ -116,16 +134,22 @@ router.post("/api/events/create", async (request, env) => {
       lat,
       lng,
       sponsor,
-      contact_email,
-      contact_phone,
+      contactEmail,
+      contactPhone,
       pdf_hash,
       description
     ).run();
     console.log("\u2705 Event saved to database");
-    return new Response(JSON.stringify({ success: true }), { status: 201, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" }
+    });
   } catch (err) {
     console.error("\u274C Error submitting event:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
   }
 });
 router.all("*", () => new Response("Not found", { status: 404 }));
@@ -185,7 +209,7 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// .wrangler/tmp/bundle-RrNEp7/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-Zw7i5s/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default
 ];
@@ -216,7 +240,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-RrNEp7/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-Zw7i5s/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
