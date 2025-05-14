@@ -1,0 +1,66 @@
+/* cr-event.css */
+
+/* overall form wrapper background */
+.cr-event-bg {
+  background-color: #f7f7f7;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* inner white card */
+.cr-event-card {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* form controls spacing */
+.cr-event-card input,
+.cr-event-card textarea,
+.cr-event-card button {
+  margin-bottom: 0.75rem;
+  width: 100%;
+}
+
+/* map container */
+#map {
+  height: 300px;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* PDF preview */
+#pdfPreview {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #ddd;
+  margin-bottom: 0.75rem;
+}
+
+/* Success modal overlay */
+.cr-modal-overlay {
+  display: none; /* toggled via JS */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  align-items: center; justify-content: center;
+  z-index: 1000;
+}
+
+/* Success modal content */
+.cr-modal-content {
+  background: #fff;
+  padding: 2rem;
+  max-width: 500px; width: 90%;
+  border-radius: 1rem;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.3);
+  text-align: center;
+  z-index: 1001;
+}

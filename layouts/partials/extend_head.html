@@ -1,4 +1,6 @@
-{{/* Extend Head Partial - Safe for Hugo templates */}}
+{{/* layouts/partials/extend_head.html */}}
+
+<!-- Extend Head Partial - Safe for Hugo templates -->
 
 <!-- Custom Favicon -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}" type="image/x-icon">
@@ -6,18 +8,37 @@
 <!-- Custom Stylesheet -->
 <link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
 
+<!-- Event‐Form Stylesheet (refactored from inline) -->
+<link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
+
 <!-- Custom Meta Tags -->
 <meta name="theme-color" content="#2e2e33">
 
 <!-- Leaflet (only used on event form page) -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+<script
+  src="https://unpkg.com/leaflet/dist/leaflet.js"
+  defer
+></script>
 
 <!-- TimelineJS3 -->
-<link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"/>
-<script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"
+/>
+<script
+  src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
+  defer
+></script>
 
-<!-- Load refactored event module only for create page -->
+<!-- Load refactored event module only for the Create Event page -->
 {{ if eq .Page.RelPermalink "/events/create/" }}
-  <script type="module" src="{{ "js/events/index.js" | relURL }}"></script>
+  <script
+    type="module"
+    src="{{ "js/events/index.js" | relURL }}"
+    defer
+  ></script>
 {{ end }}

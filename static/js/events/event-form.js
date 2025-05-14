@@ -100,8 +100,8 @@ export function renderForm(user) {
  */
 function getFormHTML() {
   return `
-    <div class="w-100 flex items-center justify-center pa5" style="background-color: #f7f7f7;">
-      <div class="w-100 w-90-m w-80-l mw6 pa4 br3 shadow-1 bg-white">
+    <div class="w-100 flex items-center justify-center pa5 cr-event-bg">
+      <div class="w-100 w-90-m w-80-l mw6 pa4 br3 shadow-1 bg-white cr-event-card">
         <h2 class="f3 fw6 tc mb4">Create an Event</h2>
         <form id="eventForm" class="flex flex-column">
           <label for="title" class="db mb2 fw6">Event Title</label>
@@ -115,7 +115,7 @@ function getFormHTML() {
 
           <label for="address" class="db mb2 fw6">Event Address or ZIP Code</label>
           <input type="text" id="address" class="input-reset ba b--black-20 pa2 w-100 mb2">
-          <button type="button" id="searchAddress" class="f6 link dim br2 ph3 pv2 mb1 dib white bg-dark-blue w-100" title="Enter an address, then click me or click on the map">
+          <button type="button" id="searchAddress" class="f6 link dim br2 ph3 pv2 mb1 dib white bg-dark-blue w-100">
             🔍 Search Address
           </button>
           <small class="f7 gray mb3">
@@ -131,11 +131,11 @@ function getFormHTML() {
           <label for="contactPhone" class="db mb2 fw6">Contact Phone (optional)</label>
           <input type="tel" id="contactPhone" class="input-reset ba b--black-20 pa2 mb3 w-100">
 
-          <div id="map" class="br2 mb3" style="height: 300px; border: 1px solid #ccc;"></div>
+          <div id="map" class="br2 mb3"></div>
 
           <label for="eventPdf" class="db mb2 fw6">Attach PDF Flyer</label>
           <input type="file" id="eventPdf" accept="application/pdf" class="input-reset ba b--black-20 pa2 mb3 w-100">
-          <iframe id="pdfPreview" class="mb3" style="width:100%; height:300px; border:1px solid #ddd; display:none;"></iframe>
+          <iframe id="pdfPreview" class="mb3" style="display:none;"></iframe>
 
           <input type="hidden" id="lat">
           <input type="hidden" id="lng">
@@ -154,48 +154,19 @@ function getFormHTML() {
       </div>
     </div>
 
-    <!-- Success Modal (hidden by default) -->
-    <div
-      id="successModal"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.75);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      "
-    >
-      <div
-        class="pa4 br3 shadow-2 w-90 mw6 tc"
-        style="
-          background-color: #ffffff;
-          opacity: 1;
-          padding: 2rem;
-          border-radius: 1rem;
-          box-shadow: 0 6px 30px rgba(0, 0, 0, 0.3);
-          z-index: 1001;
-          max-width: 500px;
-          width: 90%;
-        "
-      >
+    <!-- Success Modal -->
+    <div id="successModal" class="cr-modal-overlay">
+      <div class="cr-modal-content">
         <h3 class="f3 mb3">Success!</h3>
         <p class="mb4">Your event has been created.</p>
-        <button 
-          id="viewEventBtn" 
-          class="f5 link dim br3 ph3 pv2 white bg-blue"
-        >
+        <button id="viewEventBtn" class="f5 link dim br3 ph3 pv2 white bg-blue">
           View on Map
         </button>
       </div>
     </div>
   `;
 }
+
 
 /**
  * Wire up Preview & Confirm handling.
