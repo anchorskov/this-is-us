@@ -1,6 +1,5 @@
 ---
 title: "Events"
-layout: "section"       # uses layouts/events/list.html
 url: "/events/"
 ---
 

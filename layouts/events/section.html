@@ -1,49 +1,60 @@
+{{/* layouts/events/section.html */}}
+
 {{ define "head" }}
   {{ partial "head.html" . }}
-  <!-- Leaflet CSS -->
+
+  <!-- Leaflet CSS with integrity check -->
   <link
     rel="stylesheet"
-    href="https://unpkg.com/leaflet/dist/leaflet.css"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
   />
+
+  <!-- Events page-specific CSS -->
+  <link rel="stylesheet" href="{{ "css/events.css" | relURL }}">
 {{ end }}
 
 {{ define "main" }}
+<article class="prose mx-auto">
   <script>console.log("👉 using custom events/section.html")</script>
-  <!-- Render the intro from _index.md -->
+
+  <!-- Render markdown content from _index.md -->
   {{ .Content }}
 
-  <article class="prose mx-auto">
-    <h1 class="f2 tc">🧭 Find Events Near You</h1>
+  <h1 class="f2 tc">🧭 Find Events Near You</h1>
 
-    <!-- Controls: ZIP search, zoom, and view toggle -->
-    <div class="flex justify-center items-center mt4 space-x-2">
-      <input
-        id="zip-input"
-        type="text"
-        placeholder="Enter ZIP"
-        class="pa2 ba b--black-20 br2"
-      />
-      <button id="zip-search" class="pa2 bg-blue white br2 hover-bg-dark-blue">
-        Search
-      </button>
-      <button id="zip-zoom" class="pa2 bg-green white br2 hover-bg-dark-green">
-        Zoom to ZIP
-      </button>
-      <button id="view-toggle" class="pa2 bg-dark-blue white br2 hover-bg-blue-dark">
-        Select List View
-      </button>
-    </div>
+  <!-- Map Controls (ZIP input + toggle buttons) -->
+  {{ partial "events/map-controls.html" . }}
 
-    <!-- Leaflet map -->
-    <div
-      id="map"
-      class="my4"
-      style="height:70vh;"
-      role="application"
-      aria-label="Upcoming events map"
-    ></div>
+  <!-- Map Container -->
+  <div
+    id="map"
+    class="my4"
+    style="height: 70vh; width: 100%;"
+    role="application"
+    aria-label="Upcoming events map"
+  ></div>
 
-    <!-- Card list (hidden until “Select List View”) -->
-    <div id="events-list" style="display:none;" class="pa4" aria-label="List of upcoming events"></div>
-  </article>
+  <!-- Events List -->
+  <div
+    id="events-list"
+    class="pa4"
+    style="display: none;"
+    aria-label="List of upcoming events"
+  ></div>
+</article>
+{{ end }}
+
+{{ define "scripts" }}
+  <!-- Leaflet JS with integrity and defer -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+    defer
+  ></script>
+
+  <!-- Load the event hub map logic -->
+  <script type="module" src="{{ "js/events/hub.js" | relURL }}"></script>
 {{ end }}
