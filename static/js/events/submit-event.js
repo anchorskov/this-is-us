@@ -17,6 +17,14 @@ const CREATE_URL = `${API_ROOT}/events/create`;
  * @returns {Promise<{ok: boolean, id?: string, message?: string}>}
  */
 export async function submitEvent(payload) {
+  // Log outgoing payload for debugging
+  console.log("📡 Submitting event payload:", payload);
+
+  // Verify lat/lng presence
+  if (!payload.lat || !payload.lng) {
+    console.warn("⚠️ Missing lat/lng — map button may not render.");
+  }
+
   // Build FormData for streaming upload
   const formData = new FormData();
   Object.entries(payload).forEach(([key, value]) => {
@@ -32,9 +40,11 @@ export async function submitEvent(payload) {
 
     // Worker returns { success: true, id: "<newId>" }
     if (body.success === true) {
+      console.log("✅ Submission succeeded:", body);
       return { ok: true, id: body.id };
     } else {
       // Our Worker signaled a problem
+      console.error("❌ Worker error:", body.error);
       return {
         ok: false,
         message: body.error || 'Submission failed.',
@@ -42,6 +52,7 @@ export async function submitEvent(payload) {
     }
   } catch (err) {
     // Network failure or non-2xx status routed here
+    console.error("❌ Submission failed:", err.message);
     return { ok: false, message: err.message };
   }
 }

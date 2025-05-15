@@ -25,6 +25,7 @@ buildFuture   = false
   UseHugoToc           = true
   subtitle             = "Reclaiming our voice. Standing together."
   keywords             = ["community", "justice", "voices", "podcast"]
+  hideFooter = true
 
   [params.assets]
     disableScrollBarStyle = false

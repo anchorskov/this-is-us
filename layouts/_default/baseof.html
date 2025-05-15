@@ -27,10 +27,9 @@
   <main class="main">
     {{ block "main" . }}{{ end }}
   </main>
+<!-- 5) Footer -->
+    {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
 
-  <!-- 5) Footer -->
-  {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
-  {{ partial "extend_footer.html" . }}
 
   <!-- 6) Site-wide scripts (including firebase-auth.js config) -->
   {{ partial "site-scripts.html" . }}

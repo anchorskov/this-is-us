@@ -162,3 +162,24 @@ button.bg-dark-blue:hover,
 }
 #successModal.fixed { display: flex !important; }
 .bg-black-50 { background-color: rgba(0,0,0,0.5); }
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9999;
+}
+
+.toast {
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: white;
+  background-color: #333;
+  transition: opacity 0.3s ease;
+}
+
+.toast-success { background-color: #28a745; }
+.toast-error   { background-color: #dc3545; }
+.toast-info    { background-color: #17a2b8; }

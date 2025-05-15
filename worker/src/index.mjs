@@ -50,8 +50,8 @@ router.post('/api/events/create', async (request, env) => {
   const lat           = form.get('lat');
   const lng           = form.get('lng');
   const sponsor       = form.get('sponsor')           || '';
-  const contactEmail = form.get('contactEmail') ?? form.get('contact_email') ?? '';
-  const contactPhone = form.get('contactPhone') ?? form.get('contact_phone') ?? '';
+  const contactEmail  = form.get('contactEmail') ?? form.get('contact_email') ?? '';
+  const contactPhone  = form.get('contactPhone') ?? form.get('contact_phone') ?? '';
 
   console.log("📝 Incoming event submission:", {
     userId, name, date, location, lat, lng,
@@ -75,21 +75,30 @@ router.post('/api/events/create', async (request, env) => {
                          .map(b => b.toString(16).padStart(2, '0'))
                          .join('');
 
-    // Check for duplicate PDF
-    const { results: dup } = await env.EVENTS_DB.prepare(
-      `SELECT id FROM events WHERE pdf_hash = ?`
-    ).bind(pdf_hash).all();
+// Check for duplicate PDF only in production (skip on localhost or 127.x)
+const host = (request.headers.get('host') || '').toLowerCase();
+const isLocal = host.includes('localhost') || host.startsWith('127.');
 
-    if (dup.length) {
-      console.warn("⚠️ Duplicate PDF detected, aborting upload", { pdf_hash });
-      return new Response(JSON.stringify({
-        error: 'Duplicate PDF',
-        duplicate: true
-      }), {
-        status: 409,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+console.log("🌐 Host header:", host);
+console.log("🧪 isLocal environment:", isLocal);
+
+if (!isLocal) {
+  const { results: dup } = await env.EVENTS_DB.prepare(
+    `SELECT id FROM events WHERE pdf_hash = ?`
+  ).bind(pdf_hash).all();
+
+  if (dup.length) {
+    console.warn("⚠️ Duplicate PDF detected, aborting upload", { pdf_hash });
+    return new Response(JSON.stringify({
+      error: 'Duplicate PDF',
+      duplicate: true
+    }), {
+      status: 409,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
 
     // Upload to R2
     const key = `event-${crypto.randomUUID()}.pdf`;

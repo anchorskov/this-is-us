@@ -101,18 +101,24 @@ router.post("/api/events/create", async (request, env) => {
     const buffer = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
     const pdf_hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const { results: dup } = await env.EVENTS_DB.prepare(
-      `SELECT id FROM events WHERE pdf_hash = ?`
-    ).bind(pdf_hash).all();
-    if (dup.length) {
-      console.warn("\u26A0\uFE0F Duplicate PDF detected, aborting upload", { pdf_hash });
-      return new Response(JSON.stringify({
-        error: "Duplicate PDF",
-        duplicate: true
-      }), {
-        status: 409,
-        headers: { "Content-Type": "application/json" }
-      });
+    const host = (request.headers.get("host") || "").toLowerCase();
+    const isLocal = host.includes("localhost") || host.startsWith("127.");
+    console.log("\u{1F310} Host header:", host);
+    console.log("\u{1F9EA} isLocal environment:", isLocal);
+    if (!isLocal) {
+      const { results: dup } = await env.EVENTS_DB.prepare(
+        `SELECT id FROM events WHERE pdf_hash = ?`
+      ).bind(pdf_hash).all();
+      if (dup.length) {
+        console.warn("\u26A0\uFE0F Duplicate PDF detected, aborting upload", { pdf_hash });
+        return new Response(JSON.stringify({
+          error: "Duplicate PDF",
+          duplicate: true
+        }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
@@ -209,9 +215,33 @@ var drainBody = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "drainBody");
 var middleware_ensure_req_body_drained_default = drainBody;
 
-// .wrangler/tmp/bundle-Zw7i5s/middleware-insertion-facade.js
+// ../../../.nvm/versions/node/v22.14.0/lib/node_modules/wrangler/templates/middleware/middleware-miniflare3-json-error.ts
+function reduceError(e) {
+  return {
+    name: e?.name,
+    message: e?.message ?? String(e),
+    stack: e?.stack,
+    cause: e?.cause === void 0 ? void 0 : reduceError(e.cause)
+  };
+}
+__name(reduceError, "reduceError");
+var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx) => {
+  try {
+    return await middlewareCtx.next(request, env);
+  } catch (e) {
+    const error = reduceError(e);
+    return Response.json(error, {
+      status: 500,
+      headers: { "MF-Experimental-Error-Stack": "true" }
+    });
+  }
+}, "jsonError");
+var middleware_miniflare3_json_error_default = jsonError;
+
+// .wrangler/tmp/bundle-Wol5rB/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
-  middleware_ensure_req_body_drained_default
+  middleware_ensure_req_body_drained_default,
+  middleware_miniflare3_json_error_default
 ];
 var middleware_insertion_facade_default = src_default;
 
@@ -240,7 +270,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-Zw7i5s/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-Wol5rB/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
