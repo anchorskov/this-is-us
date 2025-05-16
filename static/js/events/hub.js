@@ -1,13 +1,14 @@
 // static/js/events/hub.js
 import { safeFetch } from '../utils/safe-fetch.js';
 import { showError } from './ui-feedback.js';
-import { parseLatLng } from '../utils/parse-latlng.js'; // ⬅️ Add this import
+import { parseLatLng } from '../utils/parse-latlng.js';
 
 let mapInstance;
 
 async function renderEvents(map, listEl) {
   const apiBase = (window.EVENTS_API_URL || '').replace(/\/$/, '');
   const eventsUrl = `${apiBase}/events`;
+  const markerCache = new Map();
 
   try {
     const events = await safeFetch(eventsUrl, {
@@ -15,7 +16,7 @@ async function renderEvents(map, listEl) {
       headers: { 'Accept': 'application/json' }
     });
 
-    console.log("📦 Fetched events from API:", events); // ← Add this line
+    console.log("📦 Fetched events from API:", events);
 
     if (!events.length) {
       listEl.innerHTML = `<p class="tc gray">No upcoming events at the moment. Check back soon!</p>`;
@@ -28,7 +29,15 @@ async function renderEvents(map, listEl) {
       const { lat, lng } = parseLatLng(evt.lat, evt.lng);
 
       if (lat !== null && lng !== null) {
-        L.marker([lat, lng])
+        const key = `${lat},${lng}`;
+        const count = markerCache.get(key) || 0;
+        markerCache.set(key, count + 1);
+
+        const offset = 0.0003 * count;
+        const adjustedLat = lat + offset;
+        const adjustedLng = lng + offset;
+
+        L.marker([adjustedLat, adjustedLng])
           .addTo(map)
           .bindPopup(`
             <strong>${evt.name}</strong><br>

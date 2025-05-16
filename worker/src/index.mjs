@@ -1,6 +1,13 @@
+// worker/src/index.mjs   the worker 
 import { Router } from 'itty-router';
-import { getSafeOrigin, validateCoords, isLocalEnv } from './utils/helpers.mjs';
+import {
+  getSafeOrigin,
+  validateCoords,
+  isLocalEnv
+} from './utils/helpers.mjs';
+
 const router = Router();
+
 
 function getEnvBindings(env, request) {
   const host = (request.headers.get('host') || '').toLowerCase();
