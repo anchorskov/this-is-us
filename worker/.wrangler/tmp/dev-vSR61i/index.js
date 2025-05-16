@@ -149,7 +149,8 @@ router.post("/api/events/create", async (request, env) => {
       description
     ).run();
     console.log("\u2705 Event successfully saved to database");
-    const { lastInsertRowid } = await db.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).first();
+    const { results } = await env.EVENTS_DB.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).all();
+    const lastInsertRowid = results?.[0]?.lastInsertRowid || null;
     return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
       status: 201,
       headers: { "Content-Type": "application/json" }

@@ -38,7 +38,6 @@ router.get('/_debug/schema', async (_, env) => {
 router.post('/api/events/create', async (request, env) => {
   const form = await request.formData();
 
-  // Accept both camelCase and snake_case
   const userId        = form.get('userId')        ?? form.get('user_id')        ?? 'anonymous';
   const name          = form.get('name');
   const date          = form.get('date');
@@ -65,7 +64,6 @@ router.post('/api/events/create', async (request, env) => {
     });
   }
 
-  // 🛡️ File guard to prevent 500 on invalid file
   if (!(file && file.arrayBuffer)) {
     console.error("❌ Invalid or missing file upload");
     return new Response(JSON.stringify({ error: 'Invalid file' }), {
@@ -75,11 +73,9 @@ router.post('/api/events/create', async (request, env) => {
   }
 
   try {
-    // Hash the PDF to check for duplicates
     const buffer = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
-    const pdf_hash = Array.from(new Uint8Array(hashBuf))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
+    const pdf_hash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
 
     const host = (request.headers.get('host') || '').toLowerCase();
     const isLocal = host.includes('localhost') || host.startsWith('127.');
@@ -99,14 +95,12 @@ router.post('/api/events/create', async (request, env) => {
       }
     }
 
-    // Upload PDF to R2
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
     console.log(`📄 Uploaded PDF: ${pdf_url}`);
 
-    // Insert into D1
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location, pdf_url,
@@ -121,13 +115,13 @@ router.post('/api/events/create', async (request, env) => {
 
     console.log("✅ Event successfully saved to database");
 
-    const { lastInsertRowid } = await db.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).first();
+    const { results } = await env.EVENTS_DB.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).all();
+    const lastInsertRowid = results?.[0]?.lastInsertRowid || null;
 
     return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' }
     });
-
 
   } catch (err) {
     console.error("❌ Error submitting event:", err.stack || err.message || err);
@@ -138,7 +132,6 @@ router.post('/api/events/create', async (request, env) => {
   }
 });
 
-// Fallback 404
 router.all('*', () => new Response('Not found', { status: 404 }));
 
 export default {
