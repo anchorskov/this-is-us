@@ -1,24 +1,21 @@
 <!-- layouts/partials/site-scripts.html -->
 <script>
-  console.log("✅ Site scripts loaded correctly.");
-
   (function () {
     const host = window.location.hostname;
     const port = window.location.port;
 
     if (host === 'localhost' && port === '1313') {
-      // During local dev, point to production API to test live data
       window.EVENTS_API_URL = "https://this-is-us.org/api";
       console.log("🐛 Dev override →", window.EVENTS_API_URL);
     } else {
-      // In production on this-is-us.org, use relative path
       window.EVENTS_API_URL = "/api";
       console.log("🌐 Using API →", window.EVENTS_API_URL);
     }
   })();
 </script>
 
-<!-- 🌍 Load Leaflet globally -->
+
+<!-- 🗺️ Leaflet CSS & JS (with integrity and defer) -->
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

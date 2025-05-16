@@ -1,35 +1,26 @@
-// 📦 static/js/events/submit-event.js
-import { showSuccess, showError, toggleLoading } from './ui-feedback.js';
+// static/js/events/error-manager.js
 
-export async function submitEvent(formDataCache) {
-  toggleLoading(true, "#confirmSubmit");
-
-  try {
-    const formData = new FormData();
-    for (const key in formDataCache) {
-      formData.append(key, formDataCache[key]);
-    }
-
-    const res = await fetch("/api/events/create", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.error || "Submission failed");
-
-    showSuccess("✅ Event submitted successfully!");
-    return { ok: true };
-  } catch (err) {
-    showError("❌ Submission failed: " + (err.message || err));
-    return { ok: false, error: err };
-  } finally {
-    toggleLoading(false, "#confirmSubmit");
+/**
+ * Centralized error message handling based on known error codes.
+ * If a code is unrecognized, default to the message provided or a fallback.
+ *
+ * @param {string} code - Optional structured error code returned by the server.
+ * @param {string} message - Optional plain message fallback.
+ * @returns {string} - Message to show to the user.
+ */
+export function getUserFriendlyError(code, message) {
+  switch (code) {
+    case 'DUPLICATE_PDF':
+      return 'An event with this file has already been submitted. Try changing the file or event details.';
+    case 'MISSING_FIELDS':
+      return 'Please fill out all required fields and upload a file.';
+    case 'INVALID_FILE':
+      return 'The uploaded file is invalid or unsupported.';
+    case 'UPLOAD_ERROR':
+      return 'There was a problem uploading the file. Please try again.';
+    case 'DB_ERROR':
+      return 'There was a problem saving your event. Please try again.';
+    default:
+      return message || 'Something went wrong. Please try again.';
   }
-}
-
-export async function checkDuplicate(title, datetime) {
-  const res = await fetch(`/api/events/check-duplicate?title=${encodeURIComponent(title)}&datetime=${encodeURIComponent(datetime)}`);
-  if (!res.ok) throw new Error("Failed to check for duplicates.");
-  return await res.json();
 }
