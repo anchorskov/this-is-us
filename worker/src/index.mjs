@@ -1,5 +1,3 @@
-// worker/src/index.mjs
-
 import { Router } from 'itty-router';
 const router = Router();
 
@@ -17,7 +15,7 @@ router.get('/api/events/pdf/:key', async (request, env) => {
   });
 });
 
-// GET /api/events - include lat & lng for mapping
+// List future events for display
 router.get('/api/events', async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(
     `SELECT id, name, date, location, pdf_url, lat, lng
@@ -30,28 +28,28 @@ router.get('/api/events', async (request, env) => {
   });
 });
 
-// Debug schema
+// Debug endpoint: see table schema
 router.get('/_debug/schema', async (_, env) => {
   const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
   return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
 });
 
-// POST /api/events/create - handles event creation
+// Create a new event
 router.post('/api/events/create', async (request, env) => {
   const form = await request.formData();
 
-  // accept either camelCase or snake_case field names
-  const userId        = form.get('userId')            ?? form.get('user_id')            ?? 'anonymous';
+  // Accept both camelCase and snake_case
+  const userId        = form.get('userId')        ?? form.get('user_id')        ?? 'anonymous';
   const name          = form.get('name');
   const date          = form.get('date');
   const location      = form.get('location');
   const file          = form.get('file');
-  const description   = form.get('description')       || '';
+  const description   = form.get('description')   || '';
   const lat           = form.get('lat');
   const lng           = form.get('lng');
-  const sponsor       = form.get('sponsor')           || '';
-  const contactEmail  = form.get('contactEmail') ?? form.get('contact_email') ?? '';
-  const contactPhone  = form.get('contactPhone') ?? form.get('contact_phone') ?? '';
+  const sponsor       = form.get('sponsor')       || '';
+  const contactEmail  = form.get('contactEmail')  ?? form.get('contact_email')  ?? '';
+  const contactPhone  = form.get('contactPhone')  ?? form.get('contact_phone')  ?? '';
 
   console.log("📝 Incoming event submission:", {
     userId, name, date, location, lat, lng,
@@ -60,55 +58,55 @@ router.post('/api/events/create', async (request, env) => {
   });
 
   if (!name || !date || !location || !file) {
-    console.warn("⚠️ Missing required fields", { name, date, location, file });
+    console.warn("⚠️ Missing required fields", { name, date, location, file: !!file });
     return new Response(JSON.stringify({ error: 'Missing fields' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' }
     });
   }
 
-  try {
-    // Compute SHA‑256 hash of the PDF for deduplication
-    const buffer   = await file.arrayBuffer();
-    const hashBuf  = await crypto.subtle.digest('SHA-256', buffer);
-    const pdf_hash = Array.from(new Uint8Array(hashBuf))
-                         .map(b => b.toString(16).padStart(2, '0'))
-                         .join('');
-
-// Check for duplicate PDF only in production (skip on localhost or 127.x)
-const host = (request.headers.get('host') || '').toLowerCase();
-const isLocal = host.includes('localhost') || host.startsWith('127.');
-
-console.log("🌐 Host header:", host);
-console.log("🧪 isLocal environment:", isLocal);
-
-if (!isLocal) {
-  const { results: dup } = await env.EVENTS_DB.prepare(
-    `SELECT id FROM events WHERE pdf_hash = ?`
-  ).bind(pdf_hash).all();
-
-  if (dup.length) {
-    console.warn("⚠️ Duplicate PDF detected, aborting upload", { pdf_hash });
-    return new Response(JSON.stringify({
-      error: 'Duplicate PDF',
-      duplicate: true
-    }), {
-      status: 409,
+  // 🛡️ File guard to prevent 500 on invalid file
+  if (!(file && file.arrayBuffer)) {
+    console.error("❌ Invalid or missing file upload");
+    return new Response(JSON.stringify({ error: 'Invalid file' }), {
+      status: 400,
       headers: { 'Content-Type': 'application/json' }
     });
   }
-}
 
+  try {
+    // Hash the PDF to check for duplicates
+    const buffer = await file.arrayBuffer();
+    const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
+    const pdf_hash = Array.from(new Uint8Array(hashBuf))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Upload to R2
+    const host = (request.headers.get('host') || '').toLowerCase();
+    const isLocal = host.includes('localhost') || host.startsWith('127.');
+    console.log("🌐 Host header:", host, "| isLocal:", isLocal);
+
+    if (!isLocal) {
+      const { results: dup } = await env.EVENTS_DB.prepare(
+        `SELECT id FROM events WHERE pdf_hash = ?`
+      ).bind(pdf_hash).all();
+
+      if (dup.length) {
+        console.warn("⚠️ Duplicate PDF detected", { pdf_hash });
+        return new Response(JSON.stringify({ error: 'Duplicate PDF', duplicate: true }), {
+          status: 409,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // Upload PDF to R2
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
+    console.log(`📄 Uploaded PDF: ${pdf_url}`);
 
-    console.log(`📄 PDF uploaded, accessible at: ${pdf_url}`);
-
-    // Insert into D1 with coordinates
+    // Insert into D1
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location, pdf_url,
@@ -121,14 +119,18 @@ if (!isLocal) {
       contactPhone, pdf_hash, description
     ).run();
 
-    console.log("✅ Event saved to database");
+    console.log("✅ Event successfully saved to database");
 
-    return new Response(JSON.stringify({ success: true }), {
+    const { lastInsertRowid } = await db.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).first();
+
+    return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
       status: 201,
       headers: { 'Content-Type': 'application/json' }
     });
+
+
   } catch (err) {
-    console.error("❌ Error submitting event:", err);
+    console.error("❌ Error submitting event:", err.stack || err.message || err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
@@ -136,7 +138,7 @@ if (!isLocal) {
   }
 });
 
-// 404 fallback
+// Fallback 404
 router.all('*', () => new Response('Not found', { status: 404 }));
 
 export default {

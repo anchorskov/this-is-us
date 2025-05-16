@@ -91,8 +91,15 @@ router.post("/api/events/create", async (request, env) => {
     file: file?.name
   });
   if (!name || !date || !location || !file) {
-    console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file });
+    console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file: !!file });
     return new Response(JSON.stringify({ error: "Missing fields" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+  if (!(file && file.arrayBuffer)) {
+    console.error("\u274C Invalid or missing file upload");
+    return new Response(JSON.stringify({ error: "Invalid file" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
     });
@@ -103,18 +110,14 @@ router.post("/api/events/create", async (request, env) => {
     const pdf_hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
     const host = (request.headers.get("host") || "").toLowerCase();
     const isLocal = host.includes("localhost") || host.startsWith("127.");
-    console.log("\u{1F310} Host header:", host);
-    console.log("\u{1F9EA} isLocal environment:", isLocal);
+    console.log("\u{1F310} Host header:", host, "| isLocal:", isLocal);
     if (!isLocal) {
       const { results: dup } = await env.EVENTS_DB.prepare(
         `SELECT id FROM events WHERE pdf_hash = ?`
       ).bind(pdf_hash).all();
       if (dup.length) {
-        console.warn("\u26A0\uFE0F Duplicate PDF detected, aborting upload", { pdf_hash });
-        return new Response(JSON.stringify({
-          error: "Duplicate PDF",
-          duplicate: true
-        }), {
+        console.warn("\u26A0\uFE0F Duplicate PDF detected", { pdf_hash });
+        return new Response(JSON.stringify({ error: "Duplicate PDF", duplicate: true }), {
           status: 409,
           headers: { "Content-Type": "application/json" }
         });
@@ -124,7 +127,7 @@ router.post("/api/events/create", async (request, env) => {
     await env.EVENT_PDFS.put(key, file.stream());
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
-    console.log(`\u{1F4C4} PDF uploaded, accessible at: ${pdf_url}`);
+    console.log(`\u{1F4C4} Uploaded PDF: ${pdf_url}`);
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location, pdf_url,
@@ -145,13 +148,14 @@ router.post("/api/events/create", async (request, env) => {
       pdf_hash,
       description
     ).run();
-    console.log("\u2705 Event saved to database");
-    return new Response(JSON.stringify({ success: true }), {
+    console.log("\u2705 Event successfully saved to database");
+    const { lastInsertRowid } = await db.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).first();
+    return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
       status: 201,
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
-    console.error("\u274C Error submitting event:", err);
+    console.error("\u274C Error submitting event:", err.stack || err.message || err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" }

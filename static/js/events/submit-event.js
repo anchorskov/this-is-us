@@ -36,15 +36,20 @@ export async function submitEvent(payload) {
     });
 
     if (body.success === true) {
-      console.log("✅ Submission succeeded:", body);
-      showSuccess("✅ Event submitted successfully!");
-      return { ok: true, id: body.id };
-    } else {
-      const message = getUserFriendlyError(body.code, body.error);
-      console.error("❌ Worker error:", message);
-      showError(`❌ ${message}`);
-      return { ok: false, message };
-    }
+    console.log("✅ Submission succeeded:", body);
+    showSuccess("✅ Event submitted successfully!");
+
+    // Redirect to map with highlight
+    const newEventId = body.id;
+    window.location.href = `/events/?highlight=${newEventId}`;
+
+    return { ok: true, id: newEventId };
+  } else {
+    const message = getUserFriendlyError(body.code, body.error);
+    console.error("❌ Worker error:", message);
+    showError(`❌ ${message}`);
+    return { ok: false, message };
+  }
 
   } catch (err) {
     const fallback = getUserFriendlyError(undefined, err.message);

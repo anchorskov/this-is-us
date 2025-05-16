@@ -110,22 +110,49 @@ function $(elOrSelector) {
     });
   }
   /**
- * Show our success modal and wire the View button.
+ * Show our success modal and wire the View and OK buttons.
  * @param {Function} onView callback when they click “View on Map”
  */
 export function showSuccessModal(onView) {
   const modal = document.getElementById('successModal');
   if (!modal) return;
-  // show it
+
+  // Ensure modal has content area to inject buttons
+  const content = modal.querySelector('.modal-content');
+  if (!content) return;
+
+  // Inject View and OK buttons if not already present
+  content.innerHTML = `
+    <p>✅ Event submitted successfully!</p>
+    <div class="mt3">
+      <button id="viewEventBtn" class="mr2 pa2 bg-blue white br2">View on Map</button>
+      <button id="okEventBtn" class="pa2 bg-green white br2">OK</button>
+    </div>
+  `;
+
+  // Show the modal
   modal.style.display = 'flex';
-  // wire up close via backdrop click
+
+  // Backdrop click closes modal
   modal.addEventListener('click', e => {
     if (e.target === modal) modal.style.display = 'none';
   });
-  // wire up the View button
+
+  // Wire up buttons
   const viewBtn = document.getElementById('viewEventBtn');
-  viewBtn.onclick = () => {
-    onView();
-    modal.style.display = 'none';
-  };
+  const okBtn = document.getElementById('okEventBtn');
+
+  if (viewBtn) {
+    viewBtn.onclick = () => {
+      onView();
+      modal.style.display = 'none';
+    };
+  }
+
+  if (okBtn) {
+    okBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+  }
 }
+
