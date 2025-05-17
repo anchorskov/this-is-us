@@ -95,6 +95,13 @@ router.post("/api/events/create", async (request, env) => {
   const sponsor = form.get("sponsor") || "";
   const contactEmail = form.get("contactEmail") ?? form.get("contact_email") ?? "";
   const contactPhone = form.get("contactPhone") ?? form.get("contact_phone") ?? "";
+  const MAX_SIZE = 5 * 1024 * 1024;
+  if (!file || file.size > MAX_SIZE) {
+    return new Response(JSON.stringify({ error: `File too large (max ${MAX_SIZE / (1024 * 1024)} MB)` }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
   console.log("\u{1F4DD} Incoming event submission:", {
     userId,
     name,
@@ -106,16 +113,11 @@ router.post("/api/events/create", async (request, env) => {
     sponsor,
     contactEmail,
     contactPhone,
-    file: file?.name
+    file: file.name,
+    size: file.size
   });
-  if (!name || !date || !location || !file) {
+  if (!name || !date || !location) {
     return new Response(JSON.stringify({ error: "Missing fields" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" }
-    });
-  }
-  if (!(file && file.arrayBuffer)) {
-    return new Response(JSON.stringify({ error: "Invalid file" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
     });

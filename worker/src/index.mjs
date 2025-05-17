@@ -17,7 +17,7 @@ router.get('/api/events/pdf/:key', async (request, env) => {
     status: 200,
     headers: {
       'Content-Type': obj.httpMetadata.contentType || 'application/pdf',
-      'Content-Disposition': `inline; filename="${key}"`,
+      'Content-Disposition': `inline; filename=\"${key}\"`,
       'Cache-Control': 'public, max-age=31536000',
     },
   });
@@ -72,21 +72,23 @@ router.post('/api/events/create', async (request, env) => {
   const contactEmail  = form.get('contactEmail')  ?? form.get('contact_email')  ?? '';
   const contactPhone  = form.get('contactPhone')  ?? form.get('contact_phone')  ?? '';
 
-  console.log("📝 Incoming event submission:", {
-    userId, name, date, location, lat, lng,
-    description, sponsor, contactEmail, contactPhone,
-    file: file?.name
-  });
-
-  if (!name || !date || !location || !file) {
-    return new Response(JSON.stringify({ error: 'Missing fields' }), {
+  // Enforce max file size (5 MB)
+  const MAX_SIZE = 5 * 1024 * 1024;
+  if (!file || file.size > MAX_SIZE) {
+    return new Response(JSON.stringify({ error: `File too large (max ${MAX_SIZE / (1024 * 1024)} MB)` }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' }
     });
   }
 
-  if (!(file && file.arrayBuffer)) {
-    return new Response(JSON.stringify({ error: 'Invalid file' }), {
+  console.log("📝 Incoming event submission:", {
+    userId, name, date, location, lat, lng,
+    description, sponsor, contactEmail, contactPhone,
+    file: file.name, size: file.size
+  });
+
+  if (!name || !date || !location) {
+    return new Response(JSON.stringify({ error: 'Missing fields' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' }
     });
@@ -118,7 +120,7 @@ router.post('/api/events/create', async (request, env) => {
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
 
-    // Insert the event record (store only the key)
+    // Insert the event record
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location,
@@ -198,4 +200,4 @@ export default {
       `DELETE FROM events WHERE date < date('now','-1 day')`
     ).run();
   }
-}; 
+};
