@@ -9,6 +9,8 @@ import {
   isValidPhone,
   areRequiredFieldsPresent,
 } from './validation-utils.js';
+// Maximum allowed PDF size in bytes (5 MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 // ——————————————————————————————————————————
 // Submit handler
@@ -54,43 +56,69 @@ export function renderForm(user) {
   const container = document.querySelector('#event-form');
   if (!container) return;
 
-  // 1) Inject HTML and hide the success modal
+  // 1) Inject HTML
   container.innerHTML = getFormHTML();
 
-  // DEBUG
-  console.log('renderForm: HTML injected, about to hide successModal');
+  // ————————————————
+  // Client-side PDF size guard (uses .file-error CSS)
+  // ————————————————
+  const fileInput  = document.getElementById('eventPdf');
+  const previewBtn = document.getElementById('previewEvent');
 
-  // 1a) Prevent choosing past dates by setting the local min
-  const dateInput = document.getElementById('datetime');
-  if (dateInput) {
-    const now = new Date();
-    // Shift into local timezone, then to ISO string
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    dateInput.min = local.toISOString().slice(0, 16);
-  }
+  // Create & insert the error message
+  const fileError = document.createElement('p');
+  fileError.id          = 'file-error';
+  fileError.className   = 'file-error';
+  fileError.textContent = 'File too large. Maximum size is 5 MB.';
+  fileError.style.display = 'none';
+  fileInput.parentNode.insertBefore(fileError, fileInput.nextSibling);
+
+  // Block oversize files before allowing Preview
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file && file.size > MAX_FILE_SIZE) {
+      fileError.style.display    = 'block';
+      previewBtn.disabled        = true;
+      previewBtn.setAttribute('aria-disabled', 'true');
+      previewBtn.classList.add('opacity-50');
+    } else {
+      fileError.style.display    = 'none';
+      previewBtn.disabled        = false;
+      previewBtn.setAttribute('aria-disabled', 'false');
+      previewBtn.classList.remove('opacity-50');
+    }
+  });
 
   // 1b) Hide the success modal
   document.getElementById('successModal')?.classList.add('dn');
 
-  // 2) Initialize map & PDF preview
+  // 2) Prevent past dates
+  const dateInput = document.getElementById('datetime');
+  if (dateInput) {
+    const now   = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    dateInput.min = local.toISOString().slice(0, 16);
+  }
+
+  // 3) Initialize map & PDF preview
   const { map, setMarker: originalSetMarker } = initMap();
   bindPdfPreview();
 
-  // 3) Wrap setMarker → fires locationSet
+  // 4) Wrap setMarker → fires locationSet
   const setMarker = (...args) => {
     originalSetMarker(...args);
     document.dispatchEvent(new Event('locationSet'));
   };
   bindAddressSearch(setMarker);
 
-  // 4) Enable Next→Preview on locationSet
+  // 5) Enable Next→Preview on locationSet
   const nextBtn = document.getElementById('previewEvent');
   document.addEventListener('locationSet', () => {
     nextBtn.setAttribute('aria-disabled', 'false');
     nextBtn.classList.remove('opacity-50');
   });
 
-  // 5) Wire up preview & confirm
+  // 6) Wire up preview & confirm
   bindFormLogic(user);
 }
 
@@ -133,7 +161,9 @@ function getFormHTML() {
 
           <div id="map" class="br2 mb3"></div>
 
-          <label for="eventPdf" class="db mb2 fw6">Attach PDF Flyer</label>
+          <label for="eventPdf" class="db mb2 fw6">
+            Attach PDF Flyer <span class="f7 gray">(Limit: 5 MB)</span>
+          </label>
           <input type="file" id="eventPdf" accept="application/pdf" class="input-reset ba b--black-20 pa2 mb3 w-100">
           <iframe id="pdfPreview" class="mb3" style="display:none;"></iframe>
 
