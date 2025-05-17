@@ -49,7 +49,7 @@ router.get('/api/events', async (request, env) => {
 });
 
 // Debug endpoint: see table schema
-router.get('/_debug/schema', async (_, env) => {
+router.get('/api/_debug/schema', async (_, env) => {
   const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
   return new Response(JSON.stringify(results), {
     headers: { 'Content-Type': 'application/json' },
@@ -60,17 +60,17 @@ router.get('/_debug/schema', async (_, env) => {
 router.post('/api/events/create', async (request, env) => {
   const form = await request.formData();
 
-  const userId       = form.get('userId')        ?? form.get('user_id')        ?? 'anonymous';
-  const name         = form.get('name');
-  const date         = form.get('date');
-  const location     = form.get('location');
-  const file         = form.get('file');
-  const description  = form.get('description')   || '';
-  const lat          = form.get('lat');
-  const lng          = form.get('lng');
-  const sponsor      = form.get('sponsor')       || '';
-  const contactEmail = form.get('contactEmail')  ?? form.get('contact_email')  ?? '';
-  const contactPhone = form.get('contactPhone')  ?? form.get('contact_phone')  ?? '';
+  const userId        = form.get('userId')        ?? form.get('user_id')        ?? 'anonymous';
+  const name          = form.get('name');
+  const date          = form.get('date');
+  const location      = form.get('location');
+  const file          = form.get('file');
+  const description   = form.get('description')   || '';
+  const lat           = form.get('lat');
+  const lng           = form.get('lng');
+  const sponsor       = form.get('sponsor')       || '';
+  const contactEmail  = form.get('contactEmail')  ?? form.get('contact_email')  ?? '';
+  const contactPhone  = form.get('contactPhone')  ?? form.get('contact_phone')  ?? '';
 
   console.log("📝 Incoming event submission:", {
     userId, name, date, location, lat, lng,
@@ -93,22 +93,32 @@ router.post('/api/events/create', async (request, env) => {
   }
 
   try {
-    // Compute file hash for de-duplication or auditing
+    // Compute file hash for deduplication
     const buffer = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
     const pdf_hash = Array.from(new Uint8Array(hashBuf))
       .map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Upload PDF to R2
-    const key = `event-${crypto.randomUUID()}.pdf`;
-    await env.EVENT_PDFS.put(key, file.stream());
+    // Check for existing PDF by hash
+    const { results: existing } = await env.EVENTS_DB.prepare(
+      `SELECT pdf_key FROM events WHERE pdf_hash = ?`
+    ).bind(pdf_hash).all();
 
-    // Rebuild origin + URL
+    let key;
+    if (existing.length > 0) {
+      key = existing[0].pdf_key;
+      console.log(`🔁 Duplicate PDF detected, reusing key ${key}`);
+    } else {
+      key = `event-${crypto.randomUUID()}.pdf`;
+      await env.EVENT_PDFS.put(key, file.stream());
+      console.log(`📄 Uploaded new PDF: ${key}`);
+    }
+
+    // Rebuild the public URL from origin
     const origin = new URL(request.url).origin;
     const pdf_url = `${origin}/api/events/pdf/${key}`;
-    console.log(`📄 Uploaded PDF: ${pdf_url}`);
 
-    // Insert event into DB (store only R2 key)
+    // Insert the event record (store only the key)
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
         user_id, name, date, location,
@@ -125,7 +135,9 @@ router.post('/api/events/create', async (request, env) => {
 
     console.log("✅ Event successfully saved to database");
 
-    const { results } = await env.EVENTS_DB.prepare(`SELECT last_insert_rowid() AS lastInsertRowid`).all();
+    const { results } = await env.EVENTS_DB.prepare(
+      `SELECT last_insert_rowid() AS lastInsertRowid`
+    ).all();
     const lastInsertRowid = results?.[0]?.lastInsertRowid || null;
 
     return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
@@ -142,10 +154,9 @@ router.post('/api/events/create', async (request, env) => {
   }
 });
 
-// Fallback for all other routes
+// Fallback for unmatched routes
 router.all('*', () => new Response('Not found', { status: 404 }));
 
-// Export the Worker handlers
 export default {
   async fetch(request, env, ctx) {
     const corsHeaders = {
@@ -170,10 +181,10 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    // Clean up expired events: PDFs + DB rows
-    const { results: expiredEvents } = await env.EVENTS_DB.prepare(`
-      SELECT id, pdf_key FROM events WHERE date < date('now','-1 day')
-    `).all();
+    // Clean up expired events
+    const { results: expiredEvents } = await env.EVENTS_DB.prepare(
+      `SELECT id, pdf_key FROM events WHERE date < date('now','-1 day')`
+    ).all();
 
     for (const ev of expiredEvents) {
       try {
@@ -183,8 +194,8 @@ export default {
       }
     }
 
-    await env.EVENTS_DB.prepare(`
-      DELETE FROM events WHERE date < date('now','-1 day')
-    `).run();
+    await env.EVENTS_DB.prepare(
+      `DELETE FROM events WHERE date < date('now','-1 day')`
+    ).run();
   }
 };
