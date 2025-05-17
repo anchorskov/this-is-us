@@ -198,4 +198,4 @@ export default {
       `DELETE FROM events WHERE date < date('now','-1 day')`
     ).run();
   }
-};
+}; 
