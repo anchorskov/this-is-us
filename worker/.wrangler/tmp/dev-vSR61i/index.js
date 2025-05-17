@@ -40,29 +40,47 @@ var router = t();
 router.get("/api/events/pdf/:key", async (request, env) => {
   const { key } = request.params;
   const obj = await env.EVENT_PDFS.get(key, { allowScripting: true });
-  if (!obj) return new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+  if (!obj) {
+    return new Response("Not found", {
+      status: 404,
+      headers: { "Content-Type": "text/plain" }
+    });
+  }
   return new Response(obj.body, {
     status: 200,
     headers: {
       "Content-Type": obj.httpMetadata.contentType || "application/pdf",
+      "Content-Disposition": `inline; filename="${key}"`,
       "Cache-Control": "public, max-age=31536000"
     }
   });
 });
 router.get("/api/events", async (request, env) => {
-  const { results } = await env.EVENTS_DB.prepare(
-    `SELECT id, name, date, location, pdf_url, lat, lng
-     FROM events
-     WHERE date >= date('now')
-     ORDER BY date`
-  ).all();
-  return new Response(JSON.stringify(results), {
+  const { results } = await env.EVENTS_DB.prepare(`
+    SELECT id, name, date, location, pdf_key, lat, lng
+    FROM events
+    WHERE date >= date('now')
+    ORDER BY date
+  `).all();
+  const origin = new URL(request.url).origin;
+  const events = results.map((ev) => ({
+    id: ev.id,
+    name: ev.name,
+    date: ev.date,
+    location: ev.location,
+    lat: ev.lat,
+    lng: ev.lng,
+    pdf_url: `${origin}/api/events/pdf/${ev.pdf_key}`
+  }));
+  return new Response(JSON.stringify(events), {
     headers: { "Content-Type": "application/json" }
   });
 });
 router.get("/_debug/schema", async (_, env) => {
   const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
-  return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(results), {
+    headers: { "Content-Type": "application/json" }
+  });
 });
 router.post("/api/events/create", async (request, env) => {
   const form = await request.formData();
@@ -91,14 +109,12 @@ router.post("/api/events/create", async (request, env) => {
     file: file?.name
   });
   if (!name || !date || !location || !file) {
-    console.warn("\u26A0\uFE0F Missing required fields", { name, date, location, file: !!file });
     return new Response(JSON.stringify({ error: "Missing fields" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
     });
   }
   if (!(file && file.arrayBuffer)) {
-    console.error("\u274C Invalid or missing file upload");
     return new Response(JSON.stringify({ error: "Invalid file" }), {
       status: 400,
       headers: { "Content-Type": "application/json" }
@@ -108,21 +124,6 @@ router.post("/api/events/create", async (request, env) => {
     const buffer = await file.arrayBuffer();
     const hashBuf = await crypto.subtle.digest("SHA-256", buffer);
     const pdf_hash = Array.from(new Uint8Array(hashBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
-    const host = (request.headers.get("host") || "").toLowerCase();
-    const isLocal = host.includes("localhost") || host.startsWith("127.");
-    console.log("\u{1F310} Host header:", host, "| isLocal:", isLocal);
-    if (!isLocal) {
-      const { results: dup } = await env.EVENTS_DB.prepare(
-        `SELECT id FROM events WHERE pdf_hash = ?`
-      ).bind(pdf_hash).all();
-      if (dup.length) {
-        console.warn("\u26A0\uFE0F Duplicate PDF detected", { pdf_hash });
-        return new Response(JSON.stringify({ error: "Duplicate PDF", duplicate: true }), {
-          status: 409,
-          headers: { "Content-Type": "application/json" }
-        });
-      }
-    }
     const key = `event-${crypto.randomUUID()}.pdf`;
     await env.EVENT_PDFS.put(key, file.stream());
     const origin = new URL(request.url).origin;
@@ -130,16 +131,17 @@ router.post("/api/events/create", async (request, env) => {
     console.log(`\u{1F4C4} Uploaded PDF: ${pdf_url}`);
     await env.EVENTS_DB.prepare(`
       INSERT INTO events (
-        user_id, name, date, location, pdf_url,
-        lat, lng, sponsor, contact_email,
-        contact_phone, pdf_hash, description
+        user_id, name, date, location,
+        pdf_key, lat, lng, sponsor,
+        contact_email, contact_phone,
+        pdf_hash, description
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       userId,
       name,
       date,
       location,
-      pdf_url,
+      key,
       lat,
       lng,
       sponsor,
@@ -176,7 +178,7 @@ var src_default = {
     }
     const response = await router.fetch(request, env, ctx);
     const newHeaders = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([key, val]) => newHeaders.set(key, val));
+    Object.entries(corsHeaders).forEach(([k, v]) => newHeaders.set(k, v));
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -184,21 +186,19 @@ var src_default = {
     });
   },
   async scheduled(event, env, ctx) {
-    const { results: expiredEvents } = await env.EVENTS_DB.prepare(
-      `SELECT id, pdf_url FROM events WHERE date < date('now','-1 day')`
-    ).all();
+    const { results: expiredEvents } = await env.EVENTS_DB.prepare(`
+      SELECT id, pdf_key FROM events WHERE date < date('now','-1 day')
+    `).all();
     for (const ev of expiredEvents) {
       try {
-        const url = new URL(ev.pdf_url);
-        const key = url.pathname.split("/").slice(2).join("/");
-        await env.EVENT_PDFS.delete(key);
+        await env.EVENT_PDFS.delete(ev.pdf_key);
       } catch (e) {
-        console.error(`\u{1F9E8} Failed to delete R2 asset for expired event ID ${ev.id}:`, e);
+        console.error(`\u{1F9E8} Failed to delete expired event asset ID ${ev.id}:`, e);
       }
     }
-    await env.EVENTS_DB.prepare(
-      `DELETE FROM events WHERE date < date('now','-1 day')`
-    ).run();
+    await env.EVENTS_DB.prepare(`
+      DELETE FROM events WHERE date < date('now','-1 day')
+    `).run();
   }
 };
 
