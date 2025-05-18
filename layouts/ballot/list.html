@@ -1,0 +1,71 @@
+{{ define "main" }}
+<article class="prose mx-auto">
+  <h1>Your Local Ballot</h1>
+
+  <form id="ballot-form">
+    <label for="zip">Enter ZIP Code:</label>
+    <input id="zip" name="zip" type="text" required minlength="5" maxlength="5" />
+    <button type="submit">View Ballot</button>
+  </form>
+
+  <section id="ballot-output" class="mt-4"></section>
+
+  <noscript>
+    <p style="color:red;">JavaScript is required to view your ballot. Please enable it in your browser.</p>
+  </noscript>
+</article>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 🌐 Dynamic API base
+  let API_BASE = "/api";
+  const host = location.hostname;
+  const port = location.port;
+
+  if (host === "localhost") {
+    if (port && port !== "1313") {
+      API_BASE = `http://${host}:${port}/api`;
+    } else {
+      API_BASE = "http://localhost:8787/api"; // default wrangler dev port
+    }
+  }
+
+  const form = document.getElementById('ballot-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const zip = document.getElementById('zip').value;
+    const output = document.getElementById('ballot-output');
+    output.innerHTML = '<p>Loading...</p>';
+
+    try {
+      const sourcesRes = await fetch(`${API_BASE}/ballot?zip=${zip}`);
+      const sourceData = await sourcesRes.json();
+      if (!sourceData.sources || !sourceData.sources.length) {
+        output.innerHTML = `<p>No ballot sources found for ZIP ${zip}.</p>`;
+        return;
+      }
+
+      const aiRes = await fetch(`${API_BASE}/ballot/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sources: sourceData.sources })
+      });
+      const result = await aiRes.json();
+
+      if (result && result.summaries) {
+        output.innerHTML = `
+          <h2>Ballot Summary for ${zip}</h2>
+          <ul>${result.summaries.map(s => `<li><a href="${s.url}" target="_blank">${s.label}</a></li>`).join('')}</ul>
+        `;
+      } else {
+        output.innerHTML = `<p>Could not generate a summary for ZIP ${zip}.</p>`;
+      }
+    } catch (err) {
+      output.innerHTML = `<p>Error: ${err.message}</p>`;
+    }
+  });
+});
+</script>
+{{ end }}

@@ -38,9 +38,11 @@ partial_calls.txt
 content/test.md
 
 # Local databases & caches
+.wrangler/
 d1-local/
 r2-local/
 worker/d1-local/
+ballots/d1-local/
 
 # Worker test PDF
 worker/dummy.pdf

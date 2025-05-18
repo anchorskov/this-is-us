@@ -1,0 +1,13 @@
+# ballots/wrangler.toml
+
+name = "this-is-us-ballots"
+main = "src/index.mjs"
+compatibility_date = "2025-05-17"
+
+[[d1_databases]]
+binding = "BALLOT_DB"
+database_name = "ballot_sources"
+database_id = "9c4b0c27-eb33-46e6-a477-fb49d4c81474"
+
+[ai]
+binding = "AI"

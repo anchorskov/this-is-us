@@ -1,46 +1,49 @@
 {{/* layouts/partials/extend_head.html */}}
 
-<!-- Extend Head Partial - Safe for Hugo templates -->
-
-<!-- Custom Favicon -->
+<!-- Favicon & Meta -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}" type="image/x-icon">
-
-<!-- Custom Stylesheet -->
-<link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
-
-<!-- Event‐Form Stylesheet (refactored from inline) -->
-<link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
-
-<!-- Custom Meta Tags -->
 <meta name="theme-color" content="#2e2e33">
 
-<!-- Leaflet (only used on event form page) -->
+<!-- Tailwind (via CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Or, for a static build without FOUC:
+<link
+  href="https://cdn.jsdelivr.net/npm/tailwindcss@^3/dist/tailwind.min.css"
+  rel="stylesheet"
+/>
+-->
+
+<!-- Third-Party CSS -->
 <link
   rel="stylesheet"
   href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
-<script
-  src="https://unpkg.com/leaflet/dist/leaflet.js"
-  defer
-></script>
-
-<!-- TimelineJS3 -->
 <link
   rel="stylesheet"
   href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"
 />
-<script
-  src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
-  defer
-></script>
 
-<!-- ✅ Material Icons (used for special event pins) -->
+<!-- Your Custom Stylesheets -->
+<link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
+
+<!-- Material Icons -->
 <link
   href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet"
 />
 
-<!-- Load refactored event module only for the Create Event page -->
+<!-- Third-Party JS (deferred) -->
+<script
+  src="https://unpkg.com/leaflet/dist/leaflet.js"
+  defer
+></script>
+<script
+  src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
+  defer
+></script>
+
+<!-- Page-Specific JS -->
 {{ if eq .Page.RelPermalink "/events/create/" }}
   <script
     type="module"
