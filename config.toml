@@ -81,9 +81,9 @@ buildFuture   = false
   weight     = 6
 
 [[menu.main]]
-  identifier = "manifesto"
-  name       = "Manifesto"
-  url        = "/manifesto/"
+  identifier = "candidates"
+  name       = "Candidates"
+  url        = "/candidates/"
   weight     = 7
 
 [[menu.main]]

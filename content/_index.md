@@ -3,8 +3,6 @@ title: "This Is Us: A Platform for Integrity"
 description: "Reclaiming character. Restoring truth. Building a future grounded in accountability."
 ---
 
-# 🏛️ This Is Us: A Platform for Integrity
-
 We are a nonpartisan community committed to restoring trust in public life through character, accountability, and transparency.
 
 > *If you’ve read this far, you’re already part of something rare—people who still care enough to think, reflect, and show up.*
