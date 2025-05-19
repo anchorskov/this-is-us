@@ -4,6 +4,7 @@ name = "mcp-server"
 main = "src/index.mjs"
 compatibility_date = "2025-05-05"
 
+[env.production]
 zone_id         = "b298c4645feb8f945eb1a0950eb24323"
 routes          = [
   "this-is-us.org/api/candidates/*",
