@@ -1,21 +1,22 @@
 {{ define "main" }}
-{{ partial "firebase-init.html" . }}
-<script>
+  {{ partial "firebase-init.html" . }}
+  <script>
     console.log("🔥 inline JS loaded (from template)");
-</script>  
-<article class="prose mx-auto">
-  <h1>{{ .Title }}</h1>
+  </script>
 
-  <!-- LOGIN PROMPT + UI WIDGET -->
-  <div id="auth-container" class="flex flex-column items-center justify-center">
-    <p id="login-prompt">Please log in to create an event.</p>
-    <div id="firebaseui-auth-container" class="mt-2"></div>
-  </div>
+  <article class="prose mx-auto">
+    <h1>{{ .Title }}</h1>
 
-  <!-- EVENT FORM UI (correct ID) -->
-  <div id="event-form" class="mt-4"></div>
-</article>
+    <!-- LOGIN PROMPT + UI WIDGET -->
+    <div id="auth-container" class="flex flex-col items-center justify-center">
+      <p id="login-prompt">Please log in to create an event.</p>
+      <div id="firebaseui-auth-container" class="mt-2"></div>
+    </div>
 
-<!-- Page-specific JS -->
-<script type="module" src="/js/events/index.js"></script>
+    <!-- EVENT FORM UI -->
+    {{ partial "event-form.html" . }}
+  </article>
+
+  <!-- Page-specific JS -->
+  <script type="module" src="/js/events/index.js" defer></script>
 {{ end }}

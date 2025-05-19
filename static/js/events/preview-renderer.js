@@ -1,10 +1,8 @@
-/**
+// static/js/events/preview-renderer.js
+
+/** 
  * Generate and display the event preview.
- * @param {Object} data  Event data with keys:
- *   name (string), date (ISO string), description (string),
- *   location (string), sponsor? (string),
- *   contact_email? (string), contact_phone? (string),
- *   file? (File)
+ * @param {Object} data  Event data with keys: name, date, description, location, sponsor?, contact_email?, contact_phone?, file?
  */
 export function renderPreview(data) {
   const container = document.querySelector('#event-preview');
@@ -13,62 +11,65 @@ export function renderPreview(data) {
     return;
   }
 
-  // 1) Normalize keys
-  const title       = data.name         ?? '';
-  const rawDate     = data.date         ?? '';
-  const address     = data.location     ?? '';
-  const description = data.description  ?? '';
-  const sponsor     = data.sponsor      ?? '';
-  const email       = data.contactEmail ?? data.contact_email ?? '';
-  const phone       = data.contactPhone ?? data.contact_phone ?? '';
+  console.log('🖼️ renderPreview called with data:', data);
+
+  // Normalize keys
+  const title       = data.name || '';
+  const rawDate     = data.date || '';
+  const address     = data.location || '';
+  const description = data.description || '';
+  const sponsor     = data.sponsor || '';
+  const email       = data.contact_email || data.contactEmail || '';
+  const phone       = data.contact_phone || data.contactPhone || '';
   const file        = data.file;
 
-  // 2) Format date safely
+  // Format date
   const formattedDate = rawDate
     ? new Date(rawDate).toLocaleString(undefined, { timeZoneName: 'short' })
     : '—';
 
-  // 3) Blob URL for PDF preview
+  // PDF URL
   const flyerURL = file ? URL.createObjectURL(file) : '';
 
-  // 4) Build markup
+  // Build markup
   container.innerHTML = `
-    <div class="bg-white pa4 br3 shadow-2">
-      <h3 class="f3 mb3">🎯 Event Preview</h3>
-      <ul class="list pl0 mb4">
-        <li class="mb2"><strong>Title:</strong> ${title}</li>
-        <li class="mb2"><strong>Date &amp; Time:</strong> ${formattedDate}</li>
-        <li class="mb2"><strong>Description:</strong><br>${description}</li>
-        <li class="mb2"><strong>Address:</strong> ${address}</li>
-        ${sponsor ? `<li class="mb2"><strong>Sponsor:</strong> ${sponsor}</li>` : ''}
-        ${email   ? `<li class="mb2"><strong>Email:</strong> ${email}</li>`   : ''}
-        ${phone   ? `<li class="mb2"><strong>Phone:</strong> ${phone}</li>`   : ''}
-      </ul>
+    <div class="bg-white rounded-2xl shadow p-6 space-y-4">
+      <h3 class="text-lg font-semibold">🎯 Event Preview</h3>
+      <dl class="grid grid-cols-1 gap-y-2">
+        <div><dt class="font-semibold">Title:</dt><dd>${title}</dd></div>
+        <div><dt class="font-semibold">Date &amp; Time:</dt><dd>${formattedDate}</dd></div>
+        <div><dt class="font-semibold">Description:</dt><dd>${description}</dd></div>
+        <div><dt class="font-semibold">Address:</dt><dd>${address}</dd></div>
+        ${sponsor ? `<div><dt class="font-semibold">Sponsor:</dt><dd>${sponsor}</dd></div>` : ''}
+        ${email   ? `<div><dt class="font-semibold">Email:</dt><dd>${email}</dd></div>` : ''}
+        ${phone   ? `<div><dt class="font-semibold">Phone:</dt><dd>${phone}</dd></div>` : ''}
+      </dl>
       ${flyerURL ? `
-        <div class="mb4">
-          <p class="mb2"><strong>Flyer Preview:</strong></p>
-          <iframe
-            class="br2"
-            style="width:100%; height:300px; border:1px solid #bbb;"
-            src="${flyerURL}">
-          </iframe>
+        <div>
+          <p class="font-semibold mb-2">Flyer Preview:</p>
+          <iframe src="${flyerURL}" class="w-full h-72 rounded border border-gray-300"></iframe>
         </div>` : ''}
       <div class="flex justify-between">
-        <button id="cancelPreview" class="f6 br2 ph3 pv2 bg-red white">✖ Cancel</button>
-        <button id="confirmSubmit" class="f6 br2 ph3 pv2 bg-green white">✅ Confirm & Submit</button>
+        <button id="cancelPreview" class="rounded-md px-4 py-2 bg-red-600 text-white">✖ Cancel</button>
+        <button id="confirmSubmit" class="rounded-md px-4 py-2 bg-green-600 text-white">✅ Confirm & Submit</button>
       </div>
     </div>
   `;
 
-  // 5) Wire up buttons
-  document
-    .getElementById('cancelPreview')
-    .addEventListener('click', () => {
-      document.getElementById('eventForm').style.display = 'block';
-      container.style.display = 'none';
-    });
-  // confirmSubmit is bound in event-form.js
+  // Show the preview pane
+  console.log('🖼️ Showing preview pane');
+  container.hidden = false;
+  container.classList.remove('hidden');
 
-  // 6) Show preview
-  container.style.display = 'block';
+  // Hide the form
+  const form = document.getElementById('eventForm');
+  form.hidden = true;
+
+  // Wire up Cancel
+  const cancelBtn = document.getElementById('cancelPreview');
+  cancelBtn.addEventListener('click', () => {
+    console.log('🖼️ Cancel preview—showing form again');
+    form.hidden = false;
+    container.hidden = true;
+  });
 }

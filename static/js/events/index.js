@@ -1,22 +1,23 @@
+// static/js/events/index.js
+
 import { renderForm } from './event-form.js';
 
-console.log("⚙️ Initializing Event Creation Flow");
+/**
+ * Initialize the Event Creation Flow once DOM is ready and Firebase auth is available.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('⚙️ Initializing Event Creation Flow');
 
-document.addEventListener("DOMContentLoaded", () => {
-  const waitForAuth = setInterval(() => {
-    if (typeof firebase !== "undefined" && firebase.auth && typeof window.currentUser !== "undefined") {
-      clearInterval(waitForAuth);
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    console.warn('Firebase auth not initialized; cannot render event form.');
+    return;
+  }
 
-      const user = window.currentUser;
-      if (user && (user.emailVerified || user.phoneNumber)) {
-        // ✅ Hide login prompt
-        const authContainer = document.getElementById("auth-container");
-        if (authContainer) authContainer.style.display = "none";
-
-        renderForm(user);
-      } else {
-        console.warn("⚠️ User not verified or not logged in");
-      }
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      renderForm({ uid: user.uid });
+    } else {
+      console.warn('User not authenticated; event form will not render.');
     }
-  }, 200);
+  });
 });

@@ -1,4 +1,4 @@
-/* Override Ananke's nav with force */
+/* static/css/custom.css */
 nav.menu {
   display: none !important;
   flex-direction: column;
@@ -183,3 +183,11 @@ button.bg-dark-blue:hover,
 .toast-success { background-color: #28a745; }
 .toast-error   { background-color: #dc3545; }
 .toast-info    { background-color: #17a2b8; }
+/* Fix for Leaflet map rendering */
+#map {
+  height: 70vh;
+  width: 100%;
+  display: block;
+  position: relative;
+  z-index: 0;
+}

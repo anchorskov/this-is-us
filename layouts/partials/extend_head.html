@@ -18,10 +18,12 @@
   rel="stylesheet"
   href="https://unpkg.com/leaflet/dist/leaflet.css"
 />
+{{ if ne .Page.RelPermalink "/events/create/" }}
 <link
   rel="stylesheet"
   href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"
 />
+{{ end }}
 
 <!-- Your Custom Stylesheets -->
 <link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
@@ -38,10 +40,12 @@
   src="https://unpkg.com/leaflet/dist/leaflet.js"
   defer
 ></script>
+{{ if ne .Page.RelPermalink "/events/create/" }}
 <script
   src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
   defer
 ></script>
+{{ end }}
 
 <!-- Page-Specific JS -->
 {{ if eq .Page.RelPermalink "/events/create/" }}
