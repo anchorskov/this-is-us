@@ -1,123 +1,138 @@
-<!-- layouts/candidates/upload.html -->
+{{/* layouts/candidates/upload.html */}}
 {{ define "main" }}
-<div class="max-w-xl w-full bg-white rounded-2xl shadow p-6 space-y-6 mx-auto mt-8">
-  <h1 class="text-2xl font-bold text-center text-gray-800">Submit Your Candidacy</h1>
-  <p class="text-gray-600 text-center">
-    Tell us your name, the office you're running for, and your location. Attach a PDF so our users can check out your platform — exactly as you want it shared.
-  </p>
+  <div class="max-w-xl mx-auto mt-8 space-y-6">
 
-  <form id="uploadForm" class="space-y-4">
-    <label class="block">
-      <span class="text-gray-700 font-medium">Candidate PDF</span>
-      <input type="file" name="file" accept="application/pdf" required
-             class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
-    </label>
+    <!-- Step 1: upload PDF -->
+    <div id="step1">
+      <h1 class="text-2xl font-bold">Submit Your Candidacy</h1>
+      <p class="text-gray-600">
+        Submit a PDF describing your candidacy. Make sure the PDF contains:
+      </p>
+      <ul class="text-gray-600 list-disc list-inside ml-6 space-y-1">
+        <li>Your name</li>
+        <li>The office you are running for</li>
+        <li>The location of your constituency</li>
+      </ul>
+      <p class="text-gray-600">
+        The system will attempt to parse these details; if parsing fails, you’ll be asked to verify or update them.
+      </p>
+      <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
+        <label class="block">
+          <span class="text-gray-700">Candidate PDF</span>
+          <input
+            type="file"
+            name="file"
+            accept="application/pdf"
+            required
+            class="mt-1 block w-full p-2 border rounded"
+          />
+        </label>
+        <button
+          type="submit"
+          class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+        >
+          Upload &amp; Parse PDF
+        </button>
+      </form>
+    </div>
 
-    <button type="submit"
-            class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
-      Upload &amp; Parse PDF
-    </button>
-  </form>
+    <!-- Step 2: confirm details -->
+    <div id="step2" class="hidden">
+      <p class="font-semibold text-green-600">Success! Your PDF was uploaded.</p>
+      <form id="confirmForm" class="space-y-4">
+        <label class="block">
+          <span class="text-gray-700">Name</span>
+          <input name="name" type="text" required class="mt-1 block w-full p-2 border rounded" />
+        </label>
+        <label class="block">
+          <span class="text-gray-700">Office</span>
+          <input name="office" type="text" required class="mt-1 block w-full p-2 border rounded" />
+        </label>
+        <label class="block">
+          <span class="text-gray-700">Location</span>
+          <input name="location" type="text" required class="mt-1 block w-full p-2 border rounded" />
+        </label>
+        <input type="hidden" name="key" />
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
+          Submit Candidate Details
+        </button>
+      </form>
+    </div>
 
-  <div id="result" class="hidden border border-gray-200 rounded-md p-4 mt-4 text-sm"></div>
-</div>
+  </div>
 
-<script>
-  const uploadForm = document.getElementById('uploadForm');
-  const resultDiv   = document.getElementById('result');
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Detect local vs. production
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    const API_BASE = isLocal ? 'http://127.0.0.1:8787' : '';
 
-  uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fileInput = uploadForm.querySelector('input[type="file"]');
-    const file = fileInput.files[0];
-    if (!file) return alert("Please upload a PDF file.");
+    const step1       = document.getElementById('step1');
+    const step2       = document.getElementById('step2');
+    const uploadForm  = document.getElementById('uploadForm');
+    const confirmForm = document.getElementById('confirmForm');
 
-    const formData = new FormData();
-    formData.append("file", file);
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = uploadForm.file.files[0];
+      if (!file) return alert('Please select a PDF.');
 
-    resultDiv.classList.remove("hidden");
-    resultDiv.innerHTML = `<p class="text-gray-600">Processing your submission...</p>`;
+      const formData = new FormData();
+      formData.append('file', file);
 
-    try {
-      const res = await fetch("/api/candidates/upload", {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-
-      if (!data.success) {
-        resultDiv.innerHTML = `<p class="text-red-600 font-semibold">Error: ${data.error || 'Unknown issue'}</p>`;
-        return;
+      let data;
+      try {
+        const res = await fetch(`${API_BASE}/api/candidates/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        data = await res.json();
+      } catch (err) {
+        return alert('Upload error: ' + err.message);
       }
 
-      // Parsed values (may be empty)
-      const parsed = data.parsed || {};
-      // Show confirmation form
-      resultDiv.innerHTML = `
-        <p class="font-semibold text-green-600">Success! Your PDF was uploaded.</p>
-        <form id="confirmForm" class="space-y-4 mt-4">
-          <label class="block">
-            <span class="text-gray-700 font-medium">Name</span>
-            <input name="name" type="text" value="${parsed.name || ''}" required
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
-          </label>
-          <label class="block">
-            <span class="text-gray-700 font-medium">Office</span>
-            <input name="office" type="text" value="${parsed.office || ''}" required
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
-          </label>
-          <label class="block">
-            <span class="text-gray-700 font-medium">Location</span>
-            <input name="location" type="text" value="${parsed.location || ''}" required
-                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
-          </label>
-          <p>
-            <a href="${data.pdf_url}" target="_blank"
-               class="text-blue-600 underline">View Original PDF</a>
-          </p>
-          <button type="submit"
-                  class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition">
-            Submit Candidate Details
-          </button>
-        </form>
-      `;
+      if (!data.success) {
+        return alert(data.error || 'Upload error');
+      }
 
-      const confirmForm = document.getElementById('confirmForm');
-      confirmForm.addEventListener('submit', async (e2) => {
-        e2.preventDefault();
-        const name     = confirmForm.querySelector('[name="name"]').value.trim();
-        const office   = confirmForm.querySelector('[name="office"]').value.trim();
-        const location = confirmForm.querySelector('[name="location"]').value.trim();
+      // Pre-fill confirm form
+      confirmForm.name.value     = data.parsed?.name     || '';
+      confirmForm.office.value   = data.parsed?.office   || '';
+      confirmForm.location.value = data.parsed?.location || '';
+      confirmForm.key.value      = data.key || data.pdf_key;
 
-        if (!name || !office || !location) {
-          return alert("Please fill in all fields.");
-        }
+      // Show step 2
+      step1.classList.add('hidden');
+      step2.classList.remove('hidden');
+    });
 
-        // Send to confirm endpoint
-        const payload = {
-          key: data.key || data.pdf_key,
-          name, office, location
-        };
+    confirmForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        key:      confirmForm.key.value,
+        name:     confirmForm.name.value.trim(),
+        office:   confirmForm.office.value.trim(),
+        location: confirmForm.location.value.trim()
+      };
 
-        try {
-          const resp = await fetch("/api/candidates/confirm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-          const result = await resp.json();
-          if (result.success) {
-            resultDiv.innerHTML = `<p class="font-semibold text-green-600">Your candidacy details have been recorded. Thank you!</p>`;
-          } else {
-            resultDiv.innerHTML += `<p class="text-red-600 font-semibold">Error: ${result.error}</p>`;
-          }
-        } catch (err) {
-          resultDiv.innerHTML += `<p class="text-red-600 font-semibold">Submission failed. Please try again.</p>`;
-        }
-      });
-    } catch (err) {
-      resultDiv.innerHTML = `<p class="text-red-600 font-semibold">Upload failed. Please try again.</p>`;
-    }
+      let json;
+      try {
+        const res = await fetch(`${API_BASE}/api/candidates/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        json = await res.json();
+      } catch (err) {
+        return alert('Submission error: ' + err.message);
+      }
+
+      if (json.success) {
+        step2.innerHTML = '<p class="text-green-600 font-semibold">Thank you! Your candidacy details have been recorded.</p>';
+      } else {
+        alert(json.error || 'Submission error');
+      }
+    });
   });
 </script>
 {{ end }}
