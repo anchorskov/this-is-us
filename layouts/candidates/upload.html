@@ -1,3 +1,4 @@
+<!-- layouts/candidates/upload.html -->
 {{ define "main" }}
 <div class="max-w-xl w-full bg-white rounded-2xl shadow p-6 space-y-6 mx-auto mt-8">
   <h1 class="text-2xl font-bold text-center text-gray-800">Submit Your Candidacy</h1>
@@ -14,7 +15,7 @@
 
     <button type="submit"
             class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
-      Submit PDF
+      Upload &amp; Parse PDF
     </button>
   </form>
 
@@ -22,44 +23,99 @@
 </div>
 
 <script>
-  const form = document.getElementById('uploadForm');
-  const resultDiv = document.getElementById('result');
+  const uploadForm = document.getElementById('uploadForm');
+  const resultDiv   = document.getElementById('result');
 
-  form.addEventListener('submit', async (e) => {
+  uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fileInput = form.querySelector('input[type="file"]');
+    const fileInput = uploadForm.querySelector('input[type="file"]');
     const file = fileInput.files[0];
     if (!file) return alert("Please upload a PDF file.");
 
     const formData = new FormData();
     formData.append("file", file);
 
-    resultDiv.classList.add("hidden");
-    resultDiv.innerHTML = "Processing your submission...";
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = `<p class="text-gray-600">Processing your submission...</p>`;
 
     try {
-      const upload = await fetch("/api/candidates/upload", {
+      const res = await fetch("/api/candidates/upload", {
         method: "POST",
         body: formData
       });
+      const data = await res.json();
 
-      const response = await upload.json();
-      resultDiv.classList.remove("hidden");
-
-      if (response.success) {
-        const c = response.candidate || {};
-        resultDiv.innerHTML = `
-          <p class="font-semibold text-green-600">Success! Your submission was received.</p>
-          <p><strong>Name:</strong> ${c.name || '—'}</p>
-          <p><strong>Office:</strong> ${c.office || '—'}</p>
-          <p><strong>Location:</strong> ${c.location || '—'}</p>
-          <p><a class="text-blue-600 underline" href="${response.pdf_url}" target="_blank">View Original PDF</a></p>
-        `;
-      } else {
-        resultDiv.innerHTML = `<p class="text-red-600 font-semibold">Error: ${response.error || 'Unknown issue'}</p>`;
+      if (!data.success) {
+        resultDiv.innerHTML = `<p class="text-red-600 font-semibold">Error: ${data.error || 'Unknown issue'}</p>`;
+        return;
       }
+
+      // Parsed values (may be empty)
+      const parsed = data.parsed || {};
+      // Show confirmation form
+      resultDiv.innerHTML = `
+        <p class="font-semibold text-green-600">Success! Your PDF was uploaded.</p>
+        <form id="confirmForm" class="space-y-4 mt-4">
+          <label class="block">
+            <span class="text-gray-700 font-medium">Name</span>
+            <input name="name" type="text" value="${parsed.name || ''}" required
+                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+          </label>
+          <label class="block">
+            <span class="text-gray-700 font-medium">Office</span>
+            <input name="office" type="text" value="${parsed.office || ''}" required
+                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+          </label>
+          <label class="block">
+            <span class="text-gray-700 font-medium">Location</span>
+            <input name="location" type="text" value="${parsed.location || ''}" required
+                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" />
+          </label>
+          <p>
+            <a href="${data.pdf_url}" target="_blank"
+               class="text-blue-600 underline">View Original PDF</a>
+          </p>
+          <button type="submit"
+                  class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition">
+            Submit Candidate Details
+          </button>
+        </form>
+      `;
+
+      const confirmForm = document.getElementById('confirmForm');
+      confirmForm.addEventListener('submit', async (e2) => {
+        e2.preventDefault();
+        const name     = confirmForm.querySelector('[name="name"]').value.trim();
+        const office   = confirmForm.querySelector('[name="office"]').value.trim();
+        const location = confirmForm.querySelector('[name="location"]').value.trim();
+
+        if (!name || !office || !location) {
+          return alert("Please fill in all fields.");
+        }
+
+        // Send to confirm endpoint
+        const payload = {
+          key: data.key || data.pdf_key,
+          name, office, location
+        };
+
+        try {
+          const resp = await fetch("/api/candidates/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const result = await resp.json();
+          if (result.success) {
+            resultDiv.innerHTML = `<p class="font-semibold text-green-600">Your candidacy details have been recorded. Thank you!</p>`;
+          } else {
+            resultDiv.innerHTML += `<p class="text-red-600 font-semibold">Error: ${result.error}</p>`;
+          }
+        } catch (err) {
+          resultDiv.innerHTML += `<p class="text-red-600 font-semibold">Submission failed. Please try again.</p>`;
+        }
+      });
     } catch (err) {
-      resultDiv.classList.remove("hidden");
       resultDiv.innerHTML = `<p class="text-red-600 font-semibold">Upload failed. Please try again.</p>`;
     }
   });
