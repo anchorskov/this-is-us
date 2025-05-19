@@ -96,10 +96,10 @@
       }
 
       // Pre-fill confirm form
-      confirmForm.name.value     = data.parsed?.name     || '';
-      confirmForm.office.value   = data.parsed?.office   || '';
-      confirmForm.location.value = data.parsed?.location || '';
-      confirmForm.key.value      = data.key || data.pdf_key;
+      confirmForm.elements.name.value     = data.parsed?.name     || '';
+      confirmForm.elements.office.value   = data.parsed?.office   || '';
+      confirmForm.elements.location.value = data.parsed?.location || '';
+      confirmForm.elements.key.value      = data.key || data.pdf_key;
 
       // Show step 2
       step1.classList.add('hidden');
@@ -109,10 +109,10 @@
     confirmForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
-        key:      confirmForm.key.value,
-        name:     confirmForm.name.value.trim(),
-        office:   confirmForm.office.value.trim(),
-        location: confirmForm.location.value.trim()
+        key:      confirmForm.elements.key.value,
+        name:     confirmForm.elements.name.value.trim(),
+        office:   confirmForm.elements.office.value.trim(),
+        location: confirmForm.elements.location.value.trim()
       };
 
       let json;
@@ -135,4 +135,5 @@
     });
   });
 </script>
+
 {{ end }}
