@@ -1,6 +1,14 @@
+# File: mcp/wrangler.toml
+
 name = "mcp-server"
 main = "src/index.mjs"
 compatibility_date = "2025-05-05"
+
+zone_id         = "b298c4645feb8f945eb1a0950eb24323"
+routes          = [
+  "this-is-us.org/api/candidates/*",
+  "this-is-us.org/api/files/*"
+]
 
 [ai]
 binding = "AI"
@@ -15,4 +23,3 @@ preview_database_id  = "1624450c-f228-4802-8a76-9c65f29295fa"
 binding             = "CANDIDATE_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
-local_dir           = "./local‑pdfs"
