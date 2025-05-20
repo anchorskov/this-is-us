@@ -14,10 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   firebase.auth().onAuthStateChanged((user) => {
+    const container = document.getElementById('event-form');
+    if (!container) return;
+
     if (user) {
+      // Show the form: remove hidden, add flex-layout classes
+      container.classList.remove('hidden');
+      container.classList.add('flex', 'items-center', 'justify-center');
+      console.log('🟢 User authenticated — showing form (hidden=false, flex added)');
       renderForm({ uid: user.uid });
     } else {
-      console.warn('User not authenticated; event form will not render.');
+      // Hide the form: add hidden, remove flex-layout classes
+      container.classList.add('hidden');
+      container.classList.remove('flex', 'items-center', 'justify-center');
+      console.log('🔒 User not authenticated — hiding form (hidden=true)');
     }
   });
 });

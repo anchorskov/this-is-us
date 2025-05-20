@@ -1,41 +1,35 @@
 <!DOCTYPE html>
 <html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
 <head>
-  {{- partial "head.html" . }}
-  {{- partial "extend_head.html" . }}
-
-  <!-- 1) Initialize Firebase & UI as early as possible -->
+  {{ partial "head.html" . }}
   {{ partial "firebase-init.html" . }}
 </head>
 
-<body class="
-  {{- if (or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`)) -}}
-    list
-  {{- end -}}
-  {{- if eq site.Params.defaultTheme `dark` -}}
-    dark
-  {{- end -}}
-" id="top">
-
-  <!-- 2) Site header -->
+<body
+  id="top"
+  class="
+    {{- if (or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`)) -}}list{{- end -}}
+    {{- if eq site.Params.defaultTheme `dark` -}} dark{{- end -}}
+  "
+>
+  <!-- Header -->
   {{ partialCached "header.html" . .Page }}
 
-  <!-- 3) Floating Login/Logout button -->
+  <!-- Floating Auth Button -->
   {{ partial "floating-auth.html" . }}
 
-  <!-- 4) Page content -->
+  <!-- Page Content -->
   <main class="main">
     {{ block "main" . }}{{ end }}
   </main>
 
-  <!-- 5) Footer -->
+  <!-- Footer -->
   {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
 
-  <!-- 6) Site-wide scripts -->
+  <!-- Site-wide scripts -->
   {{ partial "site-scripts.html" . }}
 
-  <!-- 7) Page-specific scripts (now enabled!) -->
+  <!-- Page-specific scripts -->
   {{ block "scripts" . }}{{ end }}
-
 </body>
 </html>

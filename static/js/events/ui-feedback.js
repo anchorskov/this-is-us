@@ -1,5 +1,3 @@
-// static/js/events/ui-feedback.js
-
 // ——————————————————————————————————————————
 // Simple DOM selector
 // ——————————————————————————————————————————
@@ -36,7 +34,9 @@ export function showToast(message, type = 'info', duration = 4000) {
   const toast = document.createElement('div');
   toast.className = `px-4 py-2 rounded shadow-lg bg-white border-l-4 border-${
     type === 'error' ? 'red-500' : type === 'success' ? 'green-500' : 'blue-500'
-  } text-${type === 'error' ? 'red-700' : type === 'success' ? 'green-700' : 'blue-700'}`;
+  } text-${
+    type === 'error' ? 'red-700' : type === 'success' ? 'green-700' : 'blue-700'
+  }`;
   toast.textContent = message;
   container.appendChild(toast);
 
@@ -131,23 +131,29 @@ export function showSuccessModal(onView) {
   const modal = document.getElementById('successModal');
   if (!modal) return;
 
+  // Remove Tailwind's hidden class and update ARIA
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
+  modal.style.display = 'flex';
 
+  // Wire up the buttons
   const viewBtn = document.getElementById('viewEventBtn');
   const okBtn   = document.getElementById('okEventBtn');
 
   if (viewBtn) {
     viewBtn.onclick = () => {
       onView();
+      // Hide again
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
+      modal.style.display = 'none';
     };
   }
   if (okBtn) {
     okBtn.onclick = () => {
       modal.classList.add('hidden');
       modal.setAttribute('aria-hidden', 'true');
+      modal.style.display = 'none';
     };
   }
 }
