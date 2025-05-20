@@ -82,3 +82,7 @@ This platform is built for collective action.
 > *“The future belongs to those who show up for it—with clarity, with courage, and with each other.”*
 
 *This Is Us. Built on integrity. Powered by character.*
+---
+
+**🧠 Try the Six Second Sandbox**  
+[Explore →](/sandbox/)
