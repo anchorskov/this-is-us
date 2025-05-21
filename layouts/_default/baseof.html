@@ -2,8 +2,13 @@
 <html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
 <head>
   {{ partial "head.html" . }}
+
+  {{/* for pages that define a "header" block (like interactive.html) */}}
+  {{ block "header" . }}{{ end }}
+
   {{ partial "firebase-init.html" . }}
 </head>
+
 
 <body
   id="top"
