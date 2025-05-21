@@ -9,6 +9,7 @@ import handleCandidateFile from "./routes/candidate-file.js";
 import handleCandidateConfirm from "./routes/candidate-confirm.js";
 import insertParsedCandidate from "../tools/insertParsedCandidate.js";
 import processCandidateUpload from "../tools/processCandidateUpload.js";
+import listWarriors from "../tools/warrior.mjs";
 
 const tools = {
   listCandidates,
@@ -51,6 +52,14 @@ export default {
     else if (pathname === "/api/candidates/confirm" && request.method === "POST") {
       response = await handleCandidateConfirm(request, env);
     }
+    // List warriors by location
+    else if (pathname === "/api/warriors" && request.method === "GET") {
+      const location = url.searchParams.get("location") || "";
+      const data = await listWarriors({ location }, env);
+      response = new Response(JSON.stringify(data), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
     // Block non-POST requests from falling through to tools
     else if (request.method !== "POST") {
       response = new Response("Method Not Allowed", { status: 405 });
@@ -72,14 +81,17 @@ export default {
         }
       } catch (err) {
         console.error("❌ Error in tool dispatch:", err);
-        response = new Response(JSON.stringify({
-          error: "Failed to execute tool",
-          message: err.message,
-          stack: err.stack
-        }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" }
-        });
+        response = new Response(
+          JSON.stringify({
+            error: "Failed to execute tool",
+            message: err.message,
+            stack: err.stack
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
       }
     }
 

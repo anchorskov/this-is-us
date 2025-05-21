@@ -1,0 +1,114 @@
+{{ define "main" }}
+
+  <!-- ⚔️ Our Warriors Section -->
+  <section
+    id="warriors"
+    class="max-w-5xl mx-auto p-6 bg-blue-50 rounded-lg shadow mb-12"
+    x-data="candidateList()"
+    x-init="init()"
+    x-cloak
+  >
+    <h1 class="text-3xl font-bold mb-6 text-blue-800">⚔️ Our Warriors</h1>
+
+    <!-- Location Filter -->
+    <label class="block mb-4">
+      <span class="font-semibold text-blue-700">Filter by Location</span>
+      <input
+        x-model="filter"
+        @input.debounce.500ms="fetch()"
+        @keyup.enter="fetch()"
+        type="text"
+        class="mt-1 p-2 border rounded w-full"
+        placeholder="e.g. Albany, WY"
+      />
+    </label>
+
+    <!-- Loading & Error -->
+    <div x-show="loading" class="text-center text-blue-600 mb-4">
+      Loading warriors…
+    </div>
+    <div x-show="error" class="text-center text-red-600 mb-4" x-text="error"></div>
+
+    <!-- Grid of Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template x-for="warrior in warriors" :key="warrior.id">
+        <div class="bg-white border rounded-lg shadow p-4 flex flex-col">
+          <h2 class="text-xl font-semibold mb-1" x-text="warrior.name"></h2>
+          <p class="text-gray-700 mb-1" x-text="warrior.office"></p>
+          <p class="text-sm text-gray-500 mb-4" x-text="warrior.location"></p>
+          <a
+            :href="warrior.pdf_url"
+            target="_blank"
+            class="mt-auto text-blue-600 hover:underline"
+          >View Profile →</a>
+        </div>
+      </template>
+
+      <p
+        x-show="!warriors.length && !loading && !error"
+        class="col-span-full text-gray-500"
+      >
+        No warriors found for “<span x-text="filter"></span>”.
+      </p>
+    </div>
+  </section>
+
+  <hr class="border-gray-300 my-12" />
+
+  <!-- 📥 Submit Your Candidacy Section -->
+  <section
+    id="submit-candidacy"
+    class="max-w-5xl mx-auto p-6 bg-green-50 rounded-lg shadow mb-12"
+  >
+    <div class="text-center">
+      <p class="text-2xl font-semibold text-green-800 mb-4">
+        📥 Submit Your Candidacy
+      </p>
+      <p class="text-gray-700 mb-6">
+        If you’d like to join our Warriors, click the button below to upload your PDF profile.
+      </p>
+      <a
+        href="/candidates/upload/"
+        class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+      >
+        Upload Your Profile
+      </a>
+    </div>
+  </section>
+
+{{ end }}
+
+{{ define "scripts" }}
+<script>
+function candidateList() {
+  return {
+    filter: '',
+    warriors: [],
+    loading: false,
+    error: '',
+
+    async fetch() {
+      this.loading = true;
+      this.error = '';
+
+      try {
+        const loc  = encodeURIComponent(this.filter.trim());
+        const base = window.EVENTS_API_URL || '';
+        const res  = await fetch(`${base}/warriors?location=${loc}`);
+        if (!res.ok) throw new Error(res.statusText);
+        this.warriors = await res.json();
+      } catch (e) {
+        this.error = 'Failed to load warriors.';
+        console.error(e);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    init() {
+      this.fetch();
+    }
+  }
+}
+</script>
+{{ end }}
