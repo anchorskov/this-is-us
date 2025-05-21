@@ -1,7 +1,7 @@
 // mcp/src/tools/warrior.mjs
 export default async function listWarriors({ location }, env) {
   // Use D1 to fetch by location (case-insensitive partial match)
-  const { results } = await env.EVENTS_DB.prepare(`
+  const { results } = await env.CANDIDATES_DB.prepare(`
     SELECT id, name, office, location, pdf_url, pdf_key
     FROM candidates
     WHERE LOWER(location) LIKE ?
