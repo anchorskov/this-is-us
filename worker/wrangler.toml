@@ -1,18 +1,34 @@
+# File: worker/wrangler.toml
+
 name               = "this-is-us-events"
 main               = "src/index.mjs"
 compatibility_date = "2025-05-05"
+account_id         = "8bfd3f60fbdcc89183e9e312fb03e86e"
 
-[[d1_databases]]
+[env.production]
+zone_id = "b298c4645feb8f945eb1a0950eb24323"
+routes  = [
+  # Catch both /api/events and /api/events/...
+  "this-is-us.org/api/events*",
+  # Catch both /api/events/pdf and /api/events/pdf/...
+  "this-is-us.org/api/events/pdf*",
+  "this-is-us.org/api/_debug/schema",
+  "this-is-us.org/api/sandbox/analyze"
+]
+
+# D1 Database binding for events
+[[env.production.d1_databases]]
 binding              = "EVENTS_DB"
 database_name        = "events_db"
 database_id          = "b5814930-2779-4bfb-8052-24ee419e09fd"
 preview_database_id  = "1624450c-f228-4802-8a76-9c65f29295fa"
 
-[[r2_buckets]]
+# R2 bucket binding for event PDFs
+[[env.production.r2_buckets]]
 binding             = "EVENT_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
-local_dir           = "./local‑pdfs"
 
-[triggers]
+# Scheduled cleanup trigger
+[env.production.triggers]
 crons = ["0 1 * * *"]
