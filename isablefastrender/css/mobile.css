@@ -1,0 +1,32 @@
+/* ──────────────────────────────────────────────────────────────────────────────
+   mobile.css — Mobile nav override
+   ────────────────────────────────────────────────────────────────────────────── */
+
+/* Hide the nav by default */
+nav.menu {
+  display: none;
+  background-color: #222;
+  flex-direction: column;
+  align-items: center;
+  padding: 1em;
+  position: relative;
+  z-index: 999;
+}
+
+/* Show when toggled on */
+nav.menu.visible {
+  display: flex !important;
+}
+
+/* Link styling */
+nav.menu a {
+  color: #fff;
+  text-decoration: none;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+nav.menu a:hover {
+  background-color: #444;
+}

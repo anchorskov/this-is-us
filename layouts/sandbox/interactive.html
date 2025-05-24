@@ -1,113 +1,174 @@
 {{/* layouts/sandbox/interactive.html */}}
 
 {{ define "main" }}
-<div x-data="sandboxFlow()" x-cloak class="max-w-2xl mx-auto p-6">
+<div
+  x-data="sandboxFlow()"
+  x-cloak
+  class="max-w-2xl mx-auto p-6"
+>
   <h1 class="text-3xl font-bold mb-6">🧠 Six Second Interactive Sandbox</h1>
 
   <!-- Stage 0 -->
-  <div x-show="stage === 0">
-    <label class="block font-semibold mb-2">📥 Paste your meme, message, or post:</label>
-    <textarea x-model="input" class="w-full h-32 p-4 border rounded mb-4" placeholder="Paste content…"></textarea>
-    <button @click="nextStage()" :disabled="!input.trim()" class="bg-blue-600 text-white px-4 py-2 rounded">
-      ✨ Start Reflection →
-    </button>
-  </div>
-
-  <!-- Questions 1–5 -->
-  <div x-show="stage > 0 && stage <= questions.length" class="mt-6">
-    <h2 class="font-semibold text-lg mb-2">
-      📝 Step <span x-text="stage"></span> of <span x-text="questions.length"></span>
-    </h2>
-    <p class="mb-4" x-text="questions[stage - 1].prompt"></p>
-    <textarea
-      x-model="answers[stage - 1]"
-      class="w-full h-28 p-4 border rounded mb-4"
-      placeholder="Your reflection…"
-    ></textarea>
-    <div class="flex justify-between">
-      <button @click="prevStage()" class="text-gray-500">← Back</button>
-      <button @click="nextStage()" :disabled="!answers[stage - 1].trim()" class="bg-blue-600 text-white px-4 py-2 rounded">
-        Next →
+  <template x-if="stage === 0">
+    <div>
+      <label class="block mb-2 font-semibold">
+        📥 Paste your meme, message, or post:
+      </label>
+      <textarea
+        x-model="input"
+        class="w-full h-32 p-4 border rounded mb-4"
+        placeholder="Paste content here…"
+      ></textarea>
+      <button
+        @click="nextStage()"
+        :disabled="!input.trim()"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        ✨ Start Reflection →
       </button>
     </div>
-  </div>
+  </template>
+
+  <!-- Questions 1–5 -->
+  <template x-if="stage > 0 && stage <= questions.length">
+    <div class="mt-6">
+      <h2 class="font-semibold text-lg mb-2">
+        📝 Step <span x-text="stage"></span> of <span x-text="questions.length"></span>
+      </h2>
+      <p class="mb-4" x-text="questions[stage - 1].prompt"></p>
+      <textarea
+        x-model="answers[stage - 1]"
+        class="w-full h-28 p-4 border rounded mb-4"
+        placeholder="Your reflection…"
+      ></textarea>
+      <div class="flex justify-between">
+        <button @click="prevStage()" class="text-gray-500">← Back</button>
+        <button
+          @click="nextStage()"
+          :disabled="!answers[stage - 1].trim()"
+          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  </template>
 
   <!-- AI Response -->
-  <div x-show="stage === questions.length + 1" class="mt-6">
-    <h2 class="text-xl font-bold mb-2">🔄 Generating Your Reflection…</h2>
-    <div x-show="loading" class="text-sm text-gray-500">🤖 Working with AI…</div>
-    <div x-show="error" class="text-red-500 mb-4" x-text="error"></div>
-    <div x-show="reflection" class="p-4 bg-blue-50 border rounded shadow space-y-4">
-      <h3 class="font-semibold text-blue-700">💡 Suggested Response:</h3>
-      <template x-for="line in reflection.split('\n\n')" :key="line">
-        <p class="text-blue-800" x-text="line"></p>
-      </template>
+  <template x-if="stage === questions.length + 1">
+    <div class="mt-6">
+      <h2 class="text-xl font-bold mb-2">🔄 Generating Your Reflection…</h2>
+      <div x-show="loading" class="text-sm text-gray-500">🤖 Working with AI…</div>
+      <div x-show="error" class="text-red-500 mb-4" x-text="error"></div>
+      <div
+        x-show="reflection"
+        class="space-y-4 p-4 bg-blue-50 border rounded shadow"
+      >
+        <h3 class="font-semibold text-blue-700">💡 Suggested Response:</h3>
+        <template x-for="line in reflection.split('\n\n')" :key="line">
+          <p class="text-blue-800" x-text="line"></p>
+        </template>
+      </div>
+      <button
+        @click="restart()"
+        class="mt-4 text-blue-600 hover:underline"
+      >🔁 Start over</button>
     </div>
-    <button @click="restart()" class="mt-4 text-blue-600 hover:underline">🔁 Start over</button>
-  </div>
+  </template>
 </div>
 {{ end }}
 
 {{ define "scripts" }}
-<script>
-  function sandboxFlow() {
-    return {
-      stage: 0,
-      input: '',
-      answers: ['', '', '', '', ''],
-      reflection: '',
-      loading: false,
-      error: '',
-      questions: [
-        { prompt: 'What emotions arise for you here?' },
-        { prompt: 'What is the message or claim in this statement?' },
-        { prompt: 'Who does this serve?' },
-        { prompt: 'What’s missing or needs clarification?' },
-        { prompt: 'What would you like to say in return?' }
-      ],
+  <!-- Sandbox-only API base URL -->
+  <script>
+    const host = window.location.hostname;
+    const port = window.location.port;
+    window.EVENTS_API_URL = (host === 'localhost' && port === '1313')
+      ? `${window.location.protocol}//${host}:8787/api`
+      : '/api';
+    console.log("🐛 Sandbox using EVENTS_API_URL →", window.EVENTS_API_URL);
+  </script>
 
-      nextStage() {
-        if (this.stage < this.questions.length) {
-          this.stage++;
-        } else {
-          this._generate();  // kick off the API call
-          this.stage++;
-        }
-      },
-      prevStage() { if (this.stage > 0) this.stage--; },
-      restart() {
-        this.stage = 0;
-        this.input = '';
-        this.answers = ['', '', '', '', ''];
-        this.reflection = '';
-        this.error = '';
-      },
+  <!-- Define sandboxFlow BEFORE Alpine loads -->
+  <script>
+    function sandboxFlow() {
+      return {
+        stage:      0,
+        input:      '',
+        answers:    ['', '', '', '', ''],
+        reflection: '',
+        loading:    false,
+        error:      '',
+        questions: [
+          { prompt: 'What emotions arise for you here?' },
+          { prompt: 'What is the message or claim in this statement?' },
+          { prompt: 'Who does this serve?' },
+          { prompt: 'What’s missing or needs clarification?' },
+          { prompt: 'What would you like to say in return?' }
+        ],
 
-      async _generate() {
-        this.loading = true;
-        this.error = '';
-        try {
+        nextStage() {
+          if (this.stage < this.questions.length) {
+            this.stage++;
+          } else {
+            // ➡️ All answers collected—dump them
+            console.log("✅ All answers collected:", this.answers);
+            this._generate();
+            this.stage++;
+          }
+        },
+
+        prevStage() {
+          if (this.stage > 0) this.stage--;
+        },
+
+        restart() {
+          this.stage      = 0;
+          this.input      = '';
+          this.answers    = ['', '', '', '', ''];
+          this.reflection = '';
+          this.error      = '';
+        },
+
+        async _generate() {
+          // ➡️ Prepare and log the AI payload
           const payload = {
-            prompt: this.input +
-              '\n\n' +
-              this.answers.map((a, i) => `Q${i+1}: ${a}`).join('\n')
+            prompt:
+              `${this.input}\n\nReflection:\n` +
+              this.answers.map((a, i) => `Q${i + 1}: ${a}`).join('\n')
           };
-          const base = window.EVENTS_API_URL || '';
-          const res  = await fetch(`${base}/sandbox/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-          const data = await res.json();
-          if (data.error) throw new Error(data.error);
-          this.reflection = data.message;
-        } catch (err) {
-          this.error = err.message || 'Something went wrong.';
-        } finally {
-          this.loading = false;
+          console.log("🔍 Sending to AI:", payload);
+
+          this.loading = true;
+          this.error   = '';
+          try {
+            const res = await fetch(`${window.EVENTS_API_URL}/sandbox/analyze`, {
+              method:  'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body:    JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error(res.statusText);
+
+            const data = await res.json();
+            // ➡️ Log whatever the AI sent back
+            console.log("💡 AI responded:", data.message);
+
+            if (data.error) throw new Error(data.error);
+            this.reflection = data.message;
+          } catch (err) {
+            console.error("❌ AI error:", err);
+            this.error = err.message || 'Something went wrong.';
+          } finally {
+            this.loading = false;
+          }
         }
-      }
+      };
     }
-  }
-</script>
+  </script>
+
+  <!-- Load Alpine synchronously so sandboxFlow() is available immediately -->
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <script>
+    console.log("✅ Alpine loaded (inline):", typeof Alpine !== "undefined");
+  </script>
 {{ end }}

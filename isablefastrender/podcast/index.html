@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Podcast | This is US</title>
+<meta name="keywords" content="">
+<meta name="description" content="This Is US Podcast
+Select below to visit This Is US/Jimmy Skovgard on Substack and listen to our latest episodes:
+
+  
+    
+      Visit This Is US on Substack
+    
+  ">
+<meta name="author" content="The Integrity Project">
+<link rel="canonical" href="http://localhost:1313/podcast/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.f49d66caae9ea0fd43f21f29e71a8d3e284517ed770f2aa86fa012953ad3c9ef.css" integrity="sha256-9J1myq6eoP1D8h8p5xqNPihFF&#43;13Dyqob6ASlTrTye8=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/podcast/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+
+
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<meta name="theme-color" content="#2e2e33">
+
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet/dist/leaflet.css"
+/>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css"
+/>
+
+
+
+<link rel="stylesheet" href="/css/custom.css">
+<link rel="stylesheet" href="/css/cr-event.css">
+
+
+<link
+  href="https://fonts.googleapis.com/icon?family=Material+Icons"
+  rel="stylesheet"
+/>
+
+
+<script
+  src="https://unpkg.com/leaflet/dist/leaflet.js"
+  defer
+></script>
+
+<script
+  src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
+  defer
+></script>
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+<script>
+  console.log("🔥 firebase-init partial loaded");
+</script>
+
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+
+<link
+  href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
+  rel="stylesheet"
+/>
+<script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
+
+
+<script src="/js/firebase-config.js"></script>
+<script src="/js/firebase-ui-config.js"></script>
+<script src="/js/firebase-auth.js"></script>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof firebase !== "undefined") {
+      firebase.auth().onAuthStateChanged((user) => {
+        window.currentUser = user || null;
+        if (user) {
+          console.log("🟢 firebase-init: Logged in as", user.email || user.phoneNumber);
+        } else {
+          console.log("🔴 firebase-init: No user signed in");
+        }
+      });
+    } else {
+      console.warn("⚠️ Firebase not loaded yet in firebase-init");
+    }
+  });
+</script>
+
+</head>
+
+
+<body
+  id="top"
+  class=""
+>
+  
+  
+    <script>
+      if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+      } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark');
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+      }
+    </script>
+
+<header class="header">
+  <nav class="nav">
+    <div class="logo">
+        <a href="http://localhost:1313/" accesskey="h" title="This is US (Alt + H)">This is US</a>
+
+      <div class="logo-switches">
+          <button id="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+            
+            <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+            
+            <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+      </div>
+    </div>
+    <ul id="menu">
+        <li>
+          <a href="http://localhost:1313/"
+             title="Home">
+            <span>Home
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/about/"
+             title="Our Why">
+            <span>Our Why
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/events/"
+             title="Events">
+            <span>Events
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/events/create/"
+             title="Create Event">
+            <span>Create Event
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/donate/"
+             title="Donate">
+            <span>Donate
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/volunteer/"
+             title="Volunteer">
+            <span>Volunteer
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/candidates/"
+             title="Candidates">
+            <span>Candidates
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/learn/"
+             title="Learn">
+            <span>Learn
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/podcast/"
+             title="Podcast">
+            <spanclass="active">Podcast
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="http://localhost:1313/contact/"
+             title="Contact">
+            <span>Contact
+            </span>
+          </a>
+        </li>
+    </ul>
+  </nav>
+</header>
+
+
+  
+  <div id="floating-auth" style="display:none; position:fixed; top:1rem; right:1rem; z-index:1000;">
+  <button id="auth-btn" class="auth-btn">...</button>
+</div>
+
+<script>
+  console.log("🔥 floating-auth partial script loaded");
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("floating-auth");
+    const btn = document.getElementById("auth-btn");
+
+    
+    if (!container || typeof firebase === "undefined" || !firebase.auth) {
+      console.warn("⚠️ Firebase not ready, skipping floating-auth");
+      return;
+    }
+
+    
+    const waitForAuth = () => {
+      if (!firebase.auth) return setTimeout(waitForAuth, 100);
+      firebase.auth().onAuthStateChanged(user => {
+        window.currentUser = user || null;
+
+        if (user) {
+          console.log("👤 Logged in:", user.email || user.phoneNumber);
+          btn.textContent = "Logout";
+          btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
+        } else {
+          console.log("🔒 Not signed in");
+          btn.textContent = "Login";
+          btn.onclick = () => {
+            const container = document.querySelector("#firebaseui-auth-container");
+            if (container && window.ui && window.uiConfig) {
+              console.log("▶️ Launching FirebaseUI login");
+              window.ui.start("#firebaseui-auth-container", window.uiConfig);
+            } else {
+              console.warn("⚠️ No FirebaseUI found → redirect fallback");
+              const redirectTo = encodeURIComponent(window.location.pathname);
+              location.href = `/events/create?redirect=${redirectTo}`;
+            }
+          };
+        }
+
+        setTimeout(() => {
+          container.style.display = "block";
+          console.log("🔲 floating-auth: shown");
+        }, 1000);
+      });
+    };
+
+    waitForAuth();
+  });
+</script>
+
+<style>
+  .auth-btn {
+    background: var(--tertiary, #1f2937);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+</style>
+
+
+  
+  <main class="main">
+    
+<article class="post-single">
+  <header>
+    <h1>Podcast</h1>
+  </header>
+  <section class="post-content">
+    <h2 id="thisisus-podcast">This Is US Podcast</h2>
+<p>Select below to visit This Is US/Jimmy Skovgard on Substack and listen to our latest episodes:</p>
+
+  <div style="text-align:center; margin:2em 0;">
+    <button
+      onclick="window.open('https://jimskovgard.substack.com/podcast', '_blank')"
+      style="
+        background-color: #FF6719;
+        color: white;
+        border: none;
+        padding: 1em 2em;
+        font-size: 1rem;
+        border-radius: 0.375em;
+        cursor: pointer;
+      "
+    >
+      Visit This Is US on Substack
+    </button>
+  </div>
+
+
+  </section>
+</article>
+
+  </main>
+
+  
+  
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a><footer style="margin-top: 2rem; padding: 1rem 0; font-size: 0.875rem; text-align: center; color: #666; border-top: 1px solid #ddd;">
+  <p>
+    &copy; 2025 This Is Us. Built on transparency. Powered by character.
+    |
+    <a href="/credits/" style="color: #666; text-decoration: underline;">Credits & Transparency</a>
+  </p>
+</footer>
+
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+
+
+  
+  
+<script>
+  (function () {
+    const host = window.location.hostname;
+    const port = window.location.port;
+
+    if (host === 'localhost' && port === '1313') {
+      window.EVENTS_API_URL = "https://this-is-us.org/api";
+      console.log("🐛 Dev override →", window.EVENTS_API_URL);
+    } else {
+      window.EVENTS_API_URL = "/api";
+      console.log("🌐 Using API →", window.EVENTS_API_URL);
+    }
+  })();
+</script>
+
+
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+  defer
+></script>
+
+
+  
+  
+</body>
+</html>

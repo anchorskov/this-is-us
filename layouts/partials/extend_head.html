@@ -56,8 +56,10 @@
   ></script>
 {{ end }}
 
-{{/* Sandbox & Candidates only: Alpine + cloak */}}
-{{ if or (eq .Layout "sandbox") (eq .Layout "interactive") (eq .Section "candidates") }}
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{{/* Sandbox & Candidates only: Alpine + x-cloak */}}
+{{ if or (eq .Section "sandbox") (eq .Section "candidates") }}
+  <!-- Alpine.js for interactivity -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+<script>console.log("✅ Alpine loaded:", typeof Alpine !== "undefined");</script>
   <style>[x-cloak] { display: none !important; }</style>
 {{ end }}
