@@ -19,8 +19,12 @@ export default async function handleCandidateUpload(request, env) {
   const pdf_url = `${origin}/api/files/${key}`;
 
   // Return both the raw key and the public URL
-  return new Response(
-    JSON.stringify({ success: true, key, pdf_url }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({
+    success: true,
+    key,
+    pdf_url,
+    parsed: {}  // You can replace this with real parsed data later
+  }), {
+      headers: { "Content-Type": "application/json" }
+  });
 }
