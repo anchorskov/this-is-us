@@ -38,11 +38,16 @@
           <p class="text-gray-700 mb-1" x-text="warrior.office"></p>
           <p class="text-sm text-gray-500 mb-4" x-text="warrior.location"></p>
 
-          <!-- View Profile link -->
+          <!-- View Profile link with failsafe -->
           <a
-            :href="warrior.pdf_url || `${window.EVENTS_API_URL}/events/pdf/${warrior.id}.pdf`"
-            target="_blank"
-            rel="noopener"
+            href="#"
+            @click.prevent="
+              if (!warrior.pdf_url) {
+                error = 'Profile not available for ' + warrior.name;
+              } else {
+                window.open(warrior.pdf_url, '_blank');
+              }
+            "
             class="mt-auto text-blue-600 hover:underline"
           >
             View Profile →
@@ -98,14 +103,20 @@ function candidateList() {
       this.error   = '';
 
       try {
-        const loc  = encodeURIComponent(this.filter.trim());
-        const base = window.EVENTS_API_URL || '';
-        const res  = await fetch(`${base}/warriors?location=${loc}`);
+        const loc        = encodeURIComponent(this.filter.trim());
+        const base       = window.EVENTS_API_URL || '';
+        const requestUrl = `${base}/warriors?location=${loc}`;
+        console.log('📡 Fetching warriors from:', requestUrl);
+
+        const res = await fetch(requestUrl);
         if (!res.ok) throw new Error(res.statusText);
-        this.warriors = await res.json();
+
+        const data = await res.json();
+        console.log('🔸 Warriors data received:', data);
+        this.warriors = data;
       } catch (e) {
         this.error = 'Failed to load warriors.';
-        console.error(e);
+        console.error('❌ Fetch error:', e);
       } finally {
         this.loading = false;
       }
