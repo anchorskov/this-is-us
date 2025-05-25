@@ -1,6 +1,6 @@
 {{/* layouts/candidates/list.html */}}
-{{ define "main" }}
 
+{{ define "main" }}
   <!-- ⚔️ Our Warriors Section -->
   <section
     id="warriors"
@@ -41,7 +41,7 @@
           <a
             href="#"
             @click.prevent="
-              if (!warrior.pdf_url || warrior.pdf_url === 'undefined') {
+              if (!warrior.pdf_url || warrior.pdf_url === 'undefined' || !warrior.pdf_url.includes('/api/files/')) {
                 alert('Profile not available for ' + warrior.name);
               } else {
                 window.open(warrior.pdf_url, '_blank');
@@ -85,7 +85,6 @@
       </a>
     </div>
   </section>
-
 {{ end }}
 
 {{ define "scripts" }}
@@ -99,12 +98,12 @@ function candidateList() {
 
     async fetch() {
       this.loading = true;
-      this.error   = '';
+      this.error = '';
 
       try {
-        const loc        = encodeURIComponent(this.filter.trim());
-        const base       = window.EVENTS_API_URL || '';
-        const requestUrl = `${base}/warriors?location=${loc}`;
+        const loc = encodeURIComponent(this.filter.trim());
+        const API_BASE = window.EVENTS_API_URL || '/api';
+        const requestUrl = `${API_BASE}/warriors?location=${loc}`;
         console.log('📡 Fetching warriors from:', requestUrl);
 
         const res = await fetch(requestUrl);
