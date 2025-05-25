@@ -1,8 +1,11 @@
 // mcp/src/routes/candidate-confirm.js
 export default async function handleCandidateConfirm(request, env) {
   try {
-    const { key: pdf_key, name, office, location } = await request.json();
+    // Parse and log incoming payload
+    const payload = await request.json();
     console.log("📨 Confirm payload:", payload);
+
+    const { key: pdf_key, name, office, location } = payload;
 
     // Validate
     if (!pdf_key || !name || !office || !location) {
@@ -12,19 +15,22 @@ export default async function handleCandidateConfirm(request, env) {
       );
     }
 
-    // Insert into D1 and get new record ID
+    // Compute the public URL for the PDF
+    const origin = new URL(request.url).origin;
+    const pdf_url = `${origin}/api/files/${pdf_key}`;
+
+    // Insert into D1 and retrieve new record ID
     const insert = await env.CANDIDATES_DB.prepare(
-      `INSERT INTO candidates (pdf_key, name, office, location)
-       VALUES (?, ?, ?, ?);`
+      `INSERT INTO candidates (pdf_key, pdf_url, name, office, location)
+       VALUES (?, ?, ?, ?, ?);`
     )
-    .bind(pdf_key, name, office, location)
+    .bind(pdf_key, pdf_url, name, office, location)
     .run();
 
-    // SQLite returns last inserted row ID via metadata
     const lastId = insert.lastInsertRowid || null;
 
     return new Response(
-      JSON.stringify({ success: true, id: lastId, pdf_key, name, office, location }),
+      JSON.stringify({ success: true, id: lastId, pdf_key, pdf_url, name, office, location }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
 
