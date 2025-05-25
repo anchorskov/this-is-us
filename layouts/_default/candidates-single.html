@@ -1,0 +1,28 @@
+{{/* layouts/_default/candidates-single.html */}}
+{{ define "main" }}
+
+<article class="prose max-w-5xl mx-auto p-6">
+  {{ .Content }}
+</article>
+
+<hr class="my-12" />
+
+<!-- Upload CTA -->
+<section class="max-w-5xl mx-auto p-6 bg-green-50 rounded-lg shadow text-center">
+  <p class="text-xl font-semibold text-green-800 mb-4">
+    📤 Ready to Step Forward?
+  </p>
+  <a
+    href="/candidates/upload/"
+    class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition"
+  >
+    Upload Your Profile
+  </a>
+</section>
+
+<hr class="my-12" />
+
+<!-- Warrior Directory -->
+{{ partial "candidates/warrior-directory.html" . }}
+
+{{ end }}

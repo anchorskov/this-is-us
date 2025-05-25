@@ -1,4 +1,4 @@
-# mcp/wrangler.toml
+# ./wrangler.toml
 
 name               = "mcp-server"
 main               = "src/index.mjs"
@@ -13,19 +13,17 @@ routes  = [
   "this-is-us.org/api/warriors*"
 ]
 
-# R2 bucket for PDFs
+# ✅ Move all bindings inside [env.production]
 [[env.production.r2_buckets]]
 binding             = "CANDIDATE_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
 
-# D1 database for candidates
 [[env.production.d1_databases]]
 binding              = "CANDIDATES_DB"
 database_name        = "events_db"
 database_id          = "b5814930-2779-4bfb-8052-24ee419e09fd"
 preview_database_id  = "1624450c-f228-4802-8a76-9c65f29295fa"
 
-# OpenAI binding
 [env.production.ai]
 binding = "AI"

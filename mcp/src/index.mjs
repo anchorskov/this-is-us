@@ -22,16 +22,18 @@ const tools = {
 
 export default {
   async fetch(request, env, ctx) {
-    // CORS headers for all responses
     const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": request.headers.get("Origin") || "*",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400"
     };
 
-    // Handle preflight
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
     }
 
     const url = new URL(request.url);
@@ -40,33 +42,22 @@ export default {
 
     console.log("🔍 PATH:", pathname, "METHOD:", request.method);
 
-    // Serve candidate PDF files
-    if (pathname.startsWith("/api/files/") && request.method === "GET") {
-      response = await handleCandidateFile(request, env);
-    }
-    // Upload a new candidate PDF (step 1)
-    else if (pathname === "/api/candidates/upload" && request.method === "POST") {
-      response = await handleCandidateUpload(request, env);
-    }
-    // Confirm candidate details (step 2)
-    else if (pathname === "/api/candidates/confirm" && request.method === "POST") {
-      response = await handleCandidateConfirm(request, env);
-    }
-    // List warriors by location
-    else if (pathname === "/api/warriors" && request.method === "GET") {
-      const location = url.searchParams.get("location") || "";
-      const data = await listWarriors({ location }, env);
-      response = new Response(JSON.stringify(data), {
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-    // Block non-POST requests from falling through to tools
-    else if (request.method !== "POST") {
-      response = new Response("Method Not Allowed", { status: 405 });
-    }
-    // Generic tool dispatch for other JSON-based tools
-    else {
-      try {
+    try {
+      if (pathname.startsWith("/api/files/") && request.method === "GET") {
+        response = await handleCandidateFile(request, env);
+      } else if (pathname === "/api/candidates/upload" && request.method === "POST") {
+        response = await handleCandidateUpload(request, env);
+      } else if (pathname === "/api/candidates/confirm" && request.method === "POST") {
+        response = await handleCandidateConfirm(request, env);
+      } else if (pathname === "/api/warriors" && request.method === "GET") {
+        const location = url.searchParams.get("location") || "";
+        const data = await listWarriors({ location }, env);
+        response = new Response(JSON.stringify(data), {
+          headers: { "Content-Type": "application/json" }
+        });
+      } else if (request.method !== "POST") {
+        response = new Response("Method Not Allowed", { status: 405 });
+      } else {
         const { tool, input } = await request.json();
         if (!tool || !tools[tool]) {
           response = new Response(JSON.stringify({ error: "Tool not found" }), {
@@ -79,27 +70,23 @@ export default {
             headers: { "Content-Type": "application/json" }
           });
         }
-      } catch (err) {
-        console.error("❌ Error in tool dispatch:", err);
-        response = new Response(
-          JSON.stringify({
-            error: "Failed to execute tool",
-            message: err.message,
-            stack: err.stack
-          }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json" }
-          }
-        );
       }
+    } catch (err) {
+      console.error("❌ Error during request:", err);
+      response = new Response(
+        JSON.stringify({ error: "Server error", message: err.message }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
     }
 
-    // Merge CORS headers into the final response
     const headers = new Headers(response.headers);
     for (const [key, value] of Object.entries(corsHeaders)) {
       headers.set(key, value);
     }
+
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
