@@ -2,6 +2,7 @@
 export default async function handleCandidateConfirm(request, env) {
   try {
     const { key: pdf_key, name, office, location } = await request.json();
+    console.log("📨 Confirm payload:", payload);
 
     // Validate
     if (!pdf_key || !name || !office || !location) {

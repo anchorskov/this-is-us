@@ -10,6 +10,7 @@ export default async function handleCandidateUpload(request, env) {
   }
 
   const key = `candidate-${crypto.randomUUID()}.pdf`;
+  console.log("🆕 Generated PDF key:", key);
   await env.CANDIDATE_PDFS.put(key, file.stream());
 
   const origin = new URL(request.url).origin;
