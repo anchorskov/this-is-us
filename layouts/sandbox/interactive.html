@@ -85,7 +85,7 @@
     const port = window.location.port;
     window.EVENTS_API_URL = (host === 'localhost' && port === '1313')
       ? `${window.location.protocol}//${host}:8787/api`
-      : '/api';
+      : '';
     console.log("🐛 Sandbox using EVENTS_API_URL →", window.EVENTS_API_URL);
   </script>
 
