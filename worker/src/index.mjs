@@ -1,6 +1,6 @@
 import { Router } from 'itty-router';
 const router = Router();
-import { handleSandboxRequest } from './routes/sandbox.js';
+import { handleSandboxAnalyze } from './routes/sandbox.js';
 
 // Serve PDF files via Worker to avoid cross-origin issues
 router.get('/api/events/pdf/:key', async (request, env) => {
@@ -157,7 +157,7 @@ router.post('/api/events/create', async (request, env) => {
   }
 });
 
-router.post('/api/sandbox/analyze', handleSandboxRequest)
+router.post('/api/sandbox/analyze', handleSandboxAnalyze)
 
 // Fallback for unmatched routes
 router.all('*', () => new Response('Not found', { status: 404 }));

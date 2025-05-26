@@ -1,6 +1,6 @@
 // worker/src/routes/sandbox.js
 
-export async function handleSandboxRequest(request, env) {
+export async function handleSandboxAnalyze(request, env) {
   const { prompt } = await request.json();
 
   const messages = [
