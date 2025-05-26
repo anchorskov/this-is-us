@@ -157,7 +157,7 @@ router.post('/api/events/create', async (request, env) => {
   }
 });
 
-router.post('/api/sandbox/analyze', handleSandboxAnalyze)
+router.post('/api/sandbox/analyze', handleSandboxAnalyze);
 
 // Fallback for unmatched routes
 router.all('*', () => new Response('Not found', { status: 404 }));
