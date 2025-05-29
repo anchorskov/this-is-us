@@ -88,7 +88,7 @@ buildFuture   = false
 
 [[menu.main]]
   identifier = "learn"
-  name       = "Learn"
+  name       = "Town Hall"
   url        = "/learn/"
   weight     = 8
 

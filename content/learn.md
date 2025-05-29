@@ -1,7 +1,7 @@
 ---
-title: "Learn"
+title: "Town Hall"
 ---
 
 ## Resources
 
-We curate guides, books, articles, and public talks focused on truth, civic courage, and resistance through compassion.
+Welcome to the Town Hall. This is a space for honest conversation, thoughtful questions, and shared stories. Please be respectful.
