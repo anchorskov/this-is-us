@@ -1,4 +1,6 @@
 <!-- layouts/partials/site-scripts.html -->
+
+<!-- 🌐 Set API Endpoint Dynamically -->
 <script>
   (function () {
     const host = window.location.hostname;
@@ -14,7 +16,6 @@
   })();
 </script>
 
-
 <!-- 🗺️ Leaflet CSS & JS (with integrity and defer) -->
 <link
   rel="stylesheet"
@@ -28,3 +29,11 @@
   crossorigin=""
   defer
 ></script>
+
+<!-- 🔐 Firebase Session Script (always loaded) -->
+<script src="/js/firebase-session.js" defer></script>
+
+<!-- 🔓 Firebase Login Script (only on login-required pages) -->
+{{ if or (eq .RelPermalink "/login/") (eq .RelPermalink "/events/create/") }}
+<script src="/js/firebase-login.js" defer></script>
+{{ end }}

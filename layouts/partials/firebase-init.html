@@ -6,22 +6,29 @@
 <!-- 1) Firebase core (v8-compatible UMD builds) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-<!-- 2) Firebase Auth (requires core to be present first) -->
+<!-- 2) Firebase Auth -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-<!-- 3) FirebaseUI styles & JS -->
+<!-- 3) Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- 4) FirebaseUI styles & logic -->
 <link
   href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
   rel="stylesheet"
 />
 <script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
 
-<!-- 4) Project configuration -->
+<!-- 5) Your Firebase project config and logic -->
 <script src="/js/firebase-config.js"></script>
 <script src="/js/firebase-ui-config.js"></script>
-<script src="/js/firebase-auth.js"></script>
+<script src="/js/firebase-login.js"></script>
+<script src="/js/firebase-session.js"></script>
 
-<!-- Optional early check -->
+<!-- 6) Optional: Auto logout after inactivity -->
+<script src="/js/firebase-idle-logout.js"></script>
+
+<!-- 7) Early status check -->
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     if (typeof firebase !== "undefined") {
