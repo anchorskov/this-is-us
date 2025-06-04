@@ -1,78 +1,89 @@
 {{/* layouts/sandbox/single.html */}}
 
 {{ define "main" }}
-  <!-- Root container: x-cloak hides until Alpine is ready -->
-  <div x-data="sandboxFlow()" x-cloak class="max-w-2xl mx-auto p-6">
-    
-    <!-- Stage 0: initial prompt -->
-    <div x-show="stage === 0" x-cloak>
-      <h1 class="text-3xl font-bold mb-4">🧠 Six Second Sandbox</h1>
-      <label class="block mb-2 font-semibold">📥 Drop your meme, message, or post:</label>
-      <textarea
-        x-model="input"
-        class="w-full h-32 p-4 border rounded mb-4"
-        placeholder="Paste the content here..."
-      ></textarea>
-      <button
-        @click="nextStage()"
-        :disabled="!input.trim()"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        ✨ Start Reflection →
-      </button>
-    </div>
+<div x-data="sandboxGate()" x-init="init()" x-cloak class="max-w-2xl mx-auto p-6">
 
-    <!-- Questions 1–5 -->
-    <div x-show="stage > 0 && stage <= questions.length" x-cloak>
-      <h2 class="font-semibold text-lg mb-2">
-        📝 Step <span x-text="stage"></span> of <span x-text="questions.length"></span>
-      </h2>
-      <p class="mb-4" x-text="questions[stage - 1].prompt"></p>
-      <textarea
-        x-model="answers[stage - 1]"
-        class="w-full h-28 p-4 border rounded mb-4"
-        placeholder="Your reflection..."
-      ></textarea>
-      <div class="flex justify-between">
-        <button @click="prevStage()" class="text-gray-500">← Back</button>
+  <!-- Not signed in -->
+  <template x-if="!user">
+    <div class="text-center text-red-600 mt-12">
+      🔒 Please <a href="/login" class="underline text-blue-600">sign in</a> to access the Sandbox.
+    </div>
+  </template>
+
+  <!-- Signed in -->
+  <template x-if="user">
+    <div>
+
+      <!-- Stage 0: initial prompt -->
+      <div x-show="stage === 0">
+        <h1 class="text-3xl font-bold mb-4">🧠 Six Second Sandbox</h1>
+        <label class="block mb-2 font-semibold">📥 Drop your meme, message, or post:</label>
+        <textarea
+          x-model="input"
+          class="w-full h-32 p-4 border rounded mb-4"
+          placeholder="Paste the content here..."
+        ></textarea>
         <button
           @click="nextStage()"
-          :disabled="!answers[stage - 1].trim()"
+          :disabled="!input.trim()"
           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Next →
+          ✨ Start Reflection →
         </button>
       </div>
-    </div>
 
-    <!-- Final AI response -->
-    <div x-show="stage === questions.length + 1" x-cloak>
-      <h2 class="text-xl font-bold mb-2">🔄 Generating Your Reflection...</h2>
-      <div x-show="loading" class="text-sm text-gray-500">🤖 Working with AI...</div>
-      <div x-show="error" class="text-red-500 mt-2" x-text="error"></div>
-      <div
-        x-show="reflection"
-        class="mt-4 p-4 bg-blue-50 border rounded shadow"
-      >
-        <h3 class="font-semibold mb-2">💡 Suggested Response:</h3>
-        <template x-for="line in reflection.split('\n\n')" :key="line">
-          <p class="text-blue-800" x-text="line"></p>
-        </template>
+      <!-- Questions 1–5 -->
+      <div x-show="stage > 0 && stage <= questions.length">
+        <h2 class="font-semibold text-lg mb-2">
+          📝 Step <span x-text="stage"></span> of <span x-text="questions.length"></span>
+        </h2>
+        <p class="mb-4" x-text="questions[stage - 1].prompt"></p>
+        <textarea
+          x-model="answers[stage - 1]"
+          class="w-full h-28 p-4 border rounded mb-4"
+          placeholder="Your reflection..."
+        ></textarea>
+        <div class="flex justify-between">
+          <button @click="prevStage()" class="text-gray-500">← Back</button>
+          <button
+            @click="nextStage()"
+            :disabled="!answers[stage - 1].trim()"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Next →
+          </button>
+        </div>
       </div>
-      <button
-        @click="restart()"
-        class="mt-4 text-sm text-blue-600 hover:underline"
-      >
-        🔁 Start over
-      </button>
+
+      <!-- Final AI response -->
+      <div x-show="stage === questions.length + 1">
+        <h2 class="text-xl font-bold mb-2">🔄 Generating Your Reflection...</h2>
+        <div x-show="loading" class="text-sm text-gray-500">🤖 Working with AI...</div>
+        <div x-show="error" class="text-red-500 mt-2" x-text="error"></div>
+        <div x-show="reflection" class="mt-4 p-4 bg-blue-50 border rounded shadow">
+          <h3 class="font-semibold mb-2">💡 Suggested Response:</h3>
+          <template x-for="line in reflection.split('\n\n')" :key="line">
+            <p class="text-blue-800" x-text="line"></p>
+          </template>
+        </div>
+        <button
+          @click="restart()"
+          class="mt-4 text-sm text-blue-600 hover:underline"
+        >
+          🔁 Start over
+        </button>
+      </div>
+
     </div>
-  </div>
+  </template>
+</div>
 {{ end }}
 
 {{ define "scripts" }}
 <script>
-  function sandboxFlow() {
+  function sandboxGate() {
     return {
+      user: null,
       stage: 0,
       input: '',
       answers: ['', '', '', '', ''],
@@ -87,10 +98,16 @@
         { prompt: 'What would you like to say in return?' }
       ],
 
+      init() {
+        firebase.auth().onAuthStateChanged(u => {
+          this.user = u;
+        });
+      },
+
       nextStage() {
         if (this.stage < this.questions.length) {
           this.stage++;
-        } else if (this.stage === this.questions.length) {
+        } else {
           this.generateReflection();
           this.stage++;
         }
@@ -112,16 +129,24 @@
         this.loading = true;
         this.error = '';
         try {
+          if (!this.user) throw new Error("You must be signed in to use the Sandbox.");
+
           const payload = {
             prompt: `${this.input}\n\nReflection:\n` +
-                    this.answers.map((a,i) => `Q${i+1}: ${a}`).join('\n')
+              this.answers.map((a, i) => `Q${i + 1}: ${a}`).join('\n'),
+            user: {
+              email: this.user.email,
+              uid: this.user.uid
+            }
           };
+
           const base = window.EVENTS_API_URL || '';
           const res = await fetch(`${base}/sandbox/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
+
           const data = await res.json();
           if (data.error) throw new Error(data.error);
           this.reflection = data.message;
@@ -131,7 +156,7 @@
           this.loading = false;
         }
       }
-    }
+    };
   }
 </script>
 {{ end }}

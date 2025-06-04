@@ -65,3 +65,7 @@ Thumbs.db
 
 # Bundled archives
 *.zip
+
+# Add to .gitignore
+isablefastrender/
+public/

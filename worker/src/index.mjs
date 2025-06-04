@@ -1,6 +1,11 @@
+// worker/src/index.mjs
+
 import { Router } from 'itty-router';
 const router = Router();
 import { handleSandboxAnalyze } from './routes/sandbox.js';
+import { handleCreateTownhallPost } from './townhall/createPost.js';
+import { handleListTownhallPosts } from './townhall/listPosts.js';
+import { handleDeleteTownhallPost } from './townhall/deletePost.js';
 
 // Serve PDF files via Worker to avoid cross-origin issues
 router.get('/api/events/pdf/:key', async (request, env) => {
@@ -158,6 +163,10 @@ router.post('/api/events/create', async (request, env) => {
 });
 
 router.post('/api/sandbox/analyze', handleSandboxAnalyze);
+// Create a new Town Hall post
+router.post('/api/townhall/create', handleCreateTownhallPost);
+router.get('/api/townhall/posts', handleListTownhallPosts);
+router.post('/api/townhall/delete', handleDeleteTownhallPost);
 
 // Fallback for unmatched routes
 router.all('*', () => new Response('Not found', { status: 404 }));

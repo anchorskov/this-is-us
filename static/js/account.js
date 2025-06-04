@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const joinedEl = document.getElementById("account-joined");
   const roleEl = document.getElementById("account-role");
   const newsletterEl = document.getElementById("account-newsletter");
+  const cityEl = document.getElementById("account-city");
+  const stateEl = document.getElementById("account-state");
 
   function showFeedback(msg, type = "success") {
     if (feedback) {
@@ -43,7 +45,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       displayName: user.displayName || "",
       joinedAt: new Date().toISOString().split("T")[0],
       role: "citizen",
-      newsletter: false
+      newsletter: false,
+      city: "",
+      state: ""
     };
 
     try {
@@ -57,14 +61,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Pre-fill form
     nameEl.value = profile.displayName;
     emailEl.textContent = user.email;
-    const date = new Date(profile.joinedAt);
-    joinedEl.textContent = date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+    joinedEl.textContent = new Date(profile.joinedAt).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
     roleEl.textContent = profile.role;
     newsletterEl.checked = profile.newsletter;
+    cityEl.value = profile.city || "";
+    stateEl.value = profile.state || "";
 
     // Save handler
     form.addEventListener("submit", async (e) => {
@@ -74,7 +79,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         displayName: nameEl.value.trim(),
         role: profile.role,
         newsletter: newsletterEl.checked,
-        joinedAt: profile.joinedAt
+        joinedAt: profile.joinedAt,
+        city: cityEl.value.trim(),
+        state: stateEl.value.trim()
       };
 
       try {

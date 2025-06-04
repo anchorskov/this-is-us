@@ -79,7 +79,6 @@
 {{ end }}
 
 {{ define "scripts" }}
-  <!-- Sandbox-only API base URL -->
   <script>
     const host = window.location.hostname;
     const port = window.location.port;
@@ -89,7 +88,6 @@
     console.log("🐛 Sandbox using EVENTS_API_URL →", window.EVENTS_API_URL);
   </script>
 
-  <!-- Define sandboxFlow BEFORE Alpine loads -->
   <script>
     function sandboxFlow() {
       return {
@@ -111,7 +109,6 @@
           if (this.stage < this.questions.length) {
             this.stage++;
           } else {
-            // ➡️ All answers collected—dump them
             console.log("✅ All answers collected:", this.answers);
             this._generate();
             this.stage++;
@@ -131,12 +128,22 @@
         },
 
         async _generate() {
-          // ➡️ Prepare and log the AI payload
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            this.error = "You must be signed in to use this feature.";
+            return;
+          }
+
           const payload = {
             prompt:
               `${this.input}\n\nReflection:\n` +
-              this.answers.map((a, i) => `Q${i + 1}: ${a}`).join('\n')
+              this.answers.map((a, i) => `Q${i + 1}: ${a}`).join('\n'),
+            user: {
+              email: user.email,
+              uid: user.uid
+            }
           };
+
           console.log("🔍 Sending to AI:", payload);
 
           this.loading = true;
@@ -147,10 +154,10 @@
               headers: { 'Content-Type': 'application/json' },
               body:    JSON.stringify(payload)
             });
+
             if (!res.ok) throw new Error(res.statusText);
 
             const data = await res.json();
-            // ➡️ Log whatever the AI sent back
             console.log("💡 AI responded:", data.message);
 
             if (data.error) throw new Error(data.error);
@@ -166,7 +173,6 @@
     }
   </script>
 
-  <!-- Load Alpine synchronously so sandboxFlow() is available immediately -->
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
   <script>
     console.log("✅ Alpine loaded (inline):", typeof Alpine !== "undefined");

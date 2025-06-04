@@ -21,7 +21,9 @@ if (typeof firebase === "undefined") {
           email: user.email || null,
           joinedAt: new Date().toISOString(),
           lastLogin: new Date().toISOString(),
-          role: "citizen"
+          role: "citizen",
+          city: "",      // ← Added for future editing
+          state: ""      // ← Added for future editing
         });
         console.log("✅ Firestore profile created.");
       } else {
@@ -33,7 +35,7 @@ if (typeof firebase === "undefined") {
     }
   });
 
-  // Optional logout button support
+  // 🔓 Optional logout button logic
   document.addEventListener("DOMContentLoaded", () => {
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {

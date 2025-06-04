@@ -1,34 +1,48 @@
 {{/* layouts/townhall/single.html */}}
+
 {{ define "main" }}
 <main class="max-w-3xl mx-auto px-4 py-10 space-y-10">
 
-  <!-- Welcome Header -->
+  <!-- 🏛️ Header -->
   <section class="text-center">
     <h1 class="text-4xl font-bold mb-2">🗣️ Town Hall</h1>
     <p class="text-lg text-gray-700">Speak your mind. Listen deeply. Reclaim the conversation.</p>
   </section>
 
-  <!-- Today's Prompt -->
+  <!-- 💬 Prompt -->
   <section class="bg-white shadow-md rounded-lg p-6 space-y-4">
-    <h2 class="text-xl font-semibold">💬 Today's Prompt:</h2>
-    <p class="text-gray-800 italic">“What does leadership mean to you?”</p>
+    <h2 id="townhall-prompt-header" class="text-xl font-semibold">Today's Prompt:</h2>
+    <p id="townhall-prompt" class="text-gray-800 italic">Loading prompt...</p>
 
-    <!-- Form -->
-    <form id="townhall-form" class="space-y-4">
+    <!-- ✍️ Response Form -->
+    <form id="townhall-form" class="space-y-4 hidden">
       <textarea id="response-input" rows="5" placeholder="Write your response..." class="w-full p-3 border border-gray-300 rounded-lg" required></textarea>
-      <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Submit Response</button>
+
+      <div class="flex items-center justify-between">
+        <label for="response-file" class="text-sm text-gray-500">PDF Upload (optional, max 2MB)</label>
+        <input type="file" id="response-file" name="file" accept="application/pdf" class="block text-sm text-gray-600" />
+      </div>
+
+      <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+        Submit Response
+      </button>
     </form>
+
+    <!-- 🛑 Login Notice -->
+    <div id="login-warning" class="text-red-600 text-sm hidden">Please log in to submit a response.</div>
   </section>
 
-  <!-- Responses -->
+  <!-- 📝 Response List -->
   <section>
-    <h2 class="text-xl font-semibold mb-4">📝 Recent Responses</h2>
+    <h2 class="text-xl font-semibold mb-4">Recent Responses</h2>
     <div id="response-list" class="space-y-4">
-      <!-- Responses will be inserted here via JavaScript -->
       <p class="text-gray-500 italic">No responses yet. Be the first to speak.</p>
     </div>
   </section>
 
 </main>
+
+<!-- 🔌 JS -->
 <script src="/js/townhall.js" defer></script>
 {{ end }}
+

@@ -82,10 +82,8 @@ This platform is built for collective action.
 > *“The future belongs to those who show up for it—with clarity, with courage, and with each other.”*
 
 *This Is Us. Built on integrity. Powered by character.*
+
 ---
-<!-- Six-Second Sandbox Promo Banner -->  
-<div class="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-md text-center my-8">  
-<h2 class="text-2xl font-bold text-blue-800">🧠 Six Second Sandbox</h2>  
-<p class="mt-2 text-gray-700">Pause, reflect, and reclaim your voice in seconds. Drop any meme, post, or claim—and let our interactive tool guide your critical thinking journey.</p>  
-   <a href="/sandbox/" class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">Try the Sandbox &rarr;</a>  
- </div>  
+
+<!-- Six-Second Sandbox Promo Banner -->
+{{< sandboxpromo >}}

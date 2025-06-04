@@ -1,7 +1,7 @@
 ---
 title: "Town Hall"
+url: "/townhall/"
+layout: "townhall"  # optional if you're using a custom layout
+weight: 8
 ---
-
-## Resources
-
-Welcome to the Town Hall. This is a space for honest conversation, thoughtful questions, and shared stories. Please be respectful.
+Welcome to our Town Hall — a place for community reflection, respectful conversation, and real connection.

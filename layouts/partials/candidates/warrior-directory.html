@@ -1,0 +1,85 @@
+{{/* layouts/partials/candidates/warrior-directory.html */}}
+
+<section
+  id="warriors"
+  class="max-w-5xl mx-auto p-6 bg-blue-50 rounded-lg shadow mb-12"
+  x-data="candidateList()"
+  x-init="init()"
+  x-cloak
+>
+  <h2 class="text-2xl font-bold text-blue-800 mb-6">⚔️ Our Warriors</h2>
+
+  <!-- Filter -->
+  <label class="block mb-4">
+    <span class="font-semibold text-blue-700">Filter by Location</span>
+    <input
+      x-model="filter"
+      @input.debounce.500ms="fetch()"
+      type="text"
+      class="mt-1 p-2 border rounded w-full"
+      placeholder="e.g. Casper, WY"
+    />
+  </label>
+
+  <!-- Loading/Error -->
+  <div x-show="loading" class="text-center text-blue-600 mb-4">Loading warriors…</div>
+  <div x-show="error" class="text-center text-red-600 mb-4" x-text="error"></div>
+
+  <!-- Results -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <template x-for="warrior in warriors" :key="warrior.id">
+      <div class="bg-white border rounded-lg shadow p-4 flex flex-col">
+        <h3 class="text-xl font-semibold mb-1" x-text="warrior.name"></h3>
+        <p class="text-gray-700 mb-1" x-text="warrior.office"></p>
+        <p class="text-sm text-gray-500 mb-4" x-text="warrior.location"></p>
+        <a
+          :href="warrior.pdf_url"
+          target="_blank"
+          class="mt-auto text-blue-600 hover:underline"
+        >View Profile →</a>
+      </div>
+    </template>
+
+    <p
+      x-show="!warriors.length && !loading && !error"
+      class="col-span-full text-gray-500"
+    >
+      No candidates found for “<span x-text="filter"></span>”.
+    </p>
+  </div>
+</section>
+
+<script>
+function candidateList() {
+  return {
+    filter: '',
+    warriors: [],
+    loading: false,
+    error: '',
+
+    async fetch() {
+      this.loading = true;
+      this.error = '';
+      try {
+        const loc = encodeURIComponent(this.filter.trim());
+        const base = window.EVENTS_API_URL || '';
+        const requestUrl = `${base}/warriors?location=${loc}`;
+        console.log("📡 Fetching warriors from:", requestUrl);
+        const res = await fetch(requestUrl);
+        if (!res.ok) throw new Error(res.statusText);
+        this.warriors = await res.json();
+        console.log("🔸 Warriors data received:", this.warriors);
+      } catch (e) {
+        console.error("❌ Failed to fetch warriors:", e);
+        this.error = 'Failed to load candidates.';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    init() {
+      this.fetch();
+    }
+  }
+}
+</script>
