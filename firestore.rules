@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 👤 User Profiles
+    match /users/{userId} {
+      // Full access to own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Optional: Throttle 'lastPostedAt' updates (1 minute delay)
+      allow update: if request.auth != null &&
+        request.auth.uid == userId &&
+        (
+          !request.resource.data.keys().hasAny(['lastPostedAt']) ||
+          request.resource.data.lastPostedAt > request.time - duration.value(1, 'm')
+        );
+    }
+
+    // 🗣️ Town Hall Posts (public-facing discussions)
+    match /townhall_posts/{postId} {
+      allow read: if true;
+
+      // Only verified users may post
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+
+      // Creator may edit
+      allow update: if request.auth != null &&
+        request.auth.uid == resource.data.createdBy;
+
+      // Creator, admin, or moderator may delete
+      allow delete: if request.auth != null &&
+        (
+          request.auth.uid == resource.data.createdBy ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']
+        );
+    }
+
+    // 💬 Town Hall Threads
+    match /townhall_threads/{threadId} {
+      // Authenticated users can read
+      allow read: if request.auth != null;
+
+      // Verified users can post new threads
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+
+      // Thread owner can update
+      allow update: if request.auth != null &&
+        request.auth.uid == resource.data.createdBy;
+
+      // Admin/moderator can delete
+      allow delete: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+
+      // 🔁 Nested Replies under threads
+      match /replies/{replyId} {
+        allow read: if true; // Public read allowed
+
+        allow create: if request.auth != null &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true &&
+          request.resource.data.uid == request.auth.uid;
+
+        allow update: if request.auth != null &&
+          request.auth.uid == resource.data.uid;
+
+        allow delete: if request.auth != null &&
+          (
+            request.auth.uid == resource.data.uid ||
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']
+          );
+      }
+    }
+
+    // 🔐 Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

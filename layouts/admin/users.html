@@ -1,0 +1,42 @@
+{{/* layouts/admin/users.html */}}
+
+{{ define "main" }}
+<section class="max-w-5xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-4 text-red-700">👥 Manage Users</h1>
+  <p class="mb-4 text-gray-600">View and manage registered users. Only administrators can access this page.</p>
+
+  <!-- 🔍 Search -->
+  <div class="mb-4">
+    <input id="user-search" type="text" placeholder="Search by name, city, or state..." class="w-full px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
+  </div>
+
+  <div id="users-table" class="overflow-x-auto bg-white shadow rounded-md">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Email</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">City</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">State</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Role</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="users-tbody" class="bg-white divide-y divide-gray-200">
+        <tr><td colspan="6" class="p-4 text-center text-gray-500">Loading users…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 🔐 Auth Protection + Script -->
+<script src="/js/admin-users.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.currentUserRole !== "admin") {
+      alert("🔐 Access denied: Admins only.");
+      window.location.href = "/account/";
+    }
+  });
+</script>
+{{ end }}

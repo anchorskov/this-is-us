@@ -1,0 +1,47 @@
+{{/* layouts/admin/threads.html */}}
+{{ define "main" }}
+<section class="max-w-5xl mx-auto p-6">
+  <h1 class="text-3xl font-bold mb-6 text-red-700">🧵 Manage Threads</h1>
+  <p class="mb-4 text-gray-600">Review and moderate recent town hall posts. Sort by relevance or take action if needed.</p>
+
+  <!-- 🔽 Sorting Options -->
+  <div class="mb-4">
+    <label for="sort-select" class="mr-2 text-sm font-medium text-gray-700">Sort by:</label>
+    <select id="sort-select" class="border-gray-300 rounded px-3 py-1">
+      <option value="createdAt_desc">Newest</option>
+      <option value="createdAt_asc">Oldest</option>
+      <option value="title_asc">Title (A–Z)</option>
+      <option value="author_asc">Author (A–Z)</option>
+      <option value="city_asc">City</option>
+      <option value="state_asc">State</option>
+    </select>
+  </div>
+
+  <div id="threads-table" class="overflow-x-auto bg-white shadow rounded-md">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Title</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Author</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">City</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">State</th>
+          <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="threads-tbody" class="bg-white divide-y divide-gray-200">
+        <tr><td colspan="5" class="p-4 text-center text-gray-500">Loading threads…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script src="/js/admin-threads.js" defer></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.currentUserRole !== "admin") {
+      alert("🔐 Access denied: Admins only.");
+      window.location.href = "/account/";
+    }
+  });
+</script>
+{{ end }}

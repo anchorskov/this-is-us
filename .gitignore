@@ -69,3 +69,7 @@ Thumbs.db
 # Add to .gitignore
 isablefastrender/
 public/
+
+serviceAccountKey.json
+# Firebase seeding scripts
+firebase-seeder/

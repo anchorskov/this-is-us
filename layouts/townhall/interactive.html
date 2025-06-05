@@ -24,12 +24,20 @@
   <section class="space-y-6">
     <h2 class="text-xl font-semibold">🗣️ Civic Conversations Near You</h2>
     <div id="thread-list" class="space-y-4">
-      <!-- Placeholder threads will be loaded here -->
+      <!-- Threads dynamically loaded here -->
       <div class="p-4 border rounded shadow-sm bg-white">
         <p class="font-semibold">No conversations loaded. Try filtering above or create a new thread.</p>
       </div>
     </div>
   </section>
+
+  <!-- 💬 REPLY LISTING UI (injected dynamically per thread) -->
+  <template id="reply-list-template">
+    <div class="replies-wrapper mt-4 pl-6 border-l-4 border-blue-200">
+      <h3 class="text-sm font-semibold text-gray-600 mb-2">Replies</h3>
+      <div class="replies-container space-y-2 text-sm text-gray-800"></div>
+    </div>
+  </template>
 
   <!-- ➕ CREATE NEW THREAD -->
   <section class="bg-white p-4 rounded-md shadow-md">
@@ -45,6 +53,7 @@
 
 </main>
 
-<!-- JS placeholder -->
+<!-- JS Controllers -->
 <script src="/js/townhall-interactive.js" defer></script>
+<script src="/js/thread-replies.js" defer></script>
 {{ end }}

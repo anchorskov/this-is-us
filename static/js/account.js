@@ -1,4 +1,3 @@
-// static/js/account.js
 // Logic for populating and updating the /account/ page with Firebase authentication and Firestore
 
 console.log("📘 account.js loaded");
@@ -20,14 +19,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const emailEl = document.getElementById("account-email");
   const joinedEl = document.getElementById("account-joined");
   const roleEl = document.getElementById("account-role");
+  const adminPanel = document.getElementById("admin-panel");
   const newsletterEl = document.getElementById("account-newsletter");
-  const cityEl = document.getElementById("account-city");
-  const stateEl = document.getElementById("account-state");
+  const cityEl = document.getElementById("city");
+  const stateEl = document.getElementById("state");
 
   function showFeedback(msg, type = "success") {
     if (feedback) {
       feedback.textContent = msg;
-      feedback.className = `mt-4 ${type === "error" ? "text-red-600" : "text-green-600"}`;
+      feedback.className = `mt-4 text-sm text-center ${type === "error" ? "text-red-600" : "text-green-600"}`;
       feedback.style.display = "block";
       setTimeout(() => (feedback.style.display = "none"), 4000);
     }
@@ -67,9 +67,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       day: 'numeric'
     });
     roleEl.textContent = profile.role;
+
+    if (profile.role === "admin" && adminPanel) {
+      adminPanel.classList.remove("hidden");
+    } else if (adminPanel) {
+      adminPanel.classList.add("hidden");
+    }
+
     newsletterEl.checked = profile.newsletter;
     cityEl.value = profile.city || "";
     stateEl.value = profile.state || "";
+
+    // Set global role for admin UI detection
+    window.currentUserRole = profile.role;
 
     // Save handler
     form.addEventListener("submit", async (e) => {

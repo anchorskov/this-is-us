@@ -1,4 +1,5 @@
 // static/js/firebase-session.js
+
 console.log("🔄 firebase-session.js loaded");
 
 if (typeof firebase === "undefined") {
@@ -15,23 +16,34 @@ if (typeof firebase === "undefined") {
       const userRef = db.collection("users").doc(user.uid);
       const doc = await userRef.get();
 
+      let role = "citizen";
+
       if (!doc.exists) {
         await userRef.set({
           displayName: user.displayName || "Anonymous",
           email: user.email || null,
           joinedAt: new Date().toISOString(),
           lastLogin: new Date().toISOString(),
-          role: "citizen",
-          city: "",      // ← Added for future editing
-          state: ""      // ← Added for future editing
+          role: role,
+          city: "",
+          state: ""
         });
         console.log("✅ Firestore profile created.");
       } else {
+        const data = doc.data();
+        role = data.role || role;
         await userRef.update({
           lastLogin: new Date().toISOString()
         });
         console.log("👋 Firestore profile updated.");
       }
+
+      window.currentUserRole = role;
+      document.body.setAttribute("data-user-role", role);
+      console.log(`👤 Current user role: ${role}`);
+    } else {
+      window.currentUserRole = null;
+      document.body.removeAttribute("data-user-role");
     }
   });
 
