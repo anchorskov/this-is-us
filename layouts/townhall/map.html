@@ -1,0 +1,23 @@
+{{/* layouts/townhall/map.html */}}
+
+{{ define "main" }}
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-blue-800 mb-4">🗺️ Explore the Town Hall Map</h1>
+
+  <!-- Filter Controls -->
+  <div class="mb-6 space-y-2">
+    <input id="zip-input" type="text" placeholder="Enter ZIP code..." class="border p-2 rounded w-full max-w-sm" />
+    <button onclick="zoomToZip()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+      Zoom to Location
+    </button>
+  </div>
+
+  <!-- Map Container -->
+  <div id="townhall-map" class="w-full h-[600px] border rounded"></div>
+
+  <!-- Optional Legend or Info -->
+  <div id="map-info" class="mt-4 text-sm text-gray-600"></div>
+</div>
+
+<script src="/static/js/townhall/map.js" defer></script>
+{{ end }}
