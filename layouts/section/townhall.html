@@ -1,48 +1,60 @@
-{{/* layouts/section/townhall.html */}}
+{{- /* ─────────────────────────────────────────────────────────────
+     layouts/section/townhall.html
+     Town-Hall landing (hero + tabs + FAB)
+   ───────────────────────────────────────────────────────────── */}}
 
 {{ define "main" }}
-<main class="max-w-screen-xl mx-auto px-4 py-10 space-y-10">
+<div class="mx-auto max-w-7xl px-4 py-8 space-y-10">
 
-  <!-- 🌐 MAP SECTION (Leaflet.js placeholder) -->
-  <section class="rounded-md shadow-md bg-white p-4">
-    <h2 class="text-xl font-semibold mb-2">📍 Explore Conversations by Location</h2>
-    <div id="townhall-map" class="h-96 w-full rounded"></div>
-  </section>
+  <!-- 1 ░ HERO / LOCATION ░ -->
+  <section class="bg-white shadow rounded-lg p-6 space-y-4">
+    <h1 class="text-2xl font-bold">🏛️ Town Hall</h1>
 
-  <!-- 🔍 FILTER PANEL -->
-  <section class="bg-white p-4 rounded-md shadow-md">
-    <h2 class="text-xl font-semibold mb-4">🔎 Find What Matters to You</h2>
-    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <input type="text" id="filter-location" placeholder="Enter city, state, or zip…" class="border p-2 rounded w-full" />
-      <input type="text" id="filter-topic" placeholder="Topic (e.g., budget, school)" class="border p-2 rounded w-full" />
-      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Apply Filters</button>
-    </form>
-  </section>
-
-  <!-- 🧵 THREAD LIST -->
-  <section class="space-y-6">
-    <h2 class="text-xl font-semibold">🗣️ Civic Conversations Near You</h2>
-    <div id="thread-list" class="space-y-4">
-      <!-- Placeholder threads will be loaded here -->
-      <div class="p-4 border rounded shadow-sm bg-white">
-        <p class="font-semibold">No conversations loaded. Try filtering above or create a new thread.</p>
-      </div>
+    <div class="flex flex-col md:flex-row gap-3">
+      <!-- ZIP-only search -->
+      <input id="location-input"
+             class="flex-1 border rounded p-2"
+             maxlength="5"
+             inputmode="numeric"
+             pattern="[0-9]{5}"
+             placeholder="Enter ZIP code…">
+      <button id="use-my-location"
+              class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
+        📍 Use my location
+      </button>
     </div>
+
+    <!-- collapsible mini-map preview -->
+    <div id="mini-map" class="h-56 w-full rounded mt-4 hidden"></div>
   </section>
 
-  <!-- ➕ CREATE NEW THREAD -->
-  <section class="bg-white p-4 rounded-md shadow-md">
-    <h2 class="text-xl font-semibold mb-2">Start a New Conversation</h2>
-    <form id="new-thread-form" class="space-y-4">
-      <input type="text" id="new-title" placeholder="Title" class="w-full border p-2 rounded" required />
-      <textarea id="new-body" rows="4" placeholder="Your opening comment…" class="w-full border p-2 rounded" required></textarea>
-      <div class="flex justify-end">
-        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Post Thread</button>
-      </div>
-    </form>
+  <!-- 2 ░ CONTENT TABS ░ -->
+  <section class="space-y-4">
+    <div class="border-b flex gap-6">
+      <button data-tab="nearby"   class="tab-active">Nearby</button>
+      <button data-tab="trending" class="hover:text-blue-600">Trending</button>
+      {{ if hugo.IsServer }}
+        <button data-tab="mine" class="hover:text-blue-600">My Threads</button>
+      {{ end }}
+    </div>
+
+    <!-- LIST WRAPPERS -->
+    <div id="tab-nearby"   class="thread-list grid md:grid-cols-2 gap-4"></div>
+    <div id="tab-trending" class="thread-list hidden grid md:grid-cols-2 gap-4"></div>
+    {{ if hugo.IsServer }}
+      <div id="tab-mine" class="thread-list hidden grid md:grid-cols-2 gap-4"></div>
+    {{ end }}
   </section>
 
-</main>
+  <!-- 3 ░ LIGHT SURVEY / POLL ░ -->
+  <section id="poll-wrapper" class="bg-white shadow rounded-lg p-4 hidden"></section>
 
-<!-- JS placeholder -->
+</div>
+
+<!-- Floating Action Button -->
+<button id="fab-new"
+        class="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14
+               flex items-center justify-center shadow-lg hover:bg-blue-700">
+  +
+</button>
 {{ end }}

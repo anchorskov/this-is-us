@@ -1,126 +1,102 @@
-// /static/js/townhall/threads.js
-console.log("📂 Town Hall Threads JS loaded");
+/*  static/js/townhall/threads.js
+    ────────────────────────────────────────────────────────────
+    Purpose  ▸ Stand-alone controller for /townhall/threads/*
+              (lists Nearby / Trending / Mine – *not* the map
+              landing page, which is handled by home.js).
+    Notes    ▸ Pure vanilla JS  – no external deps except
+              Leaflet (optional) & Firebase.
+            ▸ Uses “progressively-hydrated” rendering:
+              ① skeleton placeholder
+              ② Firestore payload streamed in
+            ▸ Re-usable util renderThreadCard()
+    ──────────────────────────────────────────────────────────── */
+
+console.log("📂 townhall/threads.js loaded");
 
 let db;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const threadList = document.getElementById("thread-list");
-  if (!threadList) {
-    console.warn("📂 No thread list container found.");
-    return;
-  }
+/* ─── Helpers ────────────────────────────────────────────── */
+const qs    = (sel, par = document) => par.querySelector(sel);
+const qsa   = (sel, par = document) => [...par.querySelectorAll(sel)];
+const $$new = (tag, cls, html = "") => {
+  const el = document.createElement(tag);
+  if (cls)  el.className = cls;
+  el.innerHTML = html;
+  return el;
+};
+
+function niceDate(ts) {
+  return ts?.toDate ? ts.toDate().toLocaleString() : "—";
+}
+
+function renderThreadCard(id, t) {
+  return `
+    <h3 class="font-semibold text-lg">${t.title || "Untitled"}</h3>
+    <p class="text-gray-600 line-clamp-3">${t.body || ""}</p>
+    <p class="text-sm text-gray-500 mt-1">
+      📍 ${t.location || "Unknown"} • 🕒 ${niceDate(t.timestamp)}
+    </p>
+    <div class="mt-3 flex justify-between items-center">
+      <a href="/townhall/thread/${id}"
+         class="text-blue-600 hover:underline font-medium">Open&nbsp;↗</a>
+      <span class="text-xs text-gray-400">${t.replyCount || 0}&nbsp;replies</span>
+    </div>`;
+}
+
+/* ─── Main ----------------------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", async () => {
+  const wrap = qs("#thread-list") || qs(".thread-list");
+  if (!wrap) return console.warn("📂 No thread-list wrapper!");
 
   if (typeof firebase === "undefined" || !firebase.firestore) {
-    console.error("❌ Firebase or Firestore not loaded.");
-    threadList.innerHTML = `<div class="text-red-600">⚠️ Firebase is not available. Threads cannot be loaded.</div>`;
+    wrap.innerHTML = `<div class="text-red-600">
+                        Firebase not loaded – can’t fetch threads.</div>`;
     return;
   }
-
   db = firebase.firestore();
 
-  function loadReplies(threadId, container) {
-    const replyList = document.createElement("div");
-    replyList.className = "pl-4 mt-2 space-y-2 text-sm";
-    container.appendChild(replyList);
+  /* 1️⃣  Show skeleton while loading */
+  wrap.innerHTML = "<p class='text-gray-500'>Loading threads…</p>";
 
-    db.collection(`townhall_threads/${threadId}/replies`)
-      .orderBy("timestamp", "asc")
-      .get()
-      .then((snapshot) => {
-        if (snapshot.empty) {
-          replyList.innerHTML = `<p class="text-gray-400">No replies yet.</p>`;
-        } else {
-          snapshot.forEach((doc) => {
-            const reply = doc.data();
-            const time = reply.timestamp?.toDate().toLocaleString() || "Unknown";
-            replyList.innerHTML += `
-              <div class="border-l-2 pl-2">
-                <p class="font-medium">${reply.displayName || "Anonymous"}:</p>
-                <p>${reply.content}</p>
-                <p class="text-xs text-gray-500">🕒 ${time}</p>
-              </div>
-            `;
-          });
-        }
+  try {
+    /** @type {firebase.firestore.Query} */
+    let query = db.collection("townhall_threads")
+                  .orderBy("timestamp", "desc")
+                  .limit(25);
+
+    // Simple filter on ?tab=   (/townhall/threads/?tab=trending)
+    const urlTab = new URLSearchParams(location.search).get("tab");
+    if (urlTab === "trending") query = db.collection("townhall_threads")
+                                         .orderBy("replyCount", "desc")
+                                         .limit(25);
+    if (urlTab === "mine") {
+      const user = firebase.auth().currentUser;
+      if (user) query = db.collection("townhall_threads")
+                          .where("authorUid", "==", user.uid)
+                          .orderBy("timestamp", "desc");
+      else      wrap.innerHTML = "<p>Please sign in to see your threads.</p>";
+    }
+
+    const snap = await query.get();
+
+    /* 2️⃣  Render */
+    wrap.innerHTML = "";
+    if (snap.empty) {
+      wrap.innerHTML = `<div class="text-gray-500">
+                          No threads found for this view.</div>`;
+    } else {
+      const frag = document.createDocumentFragment();
+      snap.forEach(doc => {
+        const card = $$new("article",
+          "bg-white rounded shadow p-4 space-y-1 hover:ring ring-blue-100");
+        card.innerHTML = renderThreadCard(doc.id, doc.data());
+        frag.appendChild(card);
       });
+      wrap.appendChild(frag);
+    }
+  } catch (err) {
+    console.error("❌ Failed to load threads:", err);
+    wrap.innerHTML = `<div class="text-red-600">
+                        Error loading threads. Please refresh.</div>`;
   }
-
-  function loadThreads() {
-    db.collection("townhall_threads")
-      .orderBy("timestamp", "desc")
-      .limit(20)
-      .get()
-      .then((querySnapshot) => {
-        threadList.innerHTML = "";
-        if (querySnapshot.empty) {
-          threadList.innerHTML = `<div class="p-4 border rounded bg-white text-gray-600">🕊️ No conversations yet. Start one below.</div>`;
-          return;
-        }
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const threadId = doc.id;
-          const timestamp = data.timestamp?.toDate
-            ? data.timestamp.toDate().toLocaleString()
-            : "Unknown time";
-
-          const wrapper = document.createElement("div");
-          wrapper.className = "p-4 border rounded shadow-sm bg-white";
-
-          wrapper.innerHTML = `
-            <h3 class="font-semibold text-lg">${data.title || "Untitled"}</h3>
-            <p class="text-gray-700 mt-2">${data.body || ""}</p>
-            <p class="text-sm text-gray-500 mt-2">📍 ${data.location || "Unknown"} • 🕒 ${timestamp}</p>
-            <form class="reply-form mt-4 space-y-2">
-              <input type="text" placeholder="Your name" class="reply-name border p-1 rounded w-full" required />
-              <textarea placeholder="Your reply…" class="reply-content border p-1 rounded w-full" required></textarea>
-              <button type="submit" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">Reply</button>
-            </form>
-          `;
-
-          const replyForm = wrapper.querySelector(".reply-form");
-          replyForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const name = replyForm.querySelector(".reply-name").value.trim();
-            const content = replyForm.querySelector(".reply-content").value.trim();
-
-            if (!content || !name) {
-              alert("Please provide your name and reply.");
-              return;
-            }
-
-            try {
-              const user = firebase.auth().currentUser;
-              if (!user) {
-                alert("You must be signed in to reply.");
-                return;
-              }
-
-              await db.collection(`townhall_threads/${threadId}/replies`).add({
-                displayName: name,
-                content,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                uid: user.uid,
-              });
-
-              alert("✅ Reply posted!");
-              loadThreads(); // reload threads and replies
-            } catch (err) {
-              console.error("❌ Error submitting reply:", err);
-              alert("Error submitting your reply.");
-            }
-          });
-
-          loadReplies(threadId, wrapper);
-          threadList.appendChild(wrapper);
-        });
-      })
-      .catch((err) => {
-        console.error("❌ Failed to load threads:", err);
-        threadList.innerHTML = `<div class="text-red-600">⚠️ Failed to load threads. Please try again later.</div>`;
-      });
-  }
-
-  loadThreads();
 });

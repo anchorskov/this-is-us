@@ -1,12 +1,15 @@
-{{/* ──────────────────────────────────────────────────────────────
+{{/* ───────────────────────────────────────────────────────────────
      layouts/partials/extend_head.html
-   ────────────────────────────────────────────────────────────── */}}
+     Page-level assets that must live in <head>.
+     Global assets (favicon, Tailwind, fonts, map libs, etc.) are
+     injected *only* when they’re actually needed.
+   ─────────────────────────────────────────────────────────────── */}}
 
-<!-- ░░░ META & ICONS ░░░ -->
-<link rel="icon" href="{{ "favicon.ico" | relURL }}" type="image/x-icon">
+<!-- ░░ META ░░ -->
+<link rel="icon" href="{{ "favicon.ico" | relURL }}">
 <meta name="theme-color" content="#2e2e33">
 
-<!-- ░░░ DEV-ONLY HELPERS ░░░ -->
+<!-- ░░ DEV-ONLY HELPERS (Alpine for playground pages) ░░ -->
 {{ if hugo.IsServer }}
   {{ if in (slice "sandbox" "candidates") .Section }}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -15,26 +18,32 @@
   {{ end }}
 {{ end }}
 
-<!-- ░░░ CSS ░░░ -->
-{{/* 1) Tailwind – CDN in dev, purged bundle in prod */}}
+<!-- ░░ CSS ░░ -->
+{{/* 1) Tailwind — CDN in dev, purged bundle in prod */}}
 {{ if hugo.IsServer }}
   <script src="https://cdn.tailwindcss.com"></script>
 {{ else }}
   <link rel="stylesheet" href="{{ "css/bundle.min.css" | relURL }}">
 {{ end }}
 
-<!-- 2) Third-party styles (only when needed) -->
-{{ $needsMap := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
-
-{{/*   .File is nil for 404, list pages, etc. Guard first ↓                                  */}}
-{{ $pagePath := "" }}{{ with .File }}{{ $pagePath = .Path }}{{ end }}
-{{ $needsTimeline := or (strings.HasSuffix $pagePath "/timeline.md") (eq .RelPermalink "/events/") }}
+{{/* 2) Third-party styles (only when a page needs them) */}}
+{{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
+{{ $filePath      := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
+{{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
+  <!--  Leaflet core  -->
   <link rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin>
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+
+  <!--  MarkerCluster (only if Town-Hall map uses clustering)  -->
+  {{ if eq .Section "townhall" }}
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+  {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
@@ -42,18 +51,25 @@
         href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
-<!-- 3) Project styles -->
+<!-- 3) Project-scoped styles -->
 <link rel="stylesheet" href="{{ "css/custom.css"   | relURL }}">
 <link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
 
-<!-- 4) Material Icons -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<!-- 4) Material Icons font -->
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-<!-- ░░░ JS THAT **MUST** BE IN <head> ░░░ -->
+<!-- ░░ JS (only what must sit in <head>) ░░ -->
 {{ if $needsMap }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
           crossorigin defer></script>
+
+  {{ if eq .Section "townhall" }}
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
+    <!-- Lodash for debounce in map controller -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
+  {{ end }}
 {{ end }}
 
 {{ if $needsTimeline }}
@@ -65,11 +81,11 @@
   <script type="module" src="{{ "js/events/index.js" | relURL }}" defer></script>
 {{ end }}
 
-<!-- ░░░ DEBUG ░░░ -->
+<!-- ░░ DEBUG ░░ -->
 <script>
   console.log(
     "%cPAGE CTX",
-    "background:#2e2e33;color:#fff;padding:2px 6px;border-radius:4px",
+    "background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
     "Template={{ .Layout }}",
     "Kind={{ .Kind }}",
     "Section={{ .Section }}",
@@ -77,5 +93,5 @@
   );
 </script>
 
-<!-- Tiny auth-guard helper (lightweight) -->
+<!-- Lightweight auth-guard helper (safe to load everywhere) -->
 <script src="/js/firebase-auth-guard.js" defer></script>

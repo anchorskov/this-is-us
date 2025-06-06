@@ -14,26 +14,29 @@
 </script>
 
 {{/* ── Quick helpers ─────────────────────────────────────────── */}}
-{{- $rp          := .RelPermalink -}}
-{{- $needsLogin  := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
+{{- $rp         := .RelPermalink -}}
+{{- $needsLogin := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
 
 {{/* 2️⃣  Firebase core (always) */}}
 <script src="/js/firebase-session.js" defer></script>
 
-{{/* 3️⃣  Optional FirebaseUI login (only on pages that need it) */}}
+{{/* 3️⃣  Optional FirebaseUI login */}}
 {{- if $needsLogin }}
   <script src="/js/firebase-login.js" defer></script>
 {{- end }}
 
 {{/* 4️⃣  Town-Hall page bundles */}}
-{{- if strings.HasPrefix $rp "/townhall/map"     }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/threads" }}<script src="/js/townhall/threads.js" defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/thread/" }}<script src="/js/townhall/thread.js"  defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/map"      }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/threads"  }}<script src="/js/townhall/threads.js" defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/thread/"  }}<script src="/js/townhall/thread.js"  defer></script>{{ end }}
 {{- if strings.HasPrefix $rp "/townhall/create"  }}<script src="/js/townhall/create.js"  defer></script>{{ end }}
 
-{{/* 5️⃣  Dev-only helpers (Tailwind & Firebase config)
-       – Tailwind is already included in <head> by extend_head.html,
-         so we only keep Firebase config here. */}}
+{{/* Landing-page controller */}}
+{{- if eq $rp "/townhall/" }}
+  <script src="/js/townhall/home.js" defer></script>
+{{- end }}
+
+{{/* 5️⃣  Dev-only helpers (Firebase config) */}}
 {{- if hugo.IsServer }}
   <script src="/js/firebase-config.js"></script>
 {{- else }}
