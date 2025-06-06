@@ -1,39 +1,41 @@
-<!-- layouts/partials/site-scripts.html -->
+{{- /* ─────────────────────────────────────────────────────────────
+     layouts/partials/site-scripts.html
+     Injected right before </body>.
+     Only things that truly belong at the end of the page go here.
+     ───────────────────────────────────────────────────────────── */ -}}
 
-<!-- 🌐 Set API Endpoint Dynamically -->
+{{/* 1️⃣  Dynamic API root (dev vs prod) */}}
 <script>
   (function () {
-    const host = window.location.hostname;
-    const port = window.location.port;
-
-    if (host === 'localhost' && port === '1313') {
-      window.EVENTS_API_URL = "https://this-is-us.org/api";
-      console.log("🐛 Dev override →", window.EVENTS_API_URL);
-    } else {
-      window.EVENTS_API_URL = "/api";
-      console.log("🌐 Using API →", window.EVENTS_API_URL);
-    }
+    const dev = location.hostname === 'localhost' && location.port === '1313';
+    window.EVENTS_API_URL = dev ? 'https://this-is-us.org/api' : '/api';
+    console.log(dev ? '🐛 Dev override →' : '🌐 Using API →', window.EVENTS_API_URL);
   })();
 </script>
 
-<!-- 🗺️ Leaflet CSS & JS (with integrity and defer) -->
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-  crossorigin=""
-/>
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-  crossorigin=""
-  defer
-></script>
+{{/* ── Quick helpers ─────────────────────────────────────────── */}}
+{{- $rp          := .RelPermalink -}}
+{{- $needsLogin  := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
 
-<!-- 🔐 Firebase Session Script (always loaded) -->
+{{/* 2️⃣  Firebase core (always) */}}
 <script src="/js/firebase-session.js" defer></script>
 
-<!-- 🔓 Firebase Login Script (only on login-required pages) -->
-{{ if or (eq .RelPermalink "/login/") (eq .RelPermalink "/events/create/") }}
-<script src="/js/firebase-login.js" defer></script>
-{{ end }}
+{{/* 3️⃣  Optional FirebaseUI login (only on pages that need it) */}}
+{{- if $needsLogin }}
+  <script src="/js/firebase-login.js" defer></script>
+{{- end }}
+
+{{/* 4️⃣  Town-Hall page bundles */}}
+{{- if strings.HasPrefix $rp "/townhall/map"     }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/threads" }}<script src="/js/townhall/threads.js" defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/thread/" }}<script src="/js/townhall/thread.js"  defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/create"  }}<script src="/js/townhall/create.js"  defer></script>{{ end }}
+
+{{/* 5️⃣  Dev-only helpers (Tailwind & Firebase config)
+       – Tailwind is already included in <head> by extend_head.html,
+         so we only keep Firebase config here. */}}
+{{- if hugo.IsServer }}
+  <script src="/js/firebase-config.js"></script>
+{{- else }}
+  <script src="/js/firebase-app.min.js"></script>
+{{- end }}

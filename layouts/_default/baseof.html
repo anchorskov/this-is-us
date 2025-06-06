@@ -1,40 +1,37 @@
 <!DOCTYPE html>
-<html lang="{{ site.Language }}" dir="{{ .Language.LanguageDirection | default "auto" }}">
+{{/* ------------  BASEOF  ------------- */}}
+<html
+  {{/* language attr: multilingual-safe */}}
+  {{ with .Site.Language }}lang="{{ .Lang }}" dir="{{ .LanguageDirection | default "auto" }}"
+  {{ else }}lang="{{ .Site.LanguageCode | default "en" }}"{{ end }}
+>
 <head>
+  <!-- KIND: {{ .Kind }} · SECTION: {{ .Section }} · LAYOUT: {{ .Layout }} -->
   {{ partial "head.html" . }}
 
-  {{/* for pages that define a "header" block (like interactive.html) */}}
   {{ block "header" . }}{{ end }}
-
   {{ partial "firebase-init.html" . }}
 </head>
-
 
 <body
   id="top"
   class="
-    {{- if (or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`)) -}}list{{- end -}}
-    {{- if eq site.Params.defaultTheme `dark` -}} dark{{- end -}}
+    {{- /* add .list class on list/section/search/archives */ -}}
+    {{- if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) -}}list{{- end -}}
+    {{- /* dark-theme toggle only if param exists & == "dark" */ -}}
+    {{- with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end -}}
   "
 >
-  <!-- Header -->
   {{ partialCached "header.html" . .Page }}
-
-  <!-- Floating Auth Button -->
   {{ partial "floating-auth.html" . }}
 
-  <!-- Page Content -->
   <main class="main">
     {{ block "main" . }}{{ end }}
   </main>
 
-  <!-- Footer -->
   {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
-
-  <!-- Site-wide scripts -->
   {{ partial "site-scripts.html" . }}
 
-  <!-- Page-specific scripts -->
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>
