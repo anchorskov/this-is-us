@@ -1,23 +1,41 @@
-{{/* layouts/townhall/map.html */}}
+{{- /* layouts/townhall/map.html  – Town-Hall Map view (stacked) */ -}}
 
 {{ define "main" }}
-<div class="max-w-6xl mx-auto px-4 py-8">
-  <h1 class="text-2xl font-bold text-blue-800 mb-4">🗺️ Explore the Town Hall Map</h1>
+<main class="mx-auto max-w-5xl px-4 py-10 space-y-6">
 
-  <!-- Filter Controls -->
-  <div class="mb-6 space-y-2">
-    <input id="zip-input" type="text" placeholder="Enter ZIP code..." class="border p-2 rounded w-full max-w-sm" />
-    <button onclick="zoomToZip()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-      Zoom to Location
-    </button>
-  </div>
+  <!-- page title -->
+  <header class="text-center space-y-1">
+    <h1 class="text-3xl font-bold">🗺️ Town-Hall Threads Map</h1>
+    <p class="text-gray-600">
+      Search by ZIP or pan / zoom to discover conversations near you.
+    </p>
+  </header>
 
-  <!-- Map Container -->
-  <div id="townhall-map" class="w-full h-[600px] border rounded"></div>
+  <!-- search panel (always on top) -->
+  <aside
+    class="bg-white/90 backdrop-blur shadow rounded p-4 space-y-3
+           mx-auto max-w-md relative z-[1100]">
 
-  <!-- Optional Legend or Info -->
-  <div id="map-info" class="mt-4 text-sm text-gray-600"></div>
-</div>
+    <label for="zip-input" class="block font-medium">ZIP code</label>
 
-<script src="/static/js/townhall/map.js" defer></script>
+    <div class="flex gap-2">
+      <input id="zip-input" maxlength="5" pattern="[0-9]{5}"
+             class="flex-1 border rounded p-2"
+             placeholder="e.g. 82001">
+      <button id="zoom-btn"
+              class="bg-blue-600 text-white px-4 rounded hover:bg-blue-700">
+        Zoom
+      </button>
+    </div>
+
+    <p class="text-xs text-gray-500">
+      (If you’ve saved a home ZIP we’ll auto-zoom for you)
+    </p>
+  </aside>
+
+  <!-- map -->
+  <div id="townhall-map"
+       class="h-[70vh] w-full rounded shadow relative z-0"></div>
+
+</main>
 {{ end }}

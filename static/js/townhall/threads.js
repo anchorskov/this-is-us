@@ -1,102 +1,74 @@
 /*  static/js/townhall/threads.js
-    ────────────────────────────────────────────────────────────
-    Purpose  ▸ Stand-alone controller for /townhall/threads/*
-              (lists Nearby / Trending / Mine – *not* the map
-              landing page, which is handled by home.js).
-    Notes    ▸ Pure vanilla JS  – no external deps except
-              Leaflet (optional) & Firebase.
-            ▸ Uses “progressively-hydrated” rendering:
-              ① skeleton placeholder
-              ② Firestore payload streamed in
-            ▸ Re-usable util renderThreadCard()
-    ──────────────────────────────────────────────────────────── */
+    Controller for /townhall/threads/ list page                       */
 
 console.log("📂 townhall/threads.js loaded");
 
-let db;
+document.addEventListener("DOMContentLoaded", () => {
+  const list   = document.getElementById("threads-container");
+  if (!list) return console.warn("🔕 threads-container missing");
 
-/* ─── Helpers ────────────────────────────────────────────── */
-const qs    = (sel, par = document) => par.querySelector(sel);
-const qsa   = (sel, par = document) => [...par.querySelectorAll(sel)];
-const $$new = (tag, cls, html = "") => {
-  const el = document.createElement(tag);
-  if (cls)  el.className = cls;
-  el.innerHTML = html;
-  return el;
-};
-
-function niceDate(ts) {
-  return ts?.toDate ? ts.toDate().toLocaleString() : "—";
-}
-
-function renderThreadCard(id, t) {
-  return `
-    <h3 class="font-semibold text-lg">${t.title || "Untitled"}</h3>
-    <p class="text-gray-600 line-clamp-3">${t.body || ""}</p>
-    <p class="text-sm text-gray-500 mt-1">
-      📍 ${t.location || "Unknown"} • 🕒 ${niceDate(t.timestamp)}
-    </p>
-    <div class="mt-3 flex justify-between items-center">
-      <a href="/townhall/thread/${id}"
-         class="text-blue-600 hover:underline font-medium">Open&nbsp;↗</a>
-      <span class="text-xs text-gray-400">${t.replyCount || 0}&nbsp;replies</span>
-    </div>`;
-}
-
-/* ─── Main ----------------------------------------------------------------- */
-document.addEventListener("DOMContentLoaded", async () => {
-  const wrap = qs("#thread-list") || qs(".thread-list");
-  if (!wrap) return console.warn("📂 No thread-list wrapper!");
-
-  if (typeof firebase === "undefined" || !firebase.firestore) {
-    wrap.innerHTML = `<div class="text-red-600">
-                        Firebase not loaded – can’t fetch threads.</div>`;
+  if (!firebase?.firestore) {
+    list.innerHTML =
+      '<div class="col-span-full text-red-600">⚠️ Firebase not available.</div>';
     return;
   }
-  db = firebase.firestore();
 
-  /* 1️⃣  Show skeleton while loading */
-  wrap.innerHTML = "<p class='text-gray-500'>Loading threads…</p>";
+  const db       = firebase.firestore();
+  let   lastSnap = null;           // pagination cursor
+  let   busy     = false;
+  const PAGE     = 15;
 
-  try {
-    /** @type {firebase.firestore.Query} */
-    let query = db.collection("townhall_threads")
-                  .orderBy("timestamp", "desc")
-                  .limit(25);
+  /* render one doc -> card */
+  const renderCard = (doc) => {
+    const t  = doc.data();
+    const ts = t.timestamp?.toDate()?.toLocaleString() ?? "🤷";
+    list.insertAdjacentHTML("beforeend", `
+      <article class="bg-white rounded shadow p-4 flex flex-col space-y-2">
+        <h3 class="font-semibold text-lg">${t.title ?? "Untitled"}</h3>
+        <p class="line-clamp-3 text-sm">${t.body ?? ""}</p>
+        <p class="text-xs text-gray-500 mt-auto">
+          📍 ${t.location ?? "Unknown"} • 🕒 ${ts}
+        </p>
+        <a class="text-blue-600 hover:underline"
+           href="/townhall/thread/?id=${doc.id}">Open ↗</a>
+      </article>
+    `);
+  };
 
-    // Simple filter on ?tab=   (/townhall/threads/?tab=trending)
-    const urlTab = new URLSearchParams(location.search).get("tab");
-    if (urlTab === "trending") query = db.collection("townhall_threads")
-                                         .orderBy("replyCount", "desc")
-                                         .limit(25);
-    if (urlTab === "mine") {
-      const user = firebase.auth().currentUser;
-      if (user) query = db.collection("townhall_threads")
-                          .where("authorUid", "==", user.uid)
-                          .orderBy("timestamp", "desc");
-      else      wrap.innerHTML = "<p>Please sign in to see your threads.</p>";
-    }
+  /* load PAGE threads starting after last cursor */
+  const loadMore = async () => {
+    if (busy) return; busy = true;
 
-    const snap = await query.get();
+    let q = db.collection("townhall_threads")
+              .orderBy("timestamp", "desc")
+              .limit(PAGE);
 
-    /* 2️⃣  Render */
-    wrap.innerHTML = "";
-    if (snap.empty) {
-      wrap.innerHTML = `<div class="text-gray-500">
-                          No threads found for this view.</div>`;
-    } else {
-      const frag = document.createDocumentFragment();
-      snap.forEach(doc => {
-        const card = $$new("article",
-          "bg-white rounded shadow p-4 space-y-1 hover:ring ring-blue-100");
-        card.innerHTML = renderThreadCard(doc.id, doc.data());
-        frag.appendChild(card);
-      });
-      wrap.appendChild(frag);
-    }
-  } catch (err) {
-    console.error("❌ Failed to load threads:", err);
-    wrap.innerHTML = `<div class="text-red-600">
-                        Error loading threads. Please refresh.</div>`;
-  }
+    if (lastSnap) q = q.startAfter(lastSnap);
+
+    const snap = await q.get();
+    if (snap.empty) return;        // nothing more
+
+    snap.forEach(renderCard);
+    lastSnap = snap.docs[snap.docs.length - 1];
+    busy     = false;
+  };
+
+  /* infinite scroll using IntersectionObserver */
+  const sentinel = document.getElementById("load-more");
+  new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) loadMore();
+  }).observe(sentinel);
+
+  /* topic filter (client-side search) */
+  const filterInput = document.getElementById("topic-filter");
+  filterInput?.addEventListener("input", _.debounce((e) => {
+    const term = e.target.value.trim().toLowerCase();
+    document.querySelectorAll("#threads-container article").forEach(card => {
+      const match = card.textContent.toLowerCase().includes(term);
+      card.classList.toggle("hidden", !match);
+    });
+  }, 250));
+
+  /* initial fetch */
+  loadMore();
 });
