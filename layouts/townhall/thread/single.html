@@ -1,4 +1,5 @@
-{{/* layouts/townhall/thread/single.html */}}
+{{/* layouts/townhall/thread/single.html moderate at 👉 https://github.com/anchorskov/this-is-us/discussions/categories/comments*/}}
+
 {{ define "main" }}
 <main class="mx-auto max-w-4xl px-4 py-8">
   <article class="prose lg:prose-xl">
@@ -22,6 +23,25 @@
         {{ end }}
       </p>
     {{ end }}
+
+    <!-- Giscus comment box -->
+    <div class="giscus mt-10"></div>
+    <script src="https://giscus.app/client.js"
+            data-repo="anchorskov/this-is-us"
+            data-repo-id="R_kgDOOVr6jQ"
+            data-category="Comments"
+            data-category-id="DIC_kwDOOVr6jc4CrUpX"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="bottom"
+            data-theme="preferred_color_scheme"
+            data-lang="en"
+            crossorigin="anonymous"
+            async>
+    </script>
   </article>
 </main>
 {{ end }}
+
