@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Extract threadId from query string (fallback to path segment)
   const params = new URLSearchParams(window.location.search);
   threadId      = params.get("id") || location.pathname.split("/").filter(Boolean).pop();
+  console.log("📌 threadId:", threadId);
   if (!threadId) {
     wrap.innerHTML = `<p class="text-red-600">Invalid thread ID.</p>`;
     return;

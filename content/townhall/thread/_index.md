@@ -1,4 +1,4 @@
 +++
-title  = "Town Hall Thread"
+title  = "Thread"
 layout = "townhall/thread"
 +++
