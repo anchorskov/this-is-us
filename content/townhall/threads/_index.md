@@ -1,4 +1,5 @@
-+++
-title  = "All Town-Hall Threads"
-layout = "townhall/threads"
-+++
+# content/townhall/threads/_index.md
+---
+title:  "All Town-Hall Threads"
+layout: "threads"
+---

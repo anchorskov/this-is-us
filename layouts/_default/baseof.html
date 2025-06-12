@@ -9,6 +9,10 @@
   <!-- KIND: {{ .Kind }} · SECTION: {{ .Section }} · LAYOUT: {{ .Layout }} -->
   {{ partial "head.html" . }}
 
+  {{/* Tailwind CSS – compiled via Hugo Pipes (no CDN) */}}
+  {{ $tailwind := resources.Get "css/tailwind.css" | postCSS | minify | fingerprint }}
+  <link href="{{ $tailwind.RelPermalink }}" rel="stylesheet" integrity="{{ $tailwind.Data.Integrity }}">
+
   {{ block "header" . }}{{ end }}
   {{ partial "firebase-init.html" . }}
 </head>
@@ -16,10 +20,10 @@
 <body
   id="top"
   class="
-    {{- /* add .list class on list/section/search/archives */ -}}
-    {{- if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) -}}list{{- end -}}
-    {{- /* dark-theme toggle only if param exists & == "dark" */ -}}
-    {{- with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end -}}
+    {{/* add .list class on list/section/search/archives */}}
+    {{ if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) }}list{{ end }}
+    {{/* dark-theme toggle only if param exists & == "dark" */}}
+    {{ with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end }}
   "
 >
   {{ partialCached "header.html" . .Page }}

@@ -8,6 +8,16 @@ theme         = "PaperMod"
 buildDrafts   = false
 buildFuture   = false
 
+[outputs]
+  home    = ["HTML"]
+  page    = ["HTML"]
+  section = ["HTML"]
+  taxonomy = []
+  term     = []
+
+[permalinks]
+  townhall = "/townhall/thread/:slug/"
+
 [pagination]
   pagerSize = 10
 
@@ -25,25 +35,28 @@ buildFuture   = false
   UseHugoToc           = true
   subtitle             = "Reclaiming our voice. Standing together."
   keywords             = ["community", "justice", "voices", "podcast"]
-  hideFooter = true
+  hideFooter           = true
 
   [params.assets]
     disableScrollBarStyle = false
-    customCSS            = ["css/custom.css"]
+    customCSS             = ["css/custom.css"]
 
   [params.firebase]
-    useCDN         = true
-    enableAuth     = true
-    enableStorage  = true
-    enableFirestore= true
-    mapZoomDefault = 4
-    mapCenterLat   = 39.5
-    mapCenterLng   = -98.35
-    enableZipZoom  = true
+    useCDN          = true
+    enableAuth      = true
+    enableStorage   = true
+    enableFirestore = true
+    mapZoomDefault  = 4
+    mapCenterLat    = 39.5
+    mapCenterLng    = -98.35
+    enableZipZoom   = true
+    fallbackOffline = false
 
-# --------------------------------------------------
-# Main navigation menu
-# --------------------------------------------------
+  [markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
 [[menu.main]]
   identifier = "home"
   name       = "Home"
@@ -103,11 +116,3 @@ buildFuture   = false
   name       = "Contact"
   url        = "/contact/"
   weight     = 10
-
-# --------------------------------------------------
-# Allow raw HTML (for your Anedot iframe embed )
-# --------------------------------------------------
-[markup]
-  [markup.goldmark]
-    [markup.goldmark.renderer]
-      unsafe = true

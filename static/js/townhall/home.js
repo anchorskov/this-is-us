@@ -1,4 +1,3 @@
-// static/js/townhall/home.js
 /* ---------------------------------------------------------
    Town-Hall “Home” controller (landing page)
    --------------------------------------------------------- */
@@ -133,12 +132,27 @@ async function loadMine() {
 
 /* 4️⃣  RENDER ----------------------------------------------------------- */
 function renderThreads(snap, container, useDistance = false) {
-  if (snap.empty) return (container.innerHTML = "<p>No threads here.</p>");
+  if (snap.empty) {
+    container.innerHTML = "<p>No threads here.</p>";
+    return;
+  }
   container.innerHTML = "";
+
   snap.forEach((doc) => {
     const t = doc.data();
     const card = document.createElement("a");
-    card.href = `/townhall/thread/${doc.id}`;
+
+    // 1. URI-encode the Firestore ID
+    const safeId = encodeURIComponent(doc.id);
+
+    // 2. Build a full absolute link to your dynamic thread page
+    card.href = `${window.location.origin}/townhall/thread/?id=${safeId}`;
+
+    // 3. Debug output
+    console.log("🧩 rendering card for:", doc.id, t.title);
+    console.log("🔗 card.href =", card.href);
+
+    // 4. Render the card
     card.className =
       "block border rounded p-4 bg-white shadow hover:ring-2 hover:ring-blue-500 transition";
     card.innerHTML = `

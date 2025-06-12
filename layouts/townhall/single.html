@@ -1,28 +1,37 @@
-{{/* layouts/townhall/single.html */}}
+{{/* ─────────────────────────────────────────────────────────────
+     layouts/townhall/thread.html
+     Detail page for a single Town-Hall thread
+     URL pattern: /townhall/thread/<docID>
+     JS controller: static/js/townhall/thread-view.js
+───────────────────────────────────────────────────────────── */}}
+
 {{ define "main" }}
-<main class="mx-auto max-w-4xl px-4 py-8">
-  <article class="prose lg:prose-xl">
-    <p style="color:red;">🔧 Template loaded: layouts/townhall/single.html</p>
-    <h1>{{ .Title }}</h1>
+<main class="mx-auto max-w-3xl px-4 py-10 space-y-10">
 
-    {{ with .Date }}
-      <p class="text-sm text-gray-500">Posted on {{ . | time.Format "January 2, 2006" }}</p>
-    {{ end }}
-
-    {{ with .Params.author }}
-      <p class="text-sm text-gray-600">By {{ . }}</p>
-    {{ end }}
-
-    {{ .Content }}
-
-    {{ with .Params.tags }}
-      <p class="mt-4 text-sm text-blue-700">
-        Tags:
-        {{ range . }}
-          <span class="bg-blue-100 px-2 py-1 rounded mr-2">{{ . }}</span>
-        {{ end }}
+  <!-- Thread skeleton – completely replaced by JS on load -->
+  <div id="thread-container" class="space-y-6 bg-white shadow rounded p-6">
+    <header class="space-y-1">
+      <h1 class="text-2xl font-bold text-gray-800">
+        Loading thread…
+      </h1>
+      <p class="text-sm text-gray-500">
+        If this message doesn’t disappear, check your connection or reload the page.
       </p>
-    {{ end }}
-  </article>
+    </header>
+  </div>
+
+  <!-- back-link -->
+  <nav>
+    <a href="/townhall/threads/"
+       class="text-blue-600 hover:underline">
+      ← Back to all threads
+    </a>
+  </nav>
+
 </main>
+{{ end }}
+
+{{ define "scripts" }}
+  <!-- Townhall thread view controller -->
+  <script src="/js/townhall/thread-view.js" defer></script>
 {{ end }}

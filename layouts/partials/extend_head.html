@@ -1,7 +1,7 @@
 {{/* ───────────────────────────────────────────────────────────────
      layouts/partials/extend_head.html
      Page-level assets that must live in <head>.
-     Global assets (favicon, Tailwind, fonts, map libs, etc.) are
+     Global assets (favicon, fonts, map libs, etc.) are
      injected *only* when they’re actually needed.
    ─────────────────────────────────────────────────────────────── */}}
 
@@ -18,56 +18,65 @@
   {{ end }}
 {{ end }}
 
-<!-- ░░ CSS ░░ -->
-{{/* 1) Tailwind — CDN in dev, purged bundle in prod */}}
+<!-- ░░ TAILWIND ░░ -->
 {{ if hugo.IsServer }}
+  <!-- Dev: inject Tailwind CDN for rapid iteration -->
   <script src="https://cdn.tailwindcss.com"></script>
 {{ else }}
-  <link rel="stylesheet" href="{{ "css/bundle.min.css" | relURL }}">
+  <!-- Prod: load your prebuilt Tailwind CSS -->
+  <link rel="stylesheet" href="{{ "css/tailwind.css" | relURL }}">
 {{ end }}
 
-{{/* 2) Third-party styles (only when a page needs them) */}}
+<!-- ░░ FONTS ░░ -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- ░░ CSS ░░ -->
 {{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
 {{ $filePath      := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
 {{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
-  <!--  Leaflet core  -->
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
-
-  <!--  MarkerCluster (only if Town-Hall map uses clustering)  -->
+  <!-- Leaflet core styles -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin>
   {{ if eq .Section "townhall" }}
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <!-- MarkerCluster -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
   {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
-  <link rel="stylesheet"
-        href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <link
+    rel="stylesheet"
+    href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
-<!-- 3) Project-scoped styles -->
+<!-- Project-scoped styles (after Tailwind so they can override) -->
 <link rel="stylesheet" href="{{ "css/custom.css"   | relURL }}">
 <link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
 
-<!-- 4) Material Icons font -->
-<link rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<!-- Material Icons -->
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 <!-- ░░ JS (only what must sit in <head>) ░░ -->
 {{ if $needsMap }}
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossorigin defer></script>
-
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin defer></script>
   {{ if eq .Section "townhall" }}
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
-    <!-- Lodash for debounce in map controller -->
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
   {{ end }}
 {{ end }}
@@ -76,7 +85,7 @@
   <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js" defer></script>
 {{ end }}
 
-<!-- 5) Page-specific ES-modules -->
+<!-- Page-specific ES-modules -->
 {{ if eq .RelPermalink "/events/create/" }}
   <script type="module" src="{{ "js/events/index.js" | relURL }}" defer></script>
 {{ end }}
@@ -93,5 +102,5 @@
   );
 </script>
 
-<!-- Lightweight auth-guard helper (safe to load everywhere) -->
+<!-- Lightweight auth-guard helper -->
 <script src="/js/firebase-auth-guard.js" defer></script>
