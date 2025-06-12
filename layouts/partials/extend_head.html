@@ -29,7 +29,9 @@
 
 <!-- ░░ FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap"
+  rel="stylesheet">
 
 <!-- ░░ CSS ░░ -->
 {{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
@@ -76,13 +78,17 @@
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin defer></script>
   {{ if eq .Section "townhall" }}
-    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
+    <script
+      src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+      defer></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
   {{ end }}
 {{ end }}
 
 {{ if $needsTimeline }}
-  <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js" defer></script>
+  <script
+    src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
+    defer></script>
 {{ end }}
 
 <!-- Page-specific ES-modules -->
@@ -102,5 +108,5 @@
   );
 </script>
 
-<!--  Lightweight auth-guard helper -->
+<!-- Lightweight auth-guard helper -->
 <script src="/js/firebase-auth-guard.js" defer></script>
