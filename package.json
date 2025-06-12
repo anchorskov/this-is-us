@@ -2,40 +2,50 @@
   "name": "this-is-us",
   "version": "1.0.0",
   "private": true,
+
+  "type": "commonjs",
+  "main": "tailwind.config.js",
+  "license": "ISC",
+
   "scripts": {
+    "dev": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --watch",
     "build:css": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --minify",
     "build": "npm run build:css && hugo --gc --minify"
   },
+
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.10",
-    "@tailwindcss/postcss": "^4.1.10",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.5",
-    "postcss-cli": "^11.0.1",
-    "tailwindcss": "^4.1.10"
+    "@tailwindcss/cli": "4.1.10",
+    "autoprefixer": "10.4.21",
+    "postcss": "8.5.5",
+    "tailwindcss": "4.1.10"
   },
+
   "dependencies": {
-    "@octokit/rest": "^22.0.0",
-    "axios": "^1.9.0",
-    "dotenv": "^16.5.0",
-    "firebase-admin": "^13.4.0",
-    "itty-router": "^5.0.18"
+    "@octokit/rest": "22.0.0",
+    "axios": "1.9.0",
+    "dotenv": "16.5.0",
+    "firebase-admin": "13.4.0",
+    "itty-router": "5.0.18"
   },
-  "description": "// README.md",
-  "main": "tailwind.config.js",
+
+  "engines": {
+    "node": ">=18.0.0"
+  },
+
   "directories": {
     "test": "tests"
   },
+
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anchorskov/this-is-us.git"
+    "url": "https://github.com/anchorskov/this-is-us.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+
   "bugs": {
     "url": "https://github.com/anchorskov/this-is-us/issues"
   },
-  "homepage": "https://github.com/anchorskov/this-is-us#readme"
+
+  "homepage": "https://github.com/anchorskov/this-is-us#readme",
+  "keywords": [],
+  "author": ""
 }
