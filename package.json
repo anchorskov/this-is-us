@@ -4,10 +4,10 @@
   "private": true,
 
   "scripts": {
-    "build:css": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --minify",
-    "build": "npm run build:css && hugo --gc --minify"
+    "build": "npm run build:css && hugo --gc --minify",
+    "build:css": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --minify"
   },
-
+  
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.10",
     "tailwindcss": "^4.1.10",
