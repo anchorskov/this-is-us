@@ -1,46 +1,47 @@
 <!-- layouts/partials/firebase-init.html -->
-<script>console.log('🔥 firebase-init partial loaded');</script>
-
-<!-- ——— Firebase core + services (v8 compat) ——— -->
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.min.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.min.js"></script>
-<script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.min.js"></script>
-
-<!-- ——— FirebaseUI (styles + widget) ——— -->
-<link
-  rel="stylesheet"
-  href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
-  integrity="sha384-VxpY1rcHmlF+g12v7zFdLp/4e7iqB1DwSdyz+ZTzp8h6kIg3wvxxuG6mU9cA3+38"
-  crossorigin="anonymous"
-/>
-<script defer src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.min.js"></script>
-
-<!-- ——— Project helpers (load after core libs) ——— -->
-<script defer src="/js/firebase-config.js"></script>
-<script defer src="/js/firebase-ui-config.js"></script>
-<script defer src="/js/firebase-login.js"></script>
-<script defer src="/js/firebase-session.js"></script>
-<script defer src="/js/firebase-idle-logout.js"></script>
-
-<!-- ——— Early auth status check ——— -->
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Make sure the SDK has both loaded *and* been initialised
-    if (window.firebase?.apps?.length) {
+  console.log("🔥 firebase-init partial loaded");
+</script>
+
+<!-- 1) Firebase core (v8-compatible UMD builds) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<!-- 2) Firebase Auth -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+<!-- 3) Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<!-- 4) FirebaseUI styles & logic -->
+<link
+  href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
+  rel="stylesheet"
+/>
+<script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
+
+<!-- 5) Your Firebase project config and logic -->
+<script src="/js/firebase-config.js"></script>
+<script src="/js/firebase-ui-config.js"></script>
+<script src="/js/firebase-login.js"></script>
+<script src="/js/firebase-session.js"></script>
+
+<!-- 6) Optional: Auto logout after inactivity -->
+<script src="/js/firebase-idle-logout.js"></script>
+
+<!-- 7) Early status check -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (typeof firebase !== "undefined") {
       firebase.auth().onAuthStateChanged((user) => {
         window.currentUser = user || null;
-
         if (user) {
-          console.log(
-            '🟢 firebase-init: Logged in as',
-            user.email ?? user.phoneNumber ?? '(no identifier)'
-          );
+          console.log("🟢 firebase-init: Logged in as", user.email || user.phoneNumber);
         } else {
-          console.log('🔴 firebase-init: No user signed in');
+          console.log("🔴 firebase-init: No user signed in");
         }
       });
     } else {
-      console.warn('⚠️ firebase-init: Firebase SDK not ready yet');
+      console.warn("⚠️ Firebase not loaded yet in firebase-init");
     }
   });
 </script>
