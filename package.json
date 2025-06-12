@@ -2,36 +2,30 @@
   "name": "this-is-us",
   "version": "1.0.0",
   "private": true,
-
   "scripts": {
     "build": "npm run build:css && hugo --gc --minify",
     "build:css": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --minify"
   },
-  
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.10",
-    "tailwindcss": "^4.1.10",
+    "autoprefixer": "^10.4.21",
     "postcss": "^8.5.5",
-    "postcss-cli": "^10.1.0",         
-    "autoprefixer": "^10.4.21"
+    "postcss-cli": "^10.1.0",
+    "tailwindcss": "^4.1.10"
   },
-
   "dependencies": {
-    "@octokit/rest": "^21.0.0",        
+    "@octokit/rest": "^21.0.0",
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "itty-router": "^5.0.18"
   },
-
   "engines": {
     "node": ">=18"
   },
-
   "main": "tailwind.config.js",
   "directories": {
     "test": "tests"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/anchorskov/this-is-us.git"
