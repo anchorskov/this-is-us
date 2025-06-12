@@ -12,13 +12,12 @@
     "@tailwindcss/cli": "^4.1.10",
     "tailwindcss": "^4.1.10",
     "postcss": "^8.5.5",
-    "postcss-cli": "^10.1.0",          // ← CLI binary Hugo looks for
+    "postcss-cli": "^10.1.0",         
     "autoprefixer": "^10.4.21"
   },
 
   "dependencies": {
-    "@octokit/rest": "^21.0.0",        // v22 needs Node ≥ 20; v21 works on 18+
-    "axios": "^1.9.0",
+    "@octokit/rest": "^21.0.0",        
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "itty-router": "^5.0.18"
