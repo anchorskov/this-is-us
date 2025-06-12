@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build:css": "tailwindcss -i src/input.css -o static/css/site.css --minify",
+    "build:css": "tailwindcss -i assets/css/tailwind-input.css -o static/css/tailwind.css --minify",
     "build": "npm run build:css && hugo --gc --minify"
   },
   "devDependencies": {
