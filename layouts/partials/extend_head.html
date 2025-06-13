@@ -18,6 +18,12 @@
   {{ end }}
 {{ end }}
 
+<!-- ░░ TAILWIND (DEV ONLY) ░░ -->
+{{ if hugo.IsServer }}
+  <!-- Dev: inject Tailwind CDN for rapid iteration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+{{ end }}
+
 <!-- ░░ FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link
