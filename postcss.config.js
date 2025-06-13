@@ -1,22 +1,17 @@
 // File: postcss.config.js
 module.exports = {
   plugins: [
-    // Explicitly require the PostCSS plugin for Tailwind CSS.
-    // Plugins are typically provided as an array of functions or objects.
-    require('tailwindcss/nesting'), // This is often needed with Tailwind 4.x for nested CSS rules
+    // Use the dedicated Tailwind CSS plugin
     require('tailwindcss')({
-      // You can add your Tailwind config here if needed,
-      // though it's often in a separate tailwind.config.js file that Tailwind reads automatically.
-      // For Hugo Pipes, ensure your content paths cover all relevant files.
-      // Example content paths:
-      // content: [
-      //   './content/**/*.md',
-      //   './layouts/**/*.html',
-      //   './static/js/**/*.js', // If you have dynamic classes in JS
-      // ],
+      // Your Tailwind config can go here if it's not in a separate file,
+      // or Tailwind will automatically load from tailwind.config.js if it exists.
+      // Make sure your content paths are correctly defined in tailwind.config.js
+      // if you're not putting them here.
     }),
+    // Use the dedicated PostCSS Nesting plugin for CSS nesting syntax.
+    // This resolves the 'ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './nesting'' error.
+    require('postcss-nesting'),
     require('autoprefixer'), // Autoprefixer should also be required as a function
-    // Add other PostCSS plugins here if you need them later, e.g.:
-    // require('postcss-preset-env')({ stage: 1 }),
+    // Add other PostCSS plugins here if you need them later.
   ]
 };
