@@ -1,4 +1,4 @@
-# Logic Index – This Is Us Project (v3.6)
+# Logic Index – This Is Us Project (v3.7)
 
 
 ### `logic-index.md`
@@ -41,7 +41,7 @@
 
 ### `logic-index-v3.md`
 
-**Summary**: # Logic Index – This Is Us Project (v3.4) ### `logic-index.md` ### `README.md` ### `tailwind.config.js` ### `postcss.config.js`
+**Summary**: # Logic Index – This Is Us Project (v3.6) ### `logic-index.md` ### `README.md` ### `tailwind.config.js` ### `postcss.config.js`
 
 **Definitions**:
 - `(no defs)`
@@ -255,13 +255,14 @@ BASE_URL`
 **Definitions**:
 - `(no defs)`
 
-### `scripts/summarize-logic.py`
+### `scripts/summarizev7.py`
 
-**Summary**: # summarize-logic.py – v3.6 (HTML Script Analysis) -------------------- -------------- # Full project sweep, write logic-index-v3.md (default) # Focus on Town Hall only, print to stdout
+**Summary**: # summarize-logic.py – v3.7 (HTML Stylesheet Analysis) -------------------- -------------- # Full project sweep, write logic-index-v3.md (default) # Focus on Town Hall only, print to stdout
 
 **Definitions**:
 - `analyze_file_code`
 - `audit_api_endpoints`
+- `audit_html_link_href`
 - `audit_html_script_sources`
 - `audit_hugo_partials`
 - `audit_townhall`
@@ -324,6 +325,9 @@ from typing import List`
 - `floating-auth.html`
 - `head.html`
 - `site-scripts.html`
+
+**HTML Stylesheet Hrefs**:
+- `{{ $tailwind.RelPermalink }}`
 
 ### `layouts/_default/list.html`
 
@@ -484,6 +488,10 @@ from typing import List`
 - `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js`
 - `{{ `
 
+**HTML Stylesheet Hrefs**:
+- `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css`
+- `{{ `
+
 ### `layouts/events/hub.html`
 
 **Summary**: (no summary)
@@ -498,6 +506,9 @@ from typing import List`
 **HTML Script Sources**:
 - `https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js`
 - `{{ `
+
+**HTML Stylesheet Hrefs**:
+- `https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css`
 
 ### `layouts/candidates/list.html`
 
@@ -610,6 +621,16 @@ from typing import List`
 - `https://unpkg.com/leaflet@1.9.4/dist/leaflet.js`
 - `{{ `
 
+**HTML Stylesheet Hrefs**:
+- `https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css`
+- `https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap`
+- `https://fonts.googleapis.com/icon?family=Material+Icons`
+- `https://fonts.gstatic.com`
+- `https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css`
+- `https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css`
+- `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css`
+- `{{ `
+
 ### `layouts/partials/footer.html`
 
 **Summary**: // td containing LineNos // table containing LineNos and code // code blocks not having highlight as parent class
@@ -629,7 +650,6 @@ from typing import List`
 - `location`
 
 **HTML Script Sources**:
-- `/js/firebase-app.min.js`
 - `/js/firebase-config.js`
 - `/js/firebase-login.js`
 - `/js/firebase-session.js`
@@ -662,6 +682,9 @@ from typing import List`
 - `https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js`
 - `https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js`
 - `https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js`
+
+**HTML Stylesheet Hrefs**:
+- `https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css`
 
 ### `layouts/partials/floating-auth.html`
 
@@ -708,6 +731,18 @@ from typing import List`
 
 **HTML Script Sources**:
 - `{{ $search.RelPermalink }}`
+
+**HTML Stylesheet Hrefs**:
+- `../index.json`
+- `{{ $stylesheet.RelPermalink }}`
+- `{{ .Permalink | safeURL }}`
+- `{{ .Permalink }}`
+- `{{ if .Params.canonicalURL -}} {{ trim .Params.canonicalURL `
+- `{{ site.Params.assets.apple_touch_icon | default `
+- `{{ site.Params.assets.favicon | default `
+- `{{ site.Params.assets.favicon16x16 | default `
+- `{{ site.Params.assets.favicon32x32 | default `
+- `{{ site.Params.assets.safari_pinned_tab | default `
 
 ### `layouts/partials/header.html`
 
@@ -1698,7 +1733,6 @@ from typing import List`
 - `/js/admin-threads.js` in `layouts/admin/threads.html`
 - `/js/admin-users.js` in `layouts/admin/users.html`
 - `/js/events/index.js` in `layouts/events/create.html`
-- `/js/firebase-app.min.js` in `layouts/partials/site-scripts.html`
 - `/js/firebase-auth-guard.js` in `layouts/partials/extend_head.html`
 - `/js/firebase-config.js` in `layouts/partials/firebase-init.html`
 - `/js/firebase-config.js` in `layouts/partials/site-scripts.html`
@@ -1731,3 +1765,29 @@ from typing import List`
 - `{{ ` in `layouts/events/hub.html`
 - `{{ ` in `layouts/events/section.html`
 - `{{ ` in `layouts/partials/extend_head.html`
+
+## 🎨 External Stylesheet Includes
+
+- `../index.json` in `layouts/partials/head.html`
+- `https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css` in `layouts/events/hub.html`
+- `https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css` in `layouts/partials/extend_head.html`
+- `https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap` in `layouts/partials/extend_head.html`
+- `https://fonts.googleapis.com/icon?family=Material+Icons` in `layouts/partials/extend_head.html`
+- `https://fonts.gstatic.com` in `layouts/partials/extend_head.html`
+- `https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css` in `layouts/partials/extend_head.html`
+- `https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css` in `layouts/partials/extend_head.html`
+- `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css` in `layouts/events/section.html`
+- `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css` in `layouts/partials/extend_head.html`
+- `https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css` in `layouts/partials/firebase-init.html`
+- `{{ $stylesheet.RelPermalink }}` in `layouts/partials/head.html`
+- `{{ $tailwind.RelPermalink }}` in `layouts/_default/baseof.html`
+- `{{ .Permalink | safeURL }}` in `layouts/partials/head.html`
+- `{{ .Permalink }}` in `layouts/partials/head.html`
+- `{{ ` in `layouts/events/section.html`
+- `{{ ` in `layouts/partials/extend_head.html`
+- `{{ if .Params.canonicalURL -}} {{ trim .Params.canonicalURL ` in `layouts/partials/head.html`
+- `{{ site.Params.assets.apple_touch_icon | default ` in `layouts/partials/head.html`
+- `{{ site.Params.assets.favicon | default ` in `layouts/partials/head.html`
+- `{{ site.Params.assets.favicon16x16 | default ` in `layouts/partials/head.html`
+- `{{ site.Params.assets.favicon32x32 | default ` in `layouts/partials/head.html`
+- `{{ site.Params.assets.safari_pinned_tab | default ` in `layouts/partials/head.html`
