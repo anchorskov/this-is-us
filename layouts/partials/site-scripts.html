@@ -1,10 +1,10 @@
 {{- /* ─────────────────────────────────────────────────────────────
-     layouts/partials/site-scripts.html
-     Injected right before </body>.
-     Only things that truly belong at the end of the page go here.
-     ───────────────────────────────────────────────────────────── */ -}}
+    layouts/partials/site-scripts.html
+    Injected right before </body>.
+    Only things that truly belong at the end of the page go here.
+    ───────────────────────────────────────────────────────────── */ -}}
 
-{{/* 1️⃣  Dynamic API root (dev vs prod) */}}
+{{/* 1️⃣  Dynamic API root (dev vs prod) */}}
 <script>
   (function () {
     const dev = location.hostname === 'localhost' && location.port === '1313';
@@ -14,19 +14,20 @@
 </script>
 
 {{/* ── Quick helpers ─────────────────────────────────────────── */}}
-{{- $rp         := .RelPermalink -}}
+{{- $rp        := .RelPermalink -}}
 {{- $needsLogin := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
 
-{{/* 2️⃣  Firebase core (always) */}}
+{{/* 2️⃣  Firebase core (always) - Firebase SDKs are loaded via firebase-init.html from CDN.
+    This partial should only load your *site-specific* Firebase scripts. */}}
 <script src="/js/firebase-session.js" defer></script>
 
-{{/* 3️⃣  Optional FirebaseUI login */}}
+{{/* 3️⃣  Optional FirebaseUI login */}}
 {{- if $needsLogin }}
   <script src="/js/firebase-login.js" defer></script>
 {{- end }}
 
-{{/* 4️⃣  Town-Hall page bundles */}}
-{{- if strings.HasPrefix $rp "/townhall/map"      }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
+{{/* 4️⃣  Town-Hall page bundles */}}
+{{- if strings.HasPrefix $rp "/townhall/map"  }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
 {{- if strings.HasPrefix $rp "/townhall/threads"  }}<script src="/js/townhall/threads.js" defer></script>{{ end }}
 {{- if strings.HasPrefix $rp "/townhall/create"  }}<script src="/js/townhall/create.js"  defer></script>{{ end }}
 
@@ -35,9 +36,11 @@
   <script src="/js/townhall/home.js" defer></script>
 {{- end }}
 
-{{/* 5️⃣  Dev-only helpers (Firebase config) */}}
+{{/* 5️⃣  Dev-only helpers (Firebase config) -
+    In production, firebase-config.js is not needed locally as its values
+    should be baked into your worker/frontend at build time or fetched from env vars.
+    Firebase app.min.js is already loaded from CDN in firebase-init.html.
+    */}}
 {{- if hugo.IsServer }}
   <script src="/js/firebase-config.js"></script>
-{{- else }}
-  <script src="/js/firebase-app.min.js"></script>
 {{- end }}
