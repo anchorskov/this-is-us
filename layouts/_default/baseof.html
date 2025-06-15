@@ -6,13 +6,14 @@
   {{ else }}lang="{{ .Site.LanguageCode | default "en" }}"{{ end }}
 >
 <head>
-  <!-- KIND: {{ .Kind }} · SECTION: {{ .Section }} · LAYOUT: {{ .Layout }} -->
-  {{ partial "head.html" . }}
+    {{/* This is the key change: We only load the default head partial (with its
+         conflicting stylesheet) on pages that are NOT the townhall section.
+         The townhall.html layout now builds its own <head> from scratch. */}}
+    {{ if ne .Section "townhall" }}
+      {{ partial "head.html" . }}
+    {{ end }}
 
-  {{/* Tailwind CSS – compiled via Hugo Pipes (no CDN) */}}
-  {{ $tailwind := resources.Get "css/tailwind.css" | postCSS | minify | fingerprint }}
-  <link href="{{ $tailwind.RelPermalink }}" rel="stylesheet" integrity="{{ $tailwind.Data.Integrity }}">
-
+  {{/* The block and firebase-init partial are needed globally. */}}
   {{ block "header" . }}{{ end }}
   {{ partial "firebase-init.html" . }}
 </head>
@@ -26,6 +27,7 @@
     {{ with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end }}
   "
 >
+  {{/* The header is now loaded on all pages for consistency. */}}
   {{ partialCached "header.html" . .Page }}
   {{ partial "floating-auth.html" . }}
 
@@ -33,7 +35,9 @@
     {{ block "main" . }}{{ end }}
   </main>
 
+  {{/* The footer is now loaded on all pages for consistency. */}}
   {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
+
   {{ partial "site-scripts.html" . }}
 
   {{ block "scripts" . }}{{ end }}

@@ -50,7 +50,7 @@ A space to share stories, ideas, and actions that reflect our collective commitm
 
 ---
 
-## 🗳️ Candidate Directory (Coming Soon)
+## 🗳️ Candidate Directory 
 
 An upcoming feature to explore and evaluate candidates based on integrity and public service commitment, organized by location.
 

@@ -19,10 +19,10 @@
 {{ end }}
 
 <!-- ░░ TAILWIND (DEV ONLY) ░░ -->
-{{ if hugo.IsServer }}
-  <!-- Dev: inject Tailwind CDN for rapid iteration -->
-  <script src="https://cdn.tailwindcss.com"></script>
-{{ end }}
+<!--{{ if hugo.IsServer }}
+ Dev: inject Tailwind CDN for rapid iteration 
+    <script src="https://cdn.tailwindcss.com"></script>
+{{ end }} -->
 
 <!-- ░░ FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -33,7 +33,7 @@
 <!-- ░░ CSS ░░ -->
 {{ $needsMap       := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
 {{ $filePath       := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
-{{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
+{{ $needsTimeline  := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
   <!-- Leaflet core styles -->
@@ -59,9 +59,12 @@
     href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
-<!-- Project-scoped styles (after Tailwind so they can override) -->
-<link rel="stylesheet" href="{{ "css/custom.css"   | relURL }}">
-<link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
+{{/* This is the corrected section: It prevents global styles from loading on the Town Hall page. */}}
+{{ if ne .Section "townhall" }}
+  <link rel="stylesheet" href="{{ "css/custom.css"  | relURL }}">
+  <link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
+{{ end }}
+
 
 <!-- Material Icons -->
 <link

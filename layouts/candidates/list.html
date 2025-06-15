@@ -14,7 +14,7 @@
     <!-- Location Filter -->
     <label class="block mb-4">
       <span class="font-semibold text-blue-700">Filter by Location</span>
-      <input
+      <input class="input-legacy"
         x-model="filter"
         @input.debounce.500ms="fetch()"
         @keyup.enter="fetch()"

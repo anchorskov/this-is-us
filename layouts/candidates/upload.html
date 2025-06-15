@@ -20,7 +20,7 @@
       <form id="uploadForm" enctype="multipart/form-data" class="space-y-4">
         <label class="block">
           <span class="text-gray-700">Candidate PDF</span>
-          <input
+          <input class="input-legacy"
             type="file"
             name="file"
             accept="application/pdf"
@@ -28,7 +28,7 @@
             class="mt-1 block w-full p-2 border rounded"
           />
         </label>
-        <button
+        <button class="button-legacy"
           type="submit"
           class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
@@ -52,7 +52,7 @@
           <span class="text-gray-700">Location</span>
           <input name="location" type="text" required class="mt-1 block w-full p-2 border rounded" />
         </label>
-        <input type="hidden" name="key" />
+        <input class="input-legacy" type="hidden" name="key" />
         <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
           Submit Candidate Details
         </button>

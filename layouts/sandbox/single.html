@@ -23,7 +23,7 @@
           class="w-full h-32 p-4 border rounded mb-4"
           placeholder="Paste the content here..."
         ></textarea>
-        <button
+        <button class="button-legacy"
           @click="nextStage()"
           :disabled="!input.trim()"
           class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -45,7 +45,7 @@
         ></textarea>
         <div class="flex justify-between">
           <button @click="prevStage()" class="text-gray-500">← Back</button>
-          <button
+          <button class="button-legacy"
             @click="nextStage()"
             :disabled="!answers[stage - 1].trim()"
             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -66,7 +66,7 @@
             <p class="text-blue-800" x-text="line"></p>
           </template>
         </div>
-        <button
+        <button class="button-legacy"
           @click="restart()"
           class="mt-4 text-sm text-blue-600 hover:underline"
         >

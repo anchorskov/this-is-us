@@ -1,30 +1,20 @@
-# summarize-logic.py – v3.7 (HTML Stylesheet Analysis)
+# summarize-logic.py – v3.9 (Improved Tailwind Content Audit)
 """
-CLI tool to generate a logic map of the This‑Is‑Us repo and surface
+CLI tool to generate a logic map of the This-Is-Us repo and surface
 common Town Hall wiring mistakes, with enhanced code analysis.
 
-Improvements in v3.7
+Improvements in v3.9
 --------------------
-* **Improved `analyze_file_code`**: Now `analyze_file_code` which identifies functions, classes,
-  and also common import/export patterns for better dependency mapping.
-* **API Endpoint Detection**: Scans for common API route definitions (e.g., `router.get`, `export default { fetch }`).
-* **Hugo Partial/Template Usage**: Identifies `{{ partial }}` and `{{ template }}` calls within Hugo layouts.
-* **New HTML Script Source Detection**: Extracts `script src="..."` from HTML files to list external JavaScript dependencies.
-* **New HTML Stylesheet Href Detection**: Extracts `link href="..."` from HTML files to list external CSS dependencies.
-* **New Audit Sections**:
-    * "API Endpoints Found" for Cloudflare Workers.
-    * "Hugo Template Usage" for better understanding layout composition.
-    * "External JavaScript Includes" for a consolidated view of scripts loaded by HTML.
-    * "External Stylesheet Includes" for a consolidated view of CSS files loaded by HTML.
+* **Smarter Tailwind Content Path Audit**: The `--audit-tailwind` function now
+  strips JavaScript comments from the content array before parsing paths.
+  This prevents errors and provides a much more accurate report on
+  which files Tailwind is configured to scan.
 
 Usage examples
 --------------
 ```bash
-# Full project sweep, write logic-index-v3.md (default)
-python summarize-logic.py
-
-# Focus on Town Hall only, print to stdout
-python summarize-logic.py --townhall-only --output -
+# ONLY run the new, more accurate Tailwind content path audit
+python summarize-logic.py --audit-tailwind
 ```
 """
 from __future__ import annotations
@@ -36,12 +26,13 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Set, Dict, Any
+from glob import glob
 
 try:
     import frontmatter  # type: ignore
 except ImportError:
     print("⚠️  pip install python-frontmatter for full feature support", file=sys.stderr)
-    frontmatter = None  # fallback safe‑guard
+    frontmatter = None  # fallback safe-guard
 
 BASE_DIR = Path('.')
 TARGET_EXTENSIONS = {'.js', '.html', '.mjs', '.py', '.md', '.toml', '.sql'}
@@ -79,9 +70,10 @@ RE_API_ENDPOINTS = re.compile(
     r'(?:router|app|proxy)\.(get|post|put|delete|patch|options)\s*\(\s*["\'`](.*?)["\'`]',
     re.MULTILINE | re.IGNORECASE
 )
-RE_HUGO_PARTIALS = re.compile(r'\{\{\s*(?:partial|template)\s+["\'"](.+?)["\'"]', re.MULTILINE)
+RE_HUGO_PARTIALS = re.compile(r'\{\{\s*(?:partial|template)\s+["\'](.+?)["\']', re.MULTILINE)
 RE_HTML_SCRIPT_SRC = re.compile(r'<script\s+[^>]*?src=["\'](.+?)["\']', re.MULTILINE)
-RE_HTML_LINK_HREF = re.compile(r'<link\s+[^>]*?href=["\'](.+?)["\']', re.MULTILINE) # New regex for CSS links
+RE_HTML_LINK_HREF = re.compile(r'<link\s+[^>]*?href=["\'](.+?)["\']', re.MULTILINE)
+RE_TAILWIND_CONTENT = re.compile(r'content\s*:\s*\[([\s\S]*?)\]', re.MULTILINE) # More robust regex
 
 
 # ANSI helpers
@@ -104,7 +96,7 @@ def extract_summary(path: Path) -> str:
                     return f"Description: {post.metadata['description']}"
             except Exception:
                 pass # Fallback to no summary if frontmatter fails
-        return ' '.join(comments[:5]) if comments else '(no summary)' # Increased lines for more context
+        return ' '.join(comments[:5]) if comments else '(no summary)'
     except Exception:
         return '(unreadable)'
 
@@ -114,9 +106,8 @@ def analyze_file_code(path: Path) -> Dict[str, Any]:
     try:
         code = path.read_text(encoding='utf-8', errors='ignore')
 
-        # Definitions (functions, classes, const/let/var assignments for JS)
+        # Definitions
         for match in RE_DEFINITIONS.finditer(code):
-            # Group 2 is the actual name
             name = match.group(2)
             if name and name not in results['definitions']:
                 results['definitions'].append(name)
@@ -124,12 +115,11 @@ def analyze_file_code(path: Path) -> Dict[str, Any]:
         # Imports/Exports
         if path.suffix in {'.js', '.mjs'}:
             for match in RE_JS_IMPORTS_EXPORTS.finditer(code):
-                # Group 1: import source, Group 2: require source, Group 3: export name
-                if match.group(1): # import
+                if match.group(1):
                     results['imports_exports'].append(f"import '{match.group(1)}'")
-                elif match.group(2): # require
+                elif match.group(2):
                     results['imports_exports'].append(f"require('{match.group(2)}')")
-                elif match.group(3): # export
+                elif match.group(3):
                     results['imports_exports'].append(f"export {match.group(3)}")
         elif path.suffix == '.py':
             for match in RE_PY_IMPORTS.finditer(code):
@@ -142,60 +132,38 @@ def analyze_file_code(path: Path) -> Dict[str, Any]:
                         results['imports_exports'].append(f"import {imp.strip()}")
 
         # API Endpoints
-        if path.suffix in {'.js', '.mjs'} and (
-            'worker/src/routes' in path.parts or
-            'mcp/src/routes' in path.parts or
-            'ballots/src' in path.parts # Check all workers
-        ):
+        if path.suffix in {'.js', '.mjs'} and any(p in path.parts for p in ['worker/src', 'mcp/src', 'ballots/src']):
             for match in RE_API_ENDPOINTS.finditer(code):
-                method = match.group(1).upper()
-                route = match.group(2)
-                results['api_endpoints'].append(f"{method} {route}")
+                results['api_endpoints'].append(f"{match.group(1).upper()} {match.group(2)}")
         
-        # Hugo Partials/Templates
-        if path.suffix == '.html' and 'layouts' in path.parts:
+        # Hugo Partials/Templates & HTML links
+        if path.suffix == '.html':
             for match in RE_HUGO_PARTIALS.finditer(code):
                 results['hugo_partials'].append(match.group(1))
-            
-            # HTML Script Sources
             for match in RE_HTML_SCRIPT_SRC.finditer(code):
                 results['html_script_src'].append(match.group(1))
-
-            # HTML Link Hrefs (for CSS)
             for match in RE_HTML_LINK_HREF.finditer(code):
                 results['html_link_href'].append(match.group(1))
 
-
     except Exception:
-        results['definitions'] = ['(unreadable)']
-        results['imports_exports'] = ['(unreadable)']
-        results['api_endpoints'] = ['(unreadable)']
-        results['hugo_partials'] = ['(unreadable)']
-        results['html_script_src'] = ['(unreadable)']
-        results['html_link_href'] = ['(unreadable)'] # Initialize if error occurs
+        results = {k: ['(unreadable)'] for k in results.keys()}
 
     # Ensure sorted unique lists
-    results['definitions'] = sorted(list(set(results['definitions']))) or ['(no defs)']
-    results['imports_exports'] = sorted(list(set(results['imports_exports']))) or ['(no imports/exports)']
-    results['api_endpoints'] = sorted(list(set(results['api_endpoints'])))
-    results['hugo_partials'] = sorted(list(set(results['hugo_partials'])))
-    results['html_script_src'] = sorted(list(set(results['html_script_src'])))
-    results['html_link_href'] = sorted(list(set(results['html_link_href']))) # Sort and unique this list
+    for key in results:
+        results[key] = sorted(list(set(results[key])))
+    if not results['definitions']: results['definitions'] = ['(no defs)']
+    if not results['imports_exports']: results['imports_exports'] = ['(no imports/exports)']
     
     return results
 
 def should_skip(path: Path) -> bool:
     """Determines if a path should be skipped based on ignored directories and extensions."""
-    if any(part in IGNORED_DIRS for part in path.parts):
-        return True
-    if path.suffix.lower() in IGNORED_EXTENSIONS:
-        return True
-    return False
+    return any(part in IGNORED_DIRS for part in path.parts) or path.suffix.lower() in IGNORED_EXTENSIONS
 
 def walk_directory(base: Path, capture: List[str]):
     """Recursively walks the directory, analyzes files, and captures summary."""
     for root, dirs, files in os.walk(base):
-        dirs[:] = [d for d in dirs if d not in IGNORED_DIRS] # In-place modification to prevent walking ignored dirs
+        dirs[:] = [d for d in dirs if d not in IGNORED_DIRS]
         for fname in files:
             fpath = Path(root) / fname
             if should_skip(fpath):
@@ -206,188 +174,123 @@ def walk_directory(base: Path, capture: List[str]):
                 
                 capture.append(f"\n### `{rel}`\n")
                 capture.append(f"**Summary**: {extract_summary(fpath)}\n")
-                
                 capture.append("**Definitions**:\n" + '\n'.join(f"- `{d}`" for d in analysis['definitions']))
                 
-                if analysis['imports_exports'] and analysis['imports_exports'] != ['(no imports/exports)']:
+                if analysis.get('imports_exports') and analysis['imports_exports'] != ['(no imports/exports)']:
                     capture.append("\n**Imports/Exports**:\n" + '\n'.join(f"- `{ie}`" for ie in analysis['imports_exports']))
-                
-                if analysis['api_endpoints']:
-                    capture.append("\n**API Endpoints**:\n" + '\n'.join(f"- `{ep}`" for ep in analysis['api_endpoints']))
-                
-                if analysis['hugo_partials']:
-                    capture.append("\n**Hugo Partials/Templates Used**:\n" + '\n'.join(f"- `{hp}`" for hp in analysis['hugo_partials']))
-                
-                if analysis['html_script_src']:
-                    capture.append("\n**HTML Script Sources**:\n" + '\n'.join(f"- `{src}`" for src in analysis['html_script_src']))
-                
-                if analysis['html_link_href']: # New section for HTML link hrefs
-                    capture.append("\n**HTML Stylesheet Hrefs**:\n" + '\n'.join(f"- `{href}`" for href in analysis['html_link_href']))
-
+                for key in ['api_endpoints', 'hugo_partials', 'html_script_src', 'html_link_href']:
+                    if analysis.get(key):
+                        title = key.replace('_', ' ').title().replace('Html', 'HTML')
+                        capture.append(f"\n**{title}**:\n" + '\n'.join(f"- `{item}`" for item in analysis[key]))
 
 def audit_townhall(capture: List[str]):
     """Performs specific audits for Town Hall features."""
     capture.append("\n## 🔍 Town Hall Debug Audit\n")
-    # Layout presence
     capture.append("### Layout templates\n")
     for rel in TOWNHALL_EXPECTED_LAYOUTS:
         status = colour('✅ found', GREEN) if Path(rel).exists() else colour('❌ missing', RED)
         capture.append(f"- `{rel}` – {status}")
-    # JS presence
+
     capture.append("\n### Critical JS files\n")
     for rel in TOWNHALL_EXPECTED_JS:
         status = colour('✅ found', GREEN) if Path(rel).exists() else colour('❌ missing', RED)
         capture.append(f"- `{rel}` – {status}")
-    # Thread sanity check
-    threads_dir = Path('content/townhall/thread')
-    capture.append("\n### Thread front‑matter sanity\n")
-    if not threads_dir.exists():
-        capture.append(colour("⚠️  No markdown threads found under content/townhall/thread", YELLOW))
-    else:
-        found_threads = False
-        for md in threads_dir.glob('*.md'):
-            found_threads = True
-            try:
-                if frontmatter:
-                    post = frontmatter.load(md)
-                    errs = []
-                    # Check for slug and lat/lon keys
-                    for key in ('slug', 'lat', 'lon'):
-                        if key not in post.metadata:
-                            errs.append(key)
-                    # Check for lat/lon format
-                    for coord in ('lat', 'lon'):
-                        if coord in post.metadata and not isinstance(post.metadata[coord], (int, float)):
-                            errs.append(f"{coord}‑format")
-                    if errs:
-                        capture.append(f"- `{md.relative_to(BASE_DIR)}` → " + colour('issues: ' + ', '.join(errs), YELLOW))
-                else:
-                    capture.append(f"- `{md.relative_to(BASE_DIR)}` → " + colour('skipped (python-frontmatter not installed)', YELLOW))
-            except Exception as e:
-                capture.append(f"- `{md.relative_to(BASE_DIR)}` → " + colour(f'error parsing: {e}', RED))
-        if not found_threads:
-            capture.append(colour("⚠️  No markdown thread files found in content/townhall/thread", YELLOW))
 
-
-def audit_api_endpoints(capture: List[str]):
-    """Audits and lists detected API endpoints from workers."""
-    capture.append("\n## 🌐 API Endpoints Found\n")
-    all_endpoints: List[str] = []
-    worker_dirs = [Path('ballots/src'), Path('worker/src'), Path('mcp/src')]
-    for worker_dir in worker_dirs:
-        if not worker_dir.exists():
-            continue
-        for root, _, files in os.walk(worker_dir):
-            for fname in files:
-                fpath = Path(root) / fname
-                if fpath.suffix in {'.js', '.mjs'}:
-                    analysis = analyze_file_code(fpath)
-                    if analysis['api_endpoints']:
-                        all_endpoints.extend([f"{ep} ({fpath.relative_to(BASE_DIR)})" for ep in analysis['api_endpoints']])
-    
-    if all_endpoints:
-        for ep in sorted(list(set(all_endpoints))):
-            capture.append(f"- `{ep}`")
-    else:
-        capture.append(colour("No API endpoints detected in worker directories.", YELLOW))
-
-def audit_hugo_partials(capture: List[str]):
-    """Audits and lists detected Hugo partial/template usages."""
-    capture.append("\n## 📄 Hugo Template Usage\n")
-    all_hugo_partials: List[str] = []
-    layouts_dir = Path('layouts')
-    if not layouts_dir.exists():
-        capture.append(colour("⚠️  'layouts' directory not found.", YELLOW))
+def audit_tailwind_content_paths(capture: List[str]):
+    """
+    **NEW**: Audits the content paths in tailwind.config.js to ensure they match files.
+    This is a critical diagnostic for CSS compilation issues.
+    """
+    capture.append("\n## 🌪️ Tailwind Content Path Audit\n")
+    config_path = Path('tailwind.config.js')
+    if not config_path.exists():
+        capture.append(colour(f"❌ `tailwind.config.js` not found!", RED))
         return
 
-    for root, _, files in os.walk(layouts_dir):
-        for fname in files:
-            fpath = Path(root) / fname
-            if fpath.suffix == '.html':
-                analysis = analyze_file_code(fpath)
-                if analysis['hugo_partials']:
-                    all_hugo_partials.extend([
-                        f"`{hp}` called in `{fpath.relative_to(BASE_DIR)}`"
-                        for hp in analysis['hugo_partials']
-                    ])
-    
-    if all_hugo_partials:
-        for hp_call in sorted(list(set(all_hugo_partials))):
-            capture.append(f"- {hp_call}")
-    else:
-        capture.append(colour("No Hugo partials or templates detected.", YELLOW))
+    try:
+        content = config_path.read_text(encoding='utf-8')
+        match = RE_TAILWIND_CONTENT.search(content)
+        if not match:
+            capture.append(colour("❌ Could not find `content: [...]` array in config.", RED))
+            return
+        
+        # Extract content block and clean it
+        patterns_str = match.group(1)
+        # Remove lines containing JavaScript comments
+        cleaned_patterns_str = '\n'.join(line for line in patterns_str.splitlines() if not line.strip().startswith('//'))
+        
+        # Extract comma-separated, quoted strings from the cleaned content block
+        patterns = [p.strip().strip("'\"") for p in cleaned_patterns_str.split(',') if p.strip()]
+        
+        capture.append(f"Found {len(patterns)} content patterns to check in `{config_path}`:\n")
 
-def audit_html_script_sources(capture: List[str]):
-    """Audits and lists detected external script sources in HTML files."""
-    capture.append("\n## 🔗 External JavaScript Includes\n")
-    all_script_srcs: List[str] = []
-    
-    # Check all HTML files in layouts and content (as they might contain direct script tags)
-    dirs_to_check = [Path('layouts'), Path('content')]
-    for check_dir in dirs_to_check:
-        if not check_dir.exists():
-            continue
-        for root, _, files in os.walk(check_dir):
-            for fname in files:
-                fpath = Path(root) / fname
-                if fpath.suffix == '.html':
-                    analysis = analyze_file_code(fpath)
-                    if analysis['html_script_src']:
-                        all_script_srcs.extend([
-                            f"`{src}` in `{fpath.relative_to(BASE_DIR)}`"
-                            for src in analysis['html_script_src']
-                        ])
-    
-    if all_script_srcs:
-        for src_path in sorted(list(set(all_script_srcs))):
-            capture.append(f"- {src_path}")
-    else:
-        capture.append(colour("No external JavaScript `src` attributes detected in HTML files.", YELLOW))
+        total_files_found = 0
+        for pattern in patterns:
+            if not pattern: continue
+            # The glob function needs recursive=True for '**'
+            found_files = glob(pattern, recursive=True)
+            count = len(found_files)
+            total_files_found += count
+            status = colour(f"✅ Found {count} files", GREEN) if count > 0 else colour(f"❌ Found 0 files", RED)
+            capture.append(f"- Pattern: `{pattern}` → {status}")
 
-def audit_html_link_href(capture: List[str]):
-    """Audits and lists detected external stylesheet (link href) sources in HTML files."""
-    capture.append("\n## 🎨 External Stylesheet Includes\n")
-    all_link_hrefs: List[str] = []
-    
-    # Check all HTML files in layouts and content (as they might contain direct link tags)
-    dirs_to_check = [Path('layouts'), Path('content')]
-    for check_dir in dirs_to_check:
-        if not check_dir.exists():
-            continue
-        for root, _, files in os.walk(check_dir):
-            for fname in files:
-                fpath = Path(root) / fname
-                if fpath.suffix == '.html':
-                    analysis = analyze_file_code(fpath)
-                    if analysis['html_link_href']:
-                        all_link_hrefs.extend([
-                            f"`{href}` in `{fpath.relative_to(BASE_DIR)}`"
-                            for href in analysis['html_link_href']
-                        ])
-    
-    if all_link_hrefs:
-        for href_path in sorted(list(set(all_link_hrefs))):
-            capture.append(f"- {href_path}")
+        capture.append("\n" + ("-"*20))
+        if total_files_found > 0:
+            capture.append(colour(f"✅ Success! The patterns match a total of {total_files_found} files.", GREEN))
+        else:
+            capture.append(colour(f"❌ Critical Error! No files were found by any content pattern.", RED))
+            capture.append(colour("   This is why your CSS is not compiling. Check the paths above.", RED))
+
+
+    except Exception as e:
+        capture.append(colour(f"An error occurred during Tailwind audit: {e}", RED))
+
+def generate_report_section(title: str, items: List[str], capture: List[str]):
+    """Helper to generate a markdown section for a list of items."""
+    capture.append(f"\n## {title}\n")
+    if items:
+        for item in sorted(list(set(items))):
+            capture.append(f"- {item}")
     else:
-        capture.append(colour("No external stylesheet `href` attributes detected in HTML files.", YELLOW))
+        capture.append(colour(f"No items detected for this section.", YELLOW))
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate logic index & Town Hall audit.")
+    parser = argparse.ArgumentParser(description="Generate logic index & project audits.")
+    parser.add_argument('--audit-tailwind', action='store_true', help='Only run the Tailwind content path audit.')
     parser.add_argument('--townhall-only', action='store_true', help='Only run Town Hall audit.')
     parser.add_argument('--skip-index', action='store_true', help='Skip file index generation.')
     parser.add_argument('--output', default='logic-index-v3.md', help='Path or - for stdout')
     args = parser.parse_args()
 
-    capture: List[str] = ["# Logic Index – This Is Us Project (v3.7)\n"]
+    capture: List[str] = ["# Logic Index – This Is Us Project (v3.9)\n"]
 
-    if not args.townhall_only and not args.skip_index:
-        walk_directory(BASE_DIR, capture)
+    if args.audit_tailwind:
+        audit_tailwind_content_paths(capture)
+    else:
+        if not args.townhall_only and not args.skip_index:
+            walk_directory(BASE_DIR, capture)
 
-    audit_townhall(capture)
-    audit_api_endpoints(capture)
-    audit_hugo_partials(capture)
-    audit_html_script_sources(capture)
-    audit_html_link_href(capture) # New audit section for HTML link hrefs
+        audit_townhall(capture)
+        
+        # Simplified report generation
+        all_items: Dict[str, List[str]] = defaultdict(list)
+        for root, _, files in os.walk(BASE_DIR):
+             for fname in files:
+                fpath = Path(root) / fname
+                if should_skip(fpath) or fpath.suffix not in {'.html', '.js', '.mjs'}:
+                    continue
+                analysis = analyze_file_code(fpath)
+                if analysis.get('api_endpoints'):
+                    all_items['🌐 API Endpoints Found'].extend(analysis['api_endpoints'])
+                if analysis.get('hugo_partials'):
+                    all_items['📄 Hugo Template Usage'].extend([f"`{hp}` called in `{fpath.relative_to(BASE_DIR)}`" for hp in analysis['hugo_partials']])
+                if analysis.get('html_script_src'):
+                    all_items['🔗 External JavaScript Includes'].extend([f"`{src}` in `{fpath.relative_to(BASE_DIR)}`" for src in analysis['html_script_src']])
+                if analysis.get('html_link_href'):
+                    all_items['🎨 External Stylesheet Includes'].extend([f"`{href}` in `{fpath.relative_to(BASE_DIR)}`" for href in analysis['html_link_href']])
+
+        for title, items in all_items.items():
+            generate_report_section(title, items, capture)
 
     output_text = '\n'.join(capture)
 
@@ -396,7 +299,6 @@ def main():
     else:
         Path(args.output).write_text(output_text, encoding='utf-8')
         print(colour(f"✅ {args.output} generated", GREEN))
-
 
 if __name__ == '__main__':
     main()

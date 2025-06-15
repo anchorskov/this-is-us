@@ -3,16 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "hugo --gc --minify"
+    "build:css": "postcss ./assets/css/townhall.css -o ./static/css/townhall.built.css",
+    "watch:css": "postcss ./assets/css/townhall.css -o ./static/css/townhall.built.css --watch",
+    "build:hugo": "hugo --gc --minify",
+    "build": "npm run build:css && npm run build:hugo",
+    "dev:hugo": "hugo server",
+    "dev": "npm-run-all --parallel watch:css dev:hugo"
   },
   "devDependencies": {
-    "@tailwindcss/cli": "^4.1.10",
-    "@tailwindcss/postcss": "^4.1.10",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.5",
+    "autoprefixer": "^10.4.19",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.4.38",
     "postcss-cli": "^10.1.0",
-    "postcss-nesting": "^12.1.5",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^3.4.4"
   },
   "dependencies": {
     "@octokit/rest": "^21.0.0",
@@ -22,21 +25,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "main": "tailwind.config.js",
-  "directories": {
-    "test": "tests"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anchorskov/this-is-us.git"
-  },
-  "bugs": {
-    "url": "https://github.com/anchorskov/this-is-us/issues"
-  },
-  "homepage": "https://github.com/anchorskov/this-is-us#readme",
-  "license": "ISC",
-  "type": "commonjs",
-  "keywords": [],
-  "author": ""
+  }
 }

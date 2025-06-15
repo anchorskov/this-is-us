@@ -1,60 +1,108 @@
-{{- /* ─────────────────────────────────────────────────────────────
-     layouts/section/townhall.html
-     Town-Hall landing (hero + tabs + FAB)
-   ───────────────────────────────────────────────────────────── */}}
+{{- /* ----------------------------------------------------------------
+      File: /layouts/section/townhall.html
+      Description: Standalone layout for the Town Hall main page.
+      Dependencies:
+        - CSS: /css/townhall.built.css (Tailwind v3)
+        - JS: /js/townhall/home.js
+        - Libs: Leaflet.js v1.9.4, Firebase v8.10.1
+    ----------------------------------------------------------------- */}}
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode | default "en" }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ .Title }} | {{ .Site.Title }}</title>
 
-{{ define "main" }}
-<div class="mx-auto max-w-7xl px-4 py-8 space-y-10">
+    {{/* --- Styles for this page ONLY --- */}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link href="/css/townhall.built.css" rel="stylesheet">
 
-  <!-- 1 ░ HERO / LOCATION ░ -->
-  <section class="bg-white shadow rounded-lg p-6 space-y-4">
-    <h1 class="text-2xl font-bold">🏛️ Town Hall</h1>
+    {{/* --- Scripts for this page ONLY --- */}}
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="/js/firebase-config.js"></script>
+    <script src="/js/firebase-session.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
+</head>
+<body class="bg-gray-100">
 
-    <div class="flex flex-col md:flex-row gap-3">
-      <!-- ZIP-only search -->
-      <input id="location-input"
-             class="flex-1 border rounded p-2"
-             maxlength="5"
-             inputmode="numeric"
-             pattern="[0-9]{5}"
-             placeholder="Enter ZIP code…">
-      <button id="use-my-location"
-              class="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700">
-        📍 Use my location
-      </button>
+  <header class="bg-white shadow-sm sticky top-0 z-20">
+    <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex-shrink-0">
+          <a href="/" class="text-2xl font-bold text-gray-900">This is US</a>
+        </div>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-baseline space-x-4">
+            <a href="/about/" class="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Our Why</a>
+            <a href="/events/" class="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Events</a>
+            <a href="/candidates/" class="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Candidates</a>
+            <a href="/townhall/" class="text-white bg-blue-600 px-3 py-2 rounded-md text-sm font-medium">Town Hall</a>
+            <a href="/contact/" class="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
+            <a href="/account/" class="text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">Your Account</a>
+          </div>
+        </div>
+        <div id="floating-auth" class="flex items-center">
+            <button id="auth-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-300">Login</button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div class="mx-auto max-w-7xl px-4 py-8">
+
+      <!-- 1 ░ HERO / LOCATION INPUT ░ -->
+      <section class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <a href="/townhall/create/" class="group block">
+          <h1 class="text-3xl font-bold text-gray-800 mb-4 group-hover:text-blue-600 transition-colors">
+            🏛️ Town Hall <span class="text-blue-500 text-xl font-normal opacity-0 group-hover:opacity-100 transition-opacity">(Click to Start a New Thread)</span>
+          </h1>
+        </a>
+        <p class="text-gray-600 mb-6">Discover, discuss, and drive change in your local community.</p>
+
+        <div class="max-w-xl flex flex-col sm:flex-row items-center sm:space-x-3">
+          <input id="location-input"
+                 class="flex-1 w-full border border-gray-300 rounded-md p-2 mb-3 sm:mb-0"
+                 maxlength="5"
+                 inputmode="numeric"
+                 pattern="[0-9]{5}"
+                 placeholder="Enter 5-digit ZIP code…">
+          <button id="use-my-location"
+                  class="w-full sm:w-auto bg-emerald-600 text-white px-5 py-2 rounded-md hover:bg-emerald-700 transition-colors flex-shrink-0">
+            📍 Use my location
+          </button>
+        </div>
+
+        <div id="mini-map" class="h-64 w-full rounded-lg mt-4 hidden border border-gray-200"></div>
+      </section>
+
+      <!-- 2 ░ CONTENT TABS & THREADS ░ -->
+      <section class="mb-8">
+        <div class="border-b flex space-x-6">
+          <button data-tab="trending" class="pb-2 border-b-2 border-blue-600 text-blue-600 font-semibold">Trending</button>
+          <button data-tab="nearby"   class="pb-2 border-b-2 border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600 font-semibold">Nearby</button>
+          {{ if hugo.IsServer }}
+            <button data-tab="mine" class="pb-2 border-b-2 border-transparent text-gray-500 hover:text-blue-600 hover:border-blue-600 font-semibold">My Threads</button>
+          {{ end }}
+        </div>
+
+        <div id="tab-trending" class="thread-list grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
+        <div id="tab-nearby"   class="thread-list hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
+        {{ if hugo.IsServer }}
+          <div id="tab-mine" class="thread-list hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
+        {{ end }}
+      </section>
+
     </div>
+  </main>
 
-    <!-- collapsible mini-map preview -->
-    <div id="mini-map" class="h-56 w-full rounded mt-4 hidden"></div>
-  </section>
-
-  <!-- 2 ░ CONTENT TABS ░ -->
-  <section class="space-y-4">
-    <div class="border-b flex gap-6">
-      <button data-tab="nearby"   class="tab-active">Nearby</button>
-      <button data-tab="trending" class="hover:text-blue-600">Trending</button>
-      {{ if hugo.IsServer }}
-        <button data-tab="mine" class="hover:text-blue-600">My Threads</button>
-      {{ end }}
-    </div>
-
-    <!-- LIST WRAPPERS -->
-    <div id="tab-nearby"   class="thread-list grid md:grid-cols-2 gap-4"></div>
-    <div id="tab-trending" class="thread-list hidden grid md:grid-cols-2 gap-4"></div>
-    {{ if hugo.IsServer }}
-      <div id="tab-mine" class="thread-list hidden grid md:grid-cols-2 gap-4"></div>
-    {{ end }}
-  </section>
-
-  <!-- 3 ░ LIGHT SURVEY / POLL ░ -->
-  <section id="poll-wrapper" class="bg-white shadow rounded-lg p-4 hidden"></section>
-
-</div>
-
-<!-- Floating Action Button -->
-<button id="fab-new"
-        class="fixed bottom-6 right-6 bg-blue-600 text-white rounded-full w-14 h-14
-               flex items-center justify-center shadow-lg hover:bg-blue-700">
-  +
-</button>
-{{ end }}
+  {{/* UPDATED: Added type="module" to correctly load the home.js script */}}
+  <script type="module" src="/js/townhall/home.js" defer></script>
+  
+</body>
+</html>
