@@ -1,6 +1,7 @@
 /* ---------------------------------------------------------
     File: /static/js/townhall/home.js
     Description: Main controller for the /townhall/ landing page.
+                 This version includes a fix for the Leaflet race condition.
     Dependencies:
       - Firebase v8.10.1
       - Leaflet.js v1.9.4
@@ -10,37 +11,32 @@ import { showSignInGate } from '../utils/show-sign-in.js';
 
 console.log("🧠 townhall/home.js loaded");
 
-let db;           // Firestore instance
-let userLocation; // { lat, lng }
-let map;          // Leaflet map instance
+let db;
+let userLocation;
+let map;
+// Declare the variable but don't initialize it here.
+let threadMarkers;
 
 /* 1️⃣  FIREBASE READY ---------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", () => {
-    // This function will wait for Firebase to be ready before initializing the UI.
     const waitForFirebase = setInterval(() => {
         if (typeof firebase !== "undefined" && firebase.auth) {
-            clearInterval(waitForFirebase); // Stop checking
+            clearInterval(waitForFirebase);
             console.log("✅ Firebase is ready.");
-            
-            // Initialize Firestore instance safely
             db = firebase.firestore();
-
             firebase.auth().onAuthStateChanged((u) => {
                 console.log("🔄 Auth state changed:", u ? u.email : "Not signed in");
                 window.currentUser = u || null;
                 initUI();
             });
         }
-    }, 100); // Check every 100ms
+    }, 100);
 });
-
 
 /* 2️⃣  UI BOOT ----------------------------------------------------------- */
 function initUI() {
     attachTabs();
-    // The Floating Action Button has been removed, so we no longer call attachFAB().
     attachLocationControls();
-    // Load trending topics by default
     loadTrending();
 }
 
@@ -49,7 +45,6 @@ function attachTabs() {
     document.querySelectorAll("[data-tab]").forEach((btn) => {
         btn.addEventListener("click", () => {
             const tab = btn.dataset.tab;
-            // Update button styles
             document.querySelectorAll("[data-tab]").forEach((b) => {
                 const isClicked = b === btn;
                 b.classList.toggle("border-blue-600", isClicked);
@@ -57,13 +52,9 @@ function attachTabs() {
                 b.classList.toggle("border-transparent", !isClicked);
                 b.classList.toggle("text-gray-500", !isClicked);
             });
-            // Show the correct panel
-            document.querySelectorAll(".thread-list").forEach((p) => {
-                 p.classList.add("hidden")
-            });
+            document.querySelectorAll(".thread-list").forEach((p) => p.classList.add("hidden"));
             document.getElementById(`tab-${tab}`).classList.remove("hidden");
 
-            // Lazy-load content
             if (tab === "nearby" && !userLocation) getUserLocation();
             if (tab === "mine" && !btn.dataset.loaded) {
                 loadMine();
@@ -78,37 +69,46 @@ function attachLocationControls() {
     const input = document.getElementById("location-input");
     const btn = document.getElementById("use-my-location");
 
-    // UPDATED: This now triggers the search automatically when 5 digits are entered.
     input?.addEventListener("input", () => {
         if (input.value.length === 5) {
             geocode(input.value);
         }
     });
-
-    // We keep the 'Enter' key functionality as a fallback for users who prefer it.
     input?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        geocode(input.value);
-      }
+        if (e.key === "Enter") geocode(input.value);
     });
-
     btn?.addEventListener("click", getUserLocation);
 }
 
+// UPDATED: This function now tells the map to redraw itself.
 function showMap(lat, lng) {
     const mapEl = document.getElementById("mini-map");
     mapEl.classList.remove("hidden");
 
+    if (typeof L === 'undefined') {
+        console.log("⏳ Leaflet not ready yet, waiting...");
+        setTimeout(() => showMap(lat, lng), 100);
+        return;
+    }
+
+    console.log("🗺️ Leaflet is ready, initializing map.");
     if (!map) {
+        threadMarkers = L.layerGroup();
         map = L.map("mini-map").setView([lat, lng], 11);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 18,
-            attribution: "&copy; OpenStreetMap",
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
+        threadMarkers.addTo(map);
     } else {
         map.setView([lat, lng], 11);
     }
     L.marker([lat, lng]).addTo(map);
+    
+    // THIS IS THE FIX: Tell Leaflet to re-check its container size and redraw.
+    // We wrap it in a short timeout to ensure the DOM has updated.
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 10);
 }
 
 async function geocode(q) {
@@ -126,27 +126,19 @@ async function geocode(q) {
         }
     } catch (error) {
         console.error("Geocoding API error:", error);
-        alert("Could not fetch location data.");
     }
 }
-
 
 /* 3️⃣  LOADERS ---------------------------------------------------------- */
 async function loadTrending() {
     const container = document.getElementById("tab-trending");
-    if (!db) return container.innerHTML = "<p class='text-red-500'>Error: Database not initialized.</p>";
+    if (!db) return;
     container.innerHTML = "<p class='text-gray-500'>Loading trending threads...</p>";
     try {
-        console.log("Firestore: Querying 'townhall_threads' ordered by replyCount...");
-        const snap = await db
-            .collection("townhall_threads")
-            .orderBy("replyCount", "desc")
-            .limit(10)
-            .get();
-        console.log(`Firestore: Found ${snap.size} trending documents.`);
+        const snap = await db.collection("townhall_threads").orderBy("replyCount", "desc").limit(10).get();
         renderThreads(snap, container);
-    } catch (error) {
-        console.error("Firestore Error (Trending):", error);
+    } catch (e) {
+        console.error("Firestore Error (Trending):", e);
         container.innerHTML = `<p class='text-red-500'>Error loading threads. You may need to create a Firestore index.</p>`;
     }
 }
@@ -154,92 +146,82 @@ async function loadTrending() {
 async function loadNearby() {
     if (!userLocation) return;
     const container = document.getElementById("tab-nearby");
-    if (!db) return container.innerHTML = "<p class='text-red-500'>Error: Database not initialized.</p>";
+    if (!db) return;
     container.innerHTML = "<p class='text-gray-500'>Finding threads near you...</p>";
     try {
-        console.log("Firestore: Querying 'townhall_threads' for nearby...");
-        const snap = await db
-            .collection("townhall_threads")
-            .orderBy("timestamp", "desc")
-            .limit(30)
-            .get();
-        console.log(`Firestore: Found ${snap.size} nearby documents.`);
+        const snap = await db.collection("townhall_threads").orderBy("timestamp", "desc").limit(30).get();
         renderThreads(snap, container);
-    } catch (error) {
-        console.error("Firestore Error (Nearby):", error);
-        container.innerHTML = `<p class='text-red-500'>Error loading threads. Check the console.</p>`;
+    } catch (e) {
+        console.error("Firestore Error (Nearby):", e);
     }
 }
 
 async function loadMine() {
     const container = document.getElementById("tab-mine");
     if (!window.currentUser) {
-        // UPDATED: Use the new, more user-friendly sign-in gate.
-        return showSignInGate({ 
+        return showSignInGate({
             container: container,
             message: "Sign in to see the threads you've started."
         });
     }
-    
-    if (!db) return container.innerHTML = "<p class='text-red-500'>Error: Database not initialized.</p>";
+    if (!db) return;
     container.innerHTML = "<p class='text-gray-500'>Loading your threads...</p>";
     try {
-        console.log("Firestore: Querying 'townhall_threads' for current user...");
-        const snap = await db
-            .collection("townhall_threads")
-            .where("authorUid", "==", window.currentUser.uid)
-            .get();
-
-        console.log(`Firestore: Found ${snap.size} user documents.`);
+        const snap = await db.collection("townhall_threads").where("authorUid", "==", window.currentUser.uid).get();
         renderThreads(snap, container);
-    } catch (error) {
-        console.error("Firestore Error (Mine):", error);
-        container.innerHTML = `<p class='text-red-500'>Could not load your threads at this time.</p>`;
+    } catch (e) {
+        console.error("Firestore Error (Mine):", e);
     }
 }
 
-/* 4️⃣  RENDER ----------------------------------------------------------- */
+/* 4️⃣  RENDER & MAP PINS ------------------------------------------------- */
+function addPinsToMap(threads) {
+    if (!map) return;
+    threadMarkers.clearLayers();
+
+    threads.forEach(thread => {
+        if (thread.lat && thread.lng) {
+            const marker = L.marker([thread.lat, thread.lng]);
+            const popupContent = `
+                <a href="/townhall/thread/?id=${encodeURIComponent(thread.id)}" class="font-bold text-blue-600 hover:underline">
+                    ${thread.title || 'View Thread'}
+                </a>`;
+            marker.bindPopup(popupContent);
+            threadMarkers.addLayer(marker);
+        }
+    });
+}
+
 function renderThreads(snap, container) {
     if (snap.empty) {
         container.innerHTML = "<p class='text-gray-600 col-span-full text-center py-10'>No threads found.</p>";
         return;
     }
     container.innerHTML = "";
-
+    
+    const threadsForMap = [];
     snap.forEach((doc) => {
         const t = doc.data();
+        threadsForMap.push({ id: doc.id, ...t });
+
         const card = document.createElement("div");
         card.className = "bg-white shadow-lg rounded-xl p-6 border border-gray-200 flex flex-col hover:shadow-xl transition-shadow duration-300";
-
-        const titleLink = document.createElement("a");
-        titleLink.href = `/townhall/thread/?id=${encodeURIComponent(doc.id)}`;
-        titleLink.className = "text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors";
-        titleLink.textContent = t.title || "Untitled Thread";
-
-        const locationText = document.createElement("p");
-        locationText.className = "text-sm text-gray-500 mt-1 mb-3";
-        locationText.textContent = t.location || "General";
-
-        const bodyText = document.createElement("p");
-        bodyText.className = "text-gray-700 text-sm flex-grow";
-        bodyText.textContent = (t.body || "").slice(0, 120) + '…';
-
-        const footer = document.createElement('div');
-        footer.className = "text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100";
-        footer.textContent = `Replies: ${t.replyCount || 0}`;
-
-        card.appendChild(titleLink);
-        card.appendChild(locationText);
-        card.appendChild(bodyText);
-        card.appendChild(footer);
-
+        card.innerHTML = `
+            <a href="/townhall/thread/?id=${encodeURIComponent(doc.id)}" class="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors">${t.title || "Untitled Thread"}</a>
+            <p class="text-sm text-gray-500 mt-1 mb-3">${t.location || "General"}</p>
+            <p class="text-gray-700 text-sm flex-grow">${(t.body || "").slice(0, 120)}…</p>
+            <div class="text-xs text-gray-400 mt-4 pt-4 border-t border-gray-100">Replies: ${t.replyCount || 0}</div>
+        `;
         container.appendChild(card);
     });
+
+    addPinsToMap(threadsForMap);
 }
+
 
 /* 5️⃣  GEO -------------------------------------------------------------- */
 function getUserLocation() {
-    if (!navigator.geolocation) return alert("Geolocation is not supported by your browser.");
+    if (!navigator.geolocation) return alert("Geolocation not supported");
     navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
             userLocation = { lat: coords.latitude, lng: coords.longitude };

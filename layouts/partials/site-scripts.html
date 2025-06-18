@@ -1,10 +1,10 @@
 {{- /* ─────────────────────────────────────────────────────────────
-    layouts/partials/site-scripts.html
-    Injected right before </body>.
-    Only things that truly belong at the end of the page go here.
-    ───────────────────────────────────────────────────────────── */ -}}
+     File: layouts/partials/site-scripts.html
+     Injected right before </body>.
+     Only assets that truly belong at the end of the page go here.
+   ───────────────────────────────────────────────────────────── */ -}}
 
-{{/* 1️⃣  Dynamic API root (dev vs prod) */}}
+{{/* 1️⃣ Dynamic API root (dev vs prod) */}}
 <script>
   (function () {
     const dev = location.hostname === 'localhost' && location.port === '1313';
@@ -13,34 +13,31 @@
   })();
 </script>
 
-{{/* ── Quick helpers ─────────────────────────────────────────── */}}
-{{- $rp        := .RelPermalink -}}
-{{- $needsLogin := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
+{{/* Quick helpers */}}
+{{- $rp          := .RelPermalink -}}
+{{- $needsLogin  := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
 
-{{/* 2️⃣  Firebase core (always) - Firebase SDKs are loaded via firebase-init.html from CDN.
-    This partial should only load your *site-specific* Firebase scripts. */}}
+{{/* 2️⃣ Site-specific Firebase helpers (core SDK is loaded in firebase-init) */}}
 <script src="/js/firebase-session.js" defer></script>
 
-{{/* 3️⃣  Optional FirebaseUI login */}}
+{{/* 3️⃣ Optional FirebaseUI login */}}
 {{- if $needsLogin }}
   <script src="/js/firebase-login.js" defer></script>
 {{- end }}
 
-{{/* 4️⃣  Town-Hall page bundles */}}
-{{- if strings.HasPrefix $rp "/townhall/map"  }}<script src="/js/townhall/map.js"     defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/threads"  }}<script src="/js/townhall/threads.js" defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/create"  }}<script src="/js/townhall/create.js"  defer></script>{{ end }}
+{{/* 4️⃣ Town-Hall page bundles (ES-modules) */}}
+{{- if strings.HasPrefix $rp "/townhall/map"     }}<script type="module" src="/js/townhall/map.js"     defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/threads" }}<script type="module" src="/js/townhall/threads.js" defer></script>{{ end }}
+{{- if strings.HasPrefix $rp "/townhall/create"  }}<script type="module" src="/js/townhall/create.js"  defer></script>{{ end }}
 
-{{/* Landing-page controller */}}
-{{- if eq $rp "/townhall/" }}
-  <script src="/js/townhall/home.js" defer></script>
-{{- end }}
+{{/* NOTE ──────────────────────────────────────────────────────────
+   home.js is NOT included here because layouts/section/townhall.html
+   injects it via its own {{ define "scripts" }} block, with the
+   correct `type="module"`. Including it twice caused the earlier
+   “Cannot use import statement outside a module” error.
+   ───────────────────────────────────────────────────────────────*/}}
 
-{{/* 5️⃣  Dev-only helpers (Firebase config) -
-    In production, firebase-config.js is not needed locally as its values
-    should be baked into your worker/frontend at build time or fetched from env vars.
-    Firebase app.min.js is already loaded from CDN in firebase-init.html.
-    */}}
+{{/* 5️⃣ Dev-only Firebase config helper */}}
 {{- if hugo.IsServer }}
   <script src="/js/firebase-config.js"></script>
 {{- end }}

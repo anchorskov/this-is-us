@@ -1,24 +1,49 @@
 {{- /* ----------------------------------------------------------------
       File: /layouts/townhall/create.html
-      Description: This is a temporary, standalone diagnostic page.
-                   It does NOT use the baseof.html template.
+      Description: This has been converted back to a standard Hugo
+                   template to ensure a consistent site-wide header and footer.
+      Dependencies:
+        - This template relies on the unified stylesheet loaded in baseof.html.
+        - JS: /js/townhall/create.js
     ----------------------------------------------------------------- */}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnostic Test Page</title>
-    <link href="/css/townhall.built.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100 p-8">
 
-    <div class="max-w-xl mx-auto bg-white p-10 rounded-lg shadow-lg border-4 border-red-500">
-      <h1 class="text-3xl font-bold text-red-600">DIAGNOSTIC TEST PAGE</h1>
-      <p class="mt-4 text-lg">If you can see this red text, it means Hugo has successfully found this layout file.</p>
-      <hr class="my-4">
-      <p class="text-sm text-gray-600">This confirms the problem is with the `baseof.html` template inheritance, which we can fix in the next step.</p>
+{{ define "main" }}
+  <div class="main py-8">
+    <div class="mx-auto max-w-3xl px-4">
+      <div class="bg-white shadow-md rounded-lg p-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Create a New Thread</h1>
+        
+        <form id="new-thread-form" class="space-y-6">
+          
+          <div>
+            <label for="new-title" class="block text-sm font-medium text-gray-700">Title</label>
+            <input type="text" id="new-title" name="title" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <div>
+            <label for="new-body" class="block text-sm font-medium text-gray-700">Your Message</label>
+            <textarea id="new-body" name="body" rows="6" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          
+          <div>
+            <label for="new-location" class="block text-sm font-medium text-gray-700">Location (e.g., a specific park, street, or neighborhood)</label>
+            <input type="text" id="new-location" name="location" placeholder="Downtown Casper, WY" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          
+          <div>
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Post Thread
+            </button>
+          </div>
+          
+        </form>
+        <div id="form-feedback" class="mt-4 text-center"></div>
+      </div>
     </div>
+  </div>
+{{ end }}
 
-</body>
-</html>
+{{ define "scripts" }}
+  {{/* This script is now correctly injected into the end of the <body> by baseof.html */}}
+  <script src="/js/townhall/create.js" defer></script>
+{{ end }}

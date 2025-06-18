@@ -1,0 +1,36 @@
+{{- /* -----------------------------------------------------------------
+      File: layouts/forum/lex-decorum/list.html
+      Description: List template for the Lex Decorum (Community Guidelines) section.
+    ----------------------------------------------------------------- */ -}}
+{{ define "main" }}
+<div class="container main-content">
+    <article class="section-lex-decorum-debug">
+        <header class="section-header">
+            <h1 style="color: green;">DEBUG: Lex Decorum (Community Guidelines) List Page</h1>
+            <p style="color: green;">This content is rendered by `layouts/forum/lex-decorum/list.html`.</p>
+            <hr>
+            {{ .Content }}
+        </header>
+
+        <section class="section-content">
+            <p>This is the central page for the community's code of conduct.</p>
+            <p>As this is primarily a standalone page acting as a "list" for itself, its sub-content would likely be structured within `_index.md` or as sub-sections if more detailed rules emerge.</p>
+        </section>
+
+        <section class="debug-info mt-4 p-3 border rounded bg-light">
+            <h3>Hugo Context (Lex Decorum List):</h3>
+            <pre><code>
+                .Kind: {{ .Kind }}
+                .Layout: {{ .Layout }}
+                .Type: {{ .Type }}
+                .Section: {{ .Section }}
+                .IsHome: {{ .IsHome }}
+                .IsPage: {{ .IsPage }}
+                .Permalink: {{ .Permalink }}
+                .RelPermalink: {{ .RelPermalink }}
+                .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+            </code></pre>
+        </section>
+    </article>
+</div>
+{{ end }}

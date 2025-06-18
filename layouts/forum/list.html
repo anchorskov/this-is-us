@@ -1,0 +1,74 @@
+{{- /* -----------------------------------------------------------------
+      File: /layouts/paratownhall/list.html
+      Description: A debugging parallel to the townhall page.
+    ----------------------------------------------------------------- */ -}}
+{{ define "main" }}
+<div class="container main-content">
+    <article class="townhall-debug-wrapper">
+        <header class="townhall-header">
+            <h1 style="text-align: center; color: red;">DEBUG: Parallel Town Hall Page</h1>
+            <p style="text-align: center; color: red;">
+                This page is for debugging `content/paratownhall/_index.md` and `layouts/paratownhall/list.html`.
+            </p>
+            <hr style="border-top: 1px dashed red; margin: 20px 0;">
+        </header>
+
+        <section class="card townhall-search-panel">
+            <div class="card-body">
+                <h2 class="card-title">
+                    <span class="material-icons">location_city</span> Town Hall
+                </h2>
+                <p class="card-description">
+                    Discover, discuss, and drive change in your local community.
+                </p>
+                <div class="input-group mb-3" style="display: flex; align-items: center;">
+                    <input type="text" class="form-control" placeholder="Enter 5-digit ZIP code..." aria-label="ZIP code">
+                    <button class="btn btn-success" type="button">
+                        <span class="material-icons">my_location</span> Use my location
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="townhall-tabs-section mt-4">
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Trending</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Nearby</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">My Threads</a>
+                </li>
+            </ul>
+            <div class="tab-content pt-3">
+                <div class="tab-pane fade show active" id="trending-threads">
+                    <p class="text-muted text-center">No threads found (DEBUG MODE).</p>
+                    </div>
+            </div>
+        </section>
+
+        <section class="debug-output mt-5 p-3 border rounded bg-light">
+            <h3>Hugo Context Debug Information:</h3>
+            <pre><code>
+                .Kind: {{ .Kind }}
+                .Layout: {{ .Layout }}
+                .Type: {{ .Type }}
+                .Section: {{ .Section }}
+                .IsHome: {{ .IsHome }}
+                .IsPage: {{ .IsPage }}
+                .Permalink: {{ .Permalink }}
+                .RelPermalink: {{ .RelPermalink }}
+                .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+
+                Front Matter Parameters:
+                {{ range $key, $value := .Params }}
+                - {{ $key }}: {{ $value }}
+                {{ end }}
+            </code></pre>
+        </section>
+
+    </article>
+</div>
+{{ end }}

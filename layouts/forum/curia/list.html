@@ -1,0 +1,45 @@
+{{- /* -----------------------------------------------------------------
+      File: layouts/forum/curia/list.html
+      Description: List template for the Curia (Elected Officials) section.
+    ----------------------------------------------------------------- */ -}}
+{{ define "main" }}
+<div class="container main-content">
+    <article class="section-curia-debug">
+        <header class="section-header">
+            <h1 style="color: blue;">DEBUG: Curia (Elected Officials) List Page</h1>
+            <p style="color: blue;">This content is rendered by `layouts/forum/curia/list.html`.</p>
+            <hr>
+            {{ .Content }}
+        </header>
+
+        <section class="section-content">
+            <h2>Individual Officials:</h2>
+            {{ if .Pages }}
+                <ul>
+                    {{ range .Pages }}
+                        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                    {{ end }}
+                </ul>
+            {{ else }}
+                <p>No individual official pages found in Curia yet.</p>
+            {{ end }}
+            <p>You are viewing the list page for the 'Curia' section. Check `content/forum/curia/_index.md` for main content.</p>
+        </section>
+
+        <section class="debug-info mt-4 p-3 border rounded bg-light">
+            <h3>Hugo Context (Curia List):</h3>
+            <pre><code>
+                .Kind: {{ .Kind }}
+                .Layout: {{ .Layout }}
+                .Type: {{ .Type }}
+                .Section: {{ .Section }}
+                .IsHome: {{ .IsHome }}
+                .IsPage: {{ .IsPage }}
+                .Permalink: {{ .Permalink }}
+                .RelPermalink: {{ .RelPermalink }}
+                .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+            </code></pre>
+        </section>
+    </article>
+</div>
+{{ end }}

@@ -1,3 +1,10 @@
+/*
+ * File: firestore.rules
+ * Description: Security rules for the Firestore database. This version allows
+ * public read access to townhall_threads to fix the "Trending"
+ * tab functionality for all users.
+ * Dependencies: None
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,7 +23,7 @@ service cloud.firestore {
         );
     }
 
-    // 🗣️ Town Hall Posts (public-facing discussions)
+    // 🗣️ Town Hall Posts (public-facing discussions) - Assuming this is an older collection.
     match /townhall_posts/{postId} {
       allow read: if true;
 
@@ -38,8 +45,8 @@ service cloud.firestore {
 
     // 💬 Town Hall Threads
     match /townhall_threads/{threadId} {
-      // Authenticated users can read
-      allow read: if request.auth != null;
+      // CORRECTED: Allow anyone to read threads, even if not logged in.
+      allow read: if true;
 
       // Verified users can post new threads
       allow create: if request.auth != null &&
@@ -72,7 +79,7 @@ service cloud.firestore {
       }
     }
 
-    // 🔐 Deny everything else
+    // 🔐 Deny everything else by default
     match /{document=**} {
       allow read, write: if false;
     }

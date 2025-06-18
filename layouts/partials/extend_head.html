@@ -1,102 +1,82 @@
-{{/* ───────────────────────────────────────────────────────────────
-    layouts/partials/extend_head.html
-    Page-level assets that must live in <head>.
-    Global assets (favicon, fonts, map libs, etc.) are
-    injected *only* when they’re actually needed.
-   ─────────────────────────────────────────────────────────────── */}}
+{{- /* -----------------------------------------------------------------
+      File: /layouts/partials/extend_head.html
+      Description: Now loading static CSS artifacts only: 
+                   main.dev.css in dev, main.built.css in prod.
+    ----------------------------------------------------------------- */ -}}
+<!-- extend_head.html -->
 
-<!-- ░░ META ░░ -->
+<!-- ░░ META & FAVICON ░░ -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}">
-<meta name="theme-color" content="#2e2e33">
+<meta name="theme-color" content="#2e2e33" />
 
-<!-- ░░ DEV-ONLY HELPERS (Alpine for playground pages) ░░ -->
-{{ if hugo.IsServer }}
-  {{ if in (slice "sandbox" "candidates") .Section }}
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <style>[x-cloak]{display:none!important}</style>
-    <script>console.log("✅ Alpine loaded:", typeof Alpine !== "undefined")</script>
-  {{ end }}
+<!-- ░░ DEV-ONLY HELPERS (e.g., Alpine.js) ░░ -->
+{{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>[x-cloak]{display:none!important}</style>
+  <script>console.log("✅ Alpine loaded for dev.")</script>
 {{ end }}
-
-<!-- ░░ TAILWIND (DEV ONLY) ░░ -->
-<!--{{ if hugo.IsServer }}
- Dev: inject Tailwind CDN for rapid iteration 
-    <script src="https://cdn.tailwindcss.com"></script>
-{{ end }} -->
 
 <!-- ░░ FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
-<link
-  href="https://fonts.googleapis.com/css2?family=Your+Font:wght@400;700&display=swap"
-  rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- ░░ CSS ░░ -->
-{{ $needsMap       := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
-{{ $filePath       := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
-{{ $needsTimeline  := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
+<!-- ░░ MASTER STYLESHEET ░░ -->
+{{ if hugo.IsServer }}
+  {{/* Local dev: unminified build output */}}
+  <link rel="stylesheet" href="{{ "css/main.dev.css" | relURL }}">
+{{ else }}
+  {{/* Production: minified build output */}}
+  <link rel="stylesheet" href="{{ "css/main.built.css" | relURL }}">
+{{ end }}
+
+<!-- ░░ CONDITIONAL 3rd-PARTY CSS ░░ -->
+{{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
+{{ $filePath      := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
+{{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
-  <!-- Leaflet core styles -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin>
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin>
   {{ if eq .Section "townhall" }}
-    <!-- MarkerCluster -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
   {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
-  <link
-    rel="stylesheet"
-    href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <link rel="stylesheet"
+        href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
-{{/* This is the corrected section: It prevents global styles from loading on the Town Hall page. */}}
-{{ if ne .Section "townhall" }}
-  <link rel="stylesheet" href="{{ "css/custom.css"  | relURL }}">
-  <link rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
-{{ end }}
+<!-- ░░ ICONS & MATERIAL ░░ -->
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-
-<!-- Material Icons -->
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-<!-- ░░ JS (only what must sit in <head>) ░░ -->
+<!-- ░░ HEAD-SCOPE JS ░░ -->
 {{ if $needsMap }}
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin defer></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin defer></script>
   {{ if eq .Section "townhall" }}
-    <script
-      src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
-      defer></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
   {{ end }}
 {{ end }}
 
 {{ if $needsTimeline }}
-  <script
-    src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"
-    defer></script>
+  <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js" defer></script>
 {{ end }}
 
-<!-- Page-specific ES-modules -->
+<!-- ░░ PAGE-SPECIFIC ES MODULES ░░ -->
 {{ if eq .RelPermalink "/events/create/" }}
   <script type="module" src="{{ "js/events/index.js" | relURL }}" defer></script>
 {{ end }}
 
-<!-- ░░ DEBUG ░░ -->
+<!-- ░░ DEBUG INFO ░░ -->
 <script>
   console.log(
     "%cPAGE CTX",
@@ -108,5 +88,5 @@
   );
 </script>
 
-<!-- Lightweight auth-guard helper -->
-<script src="/js/firebase-auth-guard.js" defer></script>
+<!-- ░░ AUTH GUARD ░░ -->
+<script src="{{ "js/firebase-auth-guard.js" | relURL }}" defer></script>

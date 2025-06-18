@@ -253,6 +253,55 @@ def generate_report_section(title: str, items: List[str], capture: List[str]):
             capture.append(f"- {item}")
     else:
         capture.append(colour(f"No items detected for this section.", YELLOW))
+# --- CSS / JS reference scanner ---------------------------------
+def audit_assets(capture: list[str]):
+    """
+    Finds every template or script that references Tailwind, custom.css,
+    firebase-idle-logout.js, etc.
+    """
+    capture.append("\n## 🎨 CSS / JS Reference Audit\n")
+    patterns = {
+        # ✅  Flag the compiled Town-Hall bundle, any Tailwind CDN include,
+        #     or old *.css files that still say “tailwind”
+        "tailwind": re.compile(
+            r"(townhall\.built\.css)"          # <link href="/css/townhall.built.css">
+            r"|cdn\.tailwindcss\.com"          # <script src="https://cdn.tailwindcss.com">
+            r"|tailwind[^\"'\\s]*\.css",       # any remaining literal tailwind*.css
+            re.IGNORECASE | re.DOTALL,
+        ),
+
+        # ✅  Project-scoped stylesheet(s)
+        "custom": re.compile(
+            r"custom[^\"'\\s]*\.css",
+            re.IGNORECASE | re.DOTALL,
+        ),
+
+        # ✅  Idle-logout helper (JS)
+        "logout": re.compile(
+            r"firebase-idle-logout\.js",
+            re.IGNORECASE | re.DOTALL,
+        ),
+}
+
+    hits: Dict[str, List[str]] = defaultdict(list)  # Python 3.8+ compatible
+    for path in BASE_DIR.rglob("*"):
+        if should_skip(path) or path.suffix not in {".html", ".js"}:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            for label, rx in patterns.items():
+                if rx.search(text):
+                    hits[label].append(str(path.relative_to(BASE_DIR)))
+        except Exception:
+            continue  # unreadable file
+
+    for label, files in hits.items():
+        status = colour(f"{len(files)} file(s)", GREEN if files else RED)
+        capture.append(f"\n### {label} → {status}")
+        for f in sorted(files):
+            capture.append(f"- `{f}`")
+    if not hits:
+        capture.append(colour("No matched assets found.", YELLOW))
 
 def main():
     parser = argparse.ArgumentParser(description="Generate logic index & project audits.")
@@ -260,11 +309,16 @@ def main():
     parser.add_argument('--townhall-only', action='store_true', help='Only run Town Hall audit.')
     parser.add_argument('--skip-index', action='store_true', help='Skip file index generation.')
     parser.add_argument('--output', default='logic-index-v3.md', help='Path or - for stdout')
+    parser.add_argument('--audit-assets', action='store_true',
+                        help='List every template/script that references key CSS/JS files.')
     args = parser.parse_args()
-
+   
+    
     capture: List[str] = ["# Logic Index – This Is Us Project (v3.9)\n"]
 
-    if args.audit_tailwind:
+    if args.audit_assets:
+        audit_assets(capture)
+    elif args.audit_tailwind:
         audit_tailwind_content_paths(capture)
     else:
         if not args.townhall_only and not args.skip_index:

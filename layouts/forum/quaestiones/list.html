@@ -1,0 +1,45 @@
+{{- /* -----------------------------------------------------------------
+      File: layouts/forum/quaestiones/list.html
+      Description: List template for the Quaestiones Publicae (Public Issues) section.
+    ----------------------------------------------------------------- */ -}}
+{{ define "main" }}
+<div class="container main-content">
+    <article class="section-quaestiones-debug">
+        <header class="section-header">
+            <h1 style="color: orange;">DEBUG: Quaestiones Publicae (Public Issues) List Page</h1>
+            <p style="color: orange;">This content is rendered by `layouts/forum/quaestiones/list.html`.</p>
+            <hr>
+            {{ .Content }}
+        </header>
+
+        <section class="section-content">
+            <h2>Current Public Questions:</h2>
+            {{ if .Pages }}
+                <ul>
+                    {{ range .Pages }}
+                        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                    {{ end }}
+                </ul>
+            {{ else }}
+                <p>No individual public issue pages found in Quaestiones yet.</p>
+            {{ end }}
+            <p>You are viewing the list page for the 'Quaestiones Publicae' section. Check `content/forum/quaestiones/_index.md` for main content.</p>
+        </section>
+
+        <section class="debug-info mt-4 p-3 border rounded bg-light">
+            <h3>Hugo Context (Quaestiones List):</h3>
+            <pre><code>
+                .Kind: {{ .Kind }}
+                .Layout: {{ .Layout }}
+                .Type: {{ .Type }}
+                .Section: {{ .Section }}
+                .IsHome: {{ .IsHome }}
+                .IsPage: {{ .IsPage }}
+                .Permalink: {{ .Permalink }}
+                .RelPermalink: {{ .RelPermalink }}
+                .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+            </code></pre>
+        </section>
+    </article>
+</div>
+{{ end }}
