@@ -1,4 +1,4 @@
-// worker/src/routes/townhall/listPost.js
+// worker/src/townhall/listPost.js
 
 export async function handleListTownhallPosts(request, env) {
   try {

@@ -1,7 +1,3 @@
-{{- /* -----------------------------------------------------------------
-      File: content/forum/lex-decorum/_index.html
-      Description: Main content for the Lex Decorum (Community Guidelines) section.
-    ----------------------------------------------------------------- */ -}}
 ---
 title: "Lex Decorum (Community Guidelines)"
 weight: 50

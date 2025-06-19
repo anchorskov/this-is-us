@@ -1,0 +1,50 @@
+{{/* layouts/townhall/_index.html */}}
+{{/* Interactive Town Hall UI Prototype (Scaffolded) */}}
+
+{{ define "main" }}
+<main class="max-w-screen-xl mx-auto px-4 py-10 space-y-10">
+
+  <!-- 🌐 MAP SECTION (Leaflet.js placeholder) -->
+  <section class="rounded-md shadow-md bg-white p-4">
+    <h2 class="text-xl font-semibold mb-2">📍 Explore Conversations by Location</h2>
+    <div id="townhall-map" class="h-96 w-full rounded"></div>
+  </section>
+
+  <!-- 🔍 FILTER PANEL -->
+  <section class="bg-white p-4 rounded-md shadow-md">
+    <h2 class="text-xl font-semibold mb-4">🔎 Find What Matters to You</h2>
+    <form id="filter-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <input type="text" id="filter-location" placeholder="Enter city, state, or zip…" class="border p-2 rounded w-full" />
+      <input type="text" id="filter-topic" placeholder="Topic (e.g., budget, school)" class="border p-2 rounded w-full" />
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Apply Filters</button>
+    </form>
+  </section>
+
+  <!-- 🧵 THREAD LIST -->
+  <section class="space-y-6">
+    <h2 class="text-xl font-semibold">🗣️ Civic Conversations Near You</h2>
+    <div id="thread-list" class="space-y-4">
+      <!-- Placeholder threads will be loaded here -->
+      <div class="p-4 border rounded shadow-sm bg-white">
+        <p class="font-semibold">No conversations loaded. Try filtering above or create a new thread.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ➕ CREATE NEW THREAD -->
+  <section class="bg-white p-4 rounded-md shadow-md">
+    <h2 class="text-xl font-semibold mb-2">Start a New Conversation</h2>
+    <form id="new-thread-form" class="space-y-4">
+      <input type="text" id="new-title" placeholder="Title" class="w-full border p-2 rounded" required />
+      <textarea id="new-body" rows="4" placeholder="Your opening comment…" class="w-full border p-2 rounded" required></textarea>
+      <div class="flex justify-end">
+        <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Post Thread</button>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<!-- JS placeholder -->
+<script src="/js/townhall-interactive.js" defer></script>
+{{ end }}

@@ -3,14 +3,31 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "hugo server -D",
-    "build": "hugo --gc --minify"
+    "build:css": "postcss assets/css/main.css -o static/css/uno.css",
+    "watch:css": "postcss assets/css/main.css -o static/css/main.dev.css --watch",
+    "hugo:dev": "hugo server -D --disableFastRender",
+    "dev": "npm-run-all --parallel watch:css hugo:dev",
+    "build:hugo": "hugo --gc --minify",
+    "build": "npm run build:css && npm run build:hugo"
   },
   "dependencies": {
     "@octokit/rest": "^21.0.0",
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "itty-router": "^5.0.18"
+  },
+  "devDependencies": {
+    "@unocss/cli": "^66.2.3",
+    "@unocss/postcss": "^66.2.3",
+    "@unocss/preset-attributify": "^66.2.3",
+    "@unocss/preset-icons": "^66.2.3",
+    "@unocss/preset-uno": "^66.2.3",
+    "@unocss/preset-wind3": "^66.2.3",
+    "autoprefixer": "^10.4.21",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.6",
+    "postcss-import": "^16.1.1",
+    "unocss": "^66.2.3"
   },
   "engines": {
     "node": ">=18"

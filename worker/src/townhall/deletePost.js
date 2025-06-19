@@ -1,4 +1,4 @@
-// worker/src/routes/townhall/deletePost.js
+// worker/src/townhall/deletePost.js
 
 export async function handleDeleteTownhallPost(request, env) {
   try {

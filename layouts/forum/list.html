@@ -1,74 +1,176 @@
 {{- /* -----------------------------------------------------------------
-      File: /layouts/paratownhall/list.html
-      Description: A debugging parallel to the townhall page.
+      File: layouts/forum/list.html
+      Description: Revised list template for the main Forum Civitas section.
+                   Focuses on user experience, clear flow, and aligned sections.
     ----------------------------------------------------------------- */ -}}
 {{ define "main" }}
-<div class="container main-content">
-    <article class="townhall-debug-wrapper">
-        <header class="townhall-header">
-            <h1 style="text-align: center; color: red;">DEBUG: Parallel Town Hall Page</h1>
-            <p style="text-align: center; color: red;">
-                This page is for debugging `content/paratownhall/_index.md` and `layouts/paratownhall/list.html`.
-            </p>
-            <hr style="border-top: 1px dashed red; margin: 20px 0;">
-        </header>
+<div class="container main-content py-5">
+    <section class="text-center mb-5 pb-4">
+        {{ .Content }} <div class="mt-5">
+            <h3 class="mb-4">Ready to Engage?</h3>
+            <a href="{{ "/forum/quaestiones/aquaeductus-nova/" | relURL }}" class="btn button-green btn-lg px-5 py-3 shadow-sm">
+                <span class="material-icons me-2">forum</span> Start a New Quaestio
+            </a>
+            <p class="mt-3 text-muted">Or explore the sections below.</p>
+        </div>
+    </section>
 
-        <section class="card townhall-search-panel">
-            <div class="card-body">
-                <h2 class="card-title">
-                    <span class="material-icons">location_city</span> Town Hall
-                </h2>
-                <p class="card-description">
-                    Discover, discuss, and drive change in your local community.
-                </p>
-                <div class="input-group mb-3" style="display: flex; align-items: center;">
-                    <input type="text" class="form-control" placeholder="Enter 5-digit ZIP code..." aria-label="ZIP code">
-                    <button class="btn btn-success" type="button">
-                        <span class="material-icons">my_location</span> Use my location
-                    </button>
+    <section class="my-5 py-4">
+        <h2 class="text-center mb-5 display-5 fw-bold">Current Debates & Directives</h2>
+
+        <div class="row align-items-stretch mb-5">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 p-4 shadow-sm border-0 rounded-lg">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3 fs-4"><span class="material-icons align-middle me-2">trending_up</span> Trending Quaestiones Publicae</h3>
+                        <p class="card-text text-muted">Discover the most active and important public discussions happening right now.</p>
+                        <ul class="list-group list-group-flush mt-3 mb-3">
+                            {{ with .Site.GetPage "section" "forum/quaestiones" }}
+                                {{ if .Pages }}
+                                    {{ range first 3 .Pages.ByLastmod.Reverse }}
+                                        <li class="list-group-item border-0 px-0 py-2">
+                                            <a href="{{ .RelPermalink }}" class="d-flex align-items-center text-decoration-none text-dark">
+                                                <span class="material-icons text-primary me-2">Youtube</span>
+                                                <span class="fw-bold">{{ .Title }}</span>
+                                                <small class="ms-auto text-muted">{{ .Date.Format "Jan 2" }}</small>
+                                            </a>
+                                        </li>
+                                    {{ end }}
+                                {{ else }}
+                                    <li class="list-group-item border-0 px-0 py-2 text-muted">No trending issues yet.</li>
+                                {{ end }}
+                            {{ end }}
+                        </ul>
+                        <a href="{{ "/forum/quaestiones/" | relURL }}" class="link-button btn-link text-primary d-block text-center mt-3">View All Quaestiones <span class="material-icons align-middle ms-1" style="font-size: 1.1em;">arrow_forward</span></a>
+                    </div>
                 </div>
             </div>
-        </section>
 
-        <section class="townhall-tabs-section mt-4">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="#">Trending</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">Nearby</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">My Threads</a>
-                </li>
-            </ul>
-            <div class="tab-content pt-3">
-                <div class="tab-pane fade show active" id="trending-threads">
-                    <p class="text-muted text-center">No threads found (DEBUG MODE).</p>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 p-4 shadow-sm border-0 rounded-lg">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3 fs-4"><span class="material-icons align-middle me-2">account_balance</span> Latest from the Curia</h3>
+                        <p class="card-text text-muted">Recent updates, statements, and actions from our elected officials.</p>
+                        <ul class="list-group list-group-flush mt-3 mb-3">
+                            {{ with .Site.GetPage "section" "forum/curia" }}
+                                {{ if .Pages }}
+                                    {{ range first 3 .Pages.ByLastmod.Reverse }}
+                                        <li class="list-group-item border-0 px-0 py-2">
+                                            <a href="{{ .RelPermalink }}" class="d-flex align-items-center text-decoration-none text-dark">
+                                                <span class="material-icons text-info me-2">campaign</span>
+                                                <span class="fw-bold">{{ .Title }}</span>
+                                                <small class="ms-auto text-muted">{{ .Date.Format "Jan 2" }}</small>
+                                            </a>
+                                        </li>
+                                    {{ end }}
+                                {{ else }}
+                                    <li class="list-group-item border-0 px-0 py-2 text-muted">No recent official updates yet.</li>
+                                {{ end }}
+                            {{ end }}
+                        </ul>
+                        <a href="{{ "/forum/curia/" | relURL }}" class="link-button btn-link text-primary d-block text-center mt-3">Explore Curia <span class="material-icons align-middle ms-1" style="font-size: 1.1em;">arrow_forward</span></a>
                     </div>
+                </div>
             </div>
-        </section>
+        </div>
 
-        <section class="debug-output mt-5 p-3 border rounded bg-light">
-            <h3>Hugo Context Debug Information:</h3>
-            <pre><code>
-                .Kind: {{ .Kind }}
-                .Layout: {{ .Layout }}
-                .Type: {{ .Type }}
-                .Section: {{ .Section }}
-                .IsHome: {{ .IsHome }}
-                .IsPage: {{ .IsPage }}
-                .Permalink: {{ .Permalink }}
-                .RelPermalink: {{ .RelPermalink }}
-                .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+        <div class="row align-items-stretch">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 p-4 shadow-sm border-0 rounded-lg">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3 fs-4"><span class="material-icons align-middle me-2">how_to_vote</span> Urgent Suffragium Civitatis</h3>
+                        <p class="card-text text-muted">Actions that need your immediate attention and participation to make a difference.</p>
+                        <ul class="list-group list-group-flush mt-3 mb-3">
+                            {{/* Placeholder for urgent actions. These might be a custom content type. */}}
+                            <li class="list-group-item border-0 px-0 py-2 text-muted">No urgent calls to action currently.</li>
+                            <li class="list-group-item border-0 px-0 py-2">
+                                <a href="#" class="d-flex align-items-center text-decoration-none text-dark">
+                                    <span class="material-icons text-danger me-2">flash_on</span> Petition: Restore Via Appia
+                                    <small class="ms-auto text-muted">Ends Jul 1</small>
+                                </a>
+                            </li>
+                        </ul>
+                        <a href="{{ "/forum/suffragium-civitatis/" | relURL }}" class="link-button btn-link text-primary d-block text-center mt-3">Take Action Now <span class="material-icons align-middle ms-1" style="font-size: 1.1em;">arrow_forward</span></a>
+                    </div>
+                </div>
+            </div>
 
-                Front Matter Parameters:
-                {{ range $key, $value := .Params }}
-                - {{ $key }}: {{ $value }}
-                {{ end }}
-            </code></pre>
-        </section>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 p-4 shadow-sm border-0 rounded-lg">
+                    <div class="card-body">
+                        <h3 class="card-title mb-3 fs-4"><span class="material-icons align-middle me-2">gavel</span> Recent Tabulae Publicae Highlights</h3>
+                        <p class="card-text text-muted">Key data points, reports, and official documents. Verifiable information at your fingertips.</p>
+                        <ul class="list-group list-group-flush mt-3 mb-3">
+                            {{/* Placeholder for data highlights. These might be a custom content type or specific articles. */}}
+                            <li class="list-group-item border-0 px-0 py-2 text-muted">No recent data highlights.</li>
+                            <li class="list-group-item border-0 px-0 py-2">
+                                <a href="#" class="d-flex align-items-center text-decoration-none text-dark">
+                                    <span class="material-icons text-warning me-2">analytics</span> Q2 Budget Report Analysis
+                                    <small class="ms-auto text-muted">Jun 15</small>
+                                </a>
+                            </li>
+                        </ul>
+                        <a href="{{ "/forum/tabulae-publicae/" | relURL }}" class="link-button btn-link text-primary d-block text-center mt-3">View Tabulae Publicae <span class="material-icons align-middle ms-1" style="font-size: 1.1em;">arrow_forward</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    </article>
+    <section class="my-5 py-4 bg-light rounded-lg shadow-sm">
+        <h2 class="text-center mb-5 display-5 fw-bold">Explore All Forum Pillars</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{{ "/forum/curia/" | relURL }}" class="btn button-dark-blue btn-lg w-100 py-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <span class="material-icons d-block mb-1" style="font-size: 2.5em;">supervised_user_circle</span>
+                    <span class="fw-bold">Curia</span>
+                    <small>Elected Officials</small>
+                </a>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{{ "/forum/quaestiones/" | relURL }}" class="btn button-dark-blue btn-lg w-100 py-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <span class="material-icons d-block mb-1" style="font-size: 2.5em;">help_outline</span>
+                    <span class="fw-bold">Quaestiones Publicae</span>
+                    <small>Public Issues</small>
+                </a>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{{ "/forum/tabulae-publicae/" | relURL }}" class="btn button-dark-blue btn-lg w-100 py-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <span class="material-icons d-block mb-1" style="font-size: 2.5em;">assignment</span>
+                    <span class="fw-bold">Tabulae Publicae</span>
+                    <small>Public Records</small>
+                </a>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{{ "/forum/suffragium-civitatis/" | relURL }}" class="btn button-dark-blue btn-lg w-100 py-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <span class="material-icons d-block mb-1" style="font-size: 2.5em;">how_to_vote</span>
+                    <span class="fw-bold">Suffragium Civitatis</span>
+                    <small>Citizen Action</small>
+                </a>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <a href="{{ "/forum/lex-decorum/" | relURL }}" class="btn button-dark-blue btn-lg w-100 py-3 shadow-sm d-flex flex-column align-items-center justify-content-center">
+                    <span class="material-icons d-block mb-1" style="font-size: 2.5em;">policy</span>
+                    <span class="fw-bold">Lex Decorum</span>
+                    <small>Community Guidelines</small>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="debug-output my-5 p-4 border rounded bg-light">
+        <h3 style="color: red;" class="mb-3">DEBUG INFORMATION (Forum Civitas List):</h3>
+        <pre><code>
+            .Kind: {{ .Kind }}
+            .Layout: {{ .Layout }}
+            .Type: {{ .Type }}
+            .Section: {{ .Section }}
+            .IsHome: {{ .IsHome }}
+            .IsPage: {{ .IsPage }}
+            .Permalink: {{ .Permalink }}
+            .RelPermalink: {{ .RelPermalink }}
+            .File.Path: {{ with .File }}{{ .Path }}{{ end }}
+        </code></pre>
+    </section>
 </div>
 {{ end }}

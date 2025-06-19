@@ -6,5 +6,7 @@ CREATE TABLE IF NOT EXISTS townhall_posts (
   created_at TEXT NOT NULL,
   r2_key TEXT,
   file_size INTEGER,
-  expires_at TEXT
+  expires_at TEXT,
+  city TEXT,
+  state TEXT
 );

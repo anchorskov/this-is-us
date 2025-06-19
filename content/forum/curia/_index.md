@@ -1,7 +1,3 @@
-{{- /* -----------------------------------------------------------------
-      File: content/forum/curia/_index.md
-      Description: Main content for the Curia (Elected Officials) section.
-    ----------------------------------------------------------------- */ -}}
 ---
 title: "Curia (Elected Officials)"
 weight: 10 # Adjust weight to control order in lists/menus, lower number means higher priority

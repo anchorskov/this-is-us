@@ -6,12 +6,12 @@
   {{ else }}lang="{{ .Site.LanguageCode | default "en" }}"{{ end }}
 >
 <head>
-    {{/* This is the key change: We only load the default head partial (with its
-         conflicting stylesheet) on pages that are NOT the townhall section.
-         The townhall.html layout now builds its own <head> from scratch. */}}
-    {{ if ne .Section "townhall" }}
-      {{ partial "head.html" . }}
-    {{ end }}
+    {{/*
+      The conditional logic has been removed.
+      This now loads the head.html partial on ALL pages to ensure
+      a consistent header and global script/style loading.
+    */}}
+    {{ partial "head.html" . }}
 
   {{/* The block and firebase-init partial are needed globally. */}}
   {{ block "header" . }}{{ end }}

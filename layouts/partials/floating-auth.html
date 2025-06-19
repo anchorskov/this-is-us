@@ -1,3 +1,5 @@
+<!-- layouts/partials/floating-auth.html -->
+
 <div id="floating-auth" style="display:none; position:fixed; top:1rem; right:1rem; z-index:1000;">
   <button id="auth-btn" class="auth-btn">...</button>
 </div>
@@ -24,7 +26,10 @@
         if (user) {
           console.log("👤 Logged in:", user.email || user.phoneNumber);
           btn.textContent = "Logout";
-          btn.onclick = () => firebase.auth().signOut().then(() => location.reload());
+          btn.onclick = () => firebase.auth().signOut().then(() => {
+            console.log("👋 User signed out → reloading page");
+            location.reload();
+          });
         } else {
           console.log("🔒 Not signed in");
           btn.textContent = "Login";
@@ -36,7 +41,7 @@
             } else {
               console.warn("⚠️ No FirebaseUI found → redirect fallback");
               const redirectTo = encodeURIComponent(window.location.pathname);
-              location.href = `/events/create?redirect=${redirectTo}`;
+              location.href = `/login/?redirect=${redirectTo}`;
             }
           };
         }
