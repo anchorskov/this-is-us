@@ -128,6 +128,7 @@
 .h2{height:0.5rem;}
 .max-w-2xl{max-width:42rem;}
 .max-w-3xl{max-width:48rem;}
+.max-w-4xl{max-width:56rem;}
 .max-w-5xl{max-width:64rem;}
 .max-w-6xl{max-width:72rem;}
 .max-w-7xl{max-width:80rem;}
@@ -274,6 +275,7 @@
 .pl-2{padding-left:0.5rem;}
 .pl-3{padding-left:0.75rem;}
 .pl-4{padding-left:1rem;}
+.pt-3{padding-top:0.75rem;}
 .pt-4{padding-top:1rem;}
 .pt-6{padding-top:1.5rem;}
 .text-center,
