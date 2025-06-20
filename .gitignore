@@ -73,3 +73,5 @@ public/
 serviceAccountKey.json
 # Firebase seeding scripts
 firebase-seeder/
+
+static/css/main.dev.css
