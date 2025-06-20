@@ -1,36 +1,42 @@
-// Logic for populating and updating the /account/ page with Firebase authentication and Firestore
-
+// static/js/account.js
+// Logic for populating and updating the /account/ page
 console.log("📘 account.js loaded");
 
 document.addEventListener("DOMContentLoaded", async () => {
-  if (typeof firebase === "undefined" || !firebase.auth || !firebase.firestore) {
+  if (typeof firebase === "undefined" ||
+      !firebase.auth   ||
+      !firebase.firestore) {
     console.error("❌ Firebase not fully loaded in account.js");
     return;
   }
 
   const auth = firebase.auth();
-  const db = firebase.firestore();
+  const db   = firebase.firestore();
 
-  const form = document.getElementById("account-form");
-  const feedback = document.getElementById("account-feedback");
+  const form      = document.getElementById("account-form");
+  const feedback  = document.getElementById("account-feedback");
   const deleteBtn = document.getElementById("delete-account-btn");
 
-  const nameEl = document.getElementById("account-name");
-  const emailEl = document.getElementById("account-email");
-  const joinedEl = document.getElementById("account-joined");
-  const roleEl = document.getElementById("account-role");
-  const adminPanel = document.getElementById("admin-panel");
+  const nameEl       = document.getElementById("account-name");
+  const emailEl      = document.getElementById("account-email");
+  const joinedEl     = document.getElementById("account-joined");
+  const roleEl       = document.getElementById("account-role");
+  const adminPanel   = document.getElementById("admin-panel");
   const newsletterEl = document.getElementById("account-newsletter");
-  const cityEl = document.getElementById("city");
-  const stateEl = document.getElementById("state");
+  const cityEl       = document.getElementById("city");
+  const stateEl      = document.getElementById("state");
+
+  /* NEW → resend-verification button */
+  const resendBtn = document.getElementById("resend-verification-btn");
 
   function showFeedback(msg, type = "success") {
-    if (feedback) {
-      feedback.textContent = msg;
-      feedback.className = `mt-4 text-sm text-center ${type === "error" ? "text-red-600" : "text-green-600"}`;
-      feedback.style.display = "block";
-      setTimeout(() => (feedback.style.display = "none"), 4000);
-    }
+    if (!feedback) return;
+    feedback.textContent   = msg;
+    feedback.className     =
+      `mt-4 text-sm text-center ${type === "error" ? "text-red-600"
+                                                   : "text-green-600"}`;
+    feedback.style.display = "block";
+    setTimeout(() => (feedback.style.display = "none"), 4000);
   }
 
   auth.onAuthStateChanged(async (user) => {
@@ -40,14 +46,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    /* ---------- 1. Populate form from Firestore ---------------- */
     const userRef = db.collection("users").doc(user.uid);
     let profile = {
       displayName: user.displayName || "",
-      joinedAt: new Date().toISOString().split("T")[0],
-      role: "citizen",
-      newsletter: false,
-      city: "",
-      state: ""
+      joinedAt    : new Date().toISOString().split("T")[0],
+      role        : "citizen",
+      newsletter  : false,
+      city        : "",
+      state       : ""
     };
 
     try {
@@ -58,44 +65,51 @@ document.addEventListener("DOMContentLoaded", async () => {
       showFeedback("Error loading profile", "error");
     }
 
-    // Pre-fill form
-    nameEl.value = profile.displayName;
-    emailEl.textContent = user.email;
-    joinedEl.textContent = new Date(profile.joinedAt).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-    roleEl.textContent = profile.role;
+    /* --- Fill the UI --- */
+    nameEl.value          = profile.displayName;
+    emailEl.textContent   = user.email + (user.emailVerified ? " ✅" : " ❌");
+    joinedEl.textContent  = new Date(profile.joinedAt)
+                             .toLocaleDateString(undefined,
+                               { year:"numeric", month:"short", day:"numeric" });
+    roleEl.textContent    = profile.role;
+    newsletterEl.checked  = profile.newsletter;
+    cityEl.value          = profile.city  || "";
+    stateEl.value         = profile.state || "";
 
-    if (profile.role === "admin" && adminPanel) {
-      adminPanel.classList.remove("hidden");
-    } else if (adminPanel) {
-      adminPanel.classList.add("hidden");
-    }
+    if (profile.role === "admin") adminPanel?.classList.remove("hidden");
+    else                          adminPanel?.classList.add("hidden");
 
-    newsletterEl.checked = profile.newsletter;
-    cityEl.value = profile.city || "";
-    stateEl.value = profile.state || "";
-
-    // Set global role for admin UI detection
+    // Expose role globally for other pages
     window.currentUserRole = profile.role;
 
-    // Save handler
+    /* ---------- 2. “Resend verification” handler (NEW) --------- */
+    if (resendBtn) {
+      resendBtn.onclick = async () => {
+        try {
+          await user.sendEmailVerification();
+          showFeedback("Verification e-mail sent 👍");
+        } catch (err) {
+          console.error(err);
+          showFeedback("Could not send verification e-mail", "error");
+        }
+      };
+      // Hide button if already verified
+      resendBtn.style.display = user.emailVerified ? "none" : "inline-block";
+    }
+
+    /* ---------- 3. Save-profile handler ------------------------ */
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const updatedProfile = {
         displayName: nameEl.value.trim(),
-        role: profile.role,
-        newsletter: newsletterEl.checked,
-        joinedAt: profile.joinedAt,
-        city: cityEl.value.trim(),
-        state: stateEl.value.trim()
+        role       : profile.role,
+        newsletter : newsletterEl.checked,
+        joinedAt   : profile.joinedAt,
+        city       : cityEl.value.trim(),
+        state      : stateEl.value.trim()
       };
-
       try {
-        await userRef.set(updatedProfile, { merge: true });
+        await userRef.set(updatedProfile, { merge:true });
         showFeedback("✅ Profile updated successfully");
       } catch (err) {
         console.error("❌ Update failed:", err);
@@ -103,11 +117,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
-    // Delete handler
+    /* ---------- 4. Delete-account handler ---------------------- */
     deleteBtn.addEventListener("click", async () => {
-      const confirmDelete = confirm("Are you sure you want to delete your account? This action is irreversible.");
-      if (!confirmDelete) return;
-
+      if (!confirm("Delete your account permanently?")) return;
       try {
         await userRef.delete();
         await user.delete();

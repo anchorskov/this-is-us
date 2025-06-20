@@ -1,0 +1,22 @@
+{{ define "main" }}
+<main class="max-w-4xl mx-auto px-4 py-10 space-y-10">
+
+  <!-- 🔹 Container for the thread view -->
+  <div id="thread-container">
+    <!-- thread-view.js will replace this -->
+    <p class="text-gray-500">Loading thread…</p>
+  </div>
+
+  <!-- 🔙 Link back to all threads -->
+  <div class="pt-6">
+    <a href="/townhall/threads/" class="text-blue-600 hover:underline text-sm">
+      ← Back to all threads
+    </a>
+  </div>
+
+</main>
+{{ end }}
+
+{{ define "scripts" }}
+  <script type="module" src="{{ "js/townhall/thread-view.js" | relURL }}"></script>
+{{ end }}
