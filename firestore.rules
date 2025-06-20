@@ -65,8 +65,8 @@ service cloud.firestore {
         allow read: if true; // Public read allowed
 
         allow create: if request.auth != null &&
-          request.resource.data.uid == request.auth.uid;
-
+          request.resource.data.uid == request.auth.uid &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
 
         allow update: if request.auth != null &&
           request.auth.uid == resource.data.uid;
