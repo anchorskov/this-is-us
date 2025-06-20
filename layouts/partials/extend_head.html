@@ -1,15 +1,16 @@
-{{- /* -----------------------------------------------------------------
-      File: /layouts/partials/extend_head.html
-      Description: Now loading static CSS artifacts only: 
-                   main.dev.css in dev, main.built.css in prod.
-    ----------------------------------------------------------------- */ -}}
+{{- /* ------------------------------------------------------------
+     File:  /layouts/partials/extend_head.html
+     Purpose:
+       • In dev  – load hot-reloaded  main.dev.css
+       • In prod – load static-built   uno.css
+   ------------------------------------------------------------ */ -}}
 <!-- extend_head.html -->
 
 <!-- ░░ META & FAVICON ░░ -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}">
 <meta name="theme-color" content="#2e2e33" />
 
-<!-- ░░ DEV-ONLY HELPERS (e.g., Alpine.js) ░░ -->
+<!-- ░░ DEV-ONLY HELPERS (Alpine.js, etc.) ░░ -->
 {{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>[x-cloak]{display:none!important}</style>
@@ -24,42 +25,34 @@
 {{ if hugo.IsServer }}
   <link rel="stylesheet" href="{{ "css/main.dev.css" | relURL }}">
 {{ else }}
-  <link rel="stylesheet" href="{{ "css/uno.css"      | relURL }}">
+  <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 {{ end }}
 
-
 <!-- ░░ CONDITIONAL 3rd-PARTY CSS ░░ -->
-{{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
-{{ $filePath      := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
+{{ $needsMap := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
+{{ $filePath := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
 {{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
   {{ if eq .Section "townhall" }}
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
   {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
-  <link rel="stylesheet"
-        href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
-<!-- ░░ ICONS & MATERIAL ░░ -->
-<link rel="stylesheet"
-      href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<!-- ░░ ICONS ░░ -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 <!-- ░░ HEAD-SCOPE JS ░░ -->
 {{ if $needsMap }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossorigin defer></script>
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin defer></script>
   {{ if eq .Section "townhall" }}
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
@@ -75,15 +68,11 @@
   <script type="module" src="{{ "js/events/index.js" | relURL }}" defer></script>
 {{ end }}
 
-<!-- ░░ DEBUG INFO ░░ -->
+<!-- ░░ DEBUG ░░ -->
 <script>
   console.log(
-    "%cPAGE CTX",
-    "background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
-    "Template={{ .Layout }}",
-    "Kind={{ .Kind }}",
-    "Section={{ .Section }}",
-    "URL={{ .RelPermalink }}"
+    "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
+    "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
   );
 </script>
 
