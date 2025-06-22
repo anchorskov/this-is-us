@@ -1,0 +1,48 @@
+{{/* layouts/townhall/create-thread.html */}}
+{{ define "main" }}
+<main class="max-w-3xl mx-auto p-6 space-y-8">
+
+  <!-- Heading -->
+  <header class="text-center space-y-2">
+    <h1 class="text-3xl font-bold">📝 Start a New Thread</h1>
+    <p class="text-gray-600">Share an idea, ask a question, or open a discussion.</p>
+  </header>
+
+<!-- Thread Title -->
+<!-- Thread Title -->
+<label class="block mb-4">
+  <span class="font-medium text-gray-700">Thread Title</span>
+  <input name="title"
+         class="th-input mt-1"
+         placeholder="e.g. Safer Crosswalks Downtown">
+</label>
+
+<!-- Location -->
+<label class="block mb-4">
+  <span class="font-medium text-gray-700">Location (ZIP or city)</span>
+  <input name="location"
+         class="th-input mt-1"
+         placeholder="80302">
+</label>
+
+<!-- Message -->
+<label class="block mb-6">
+  <span class="font-medium text-gray-700">Message</span>
+  <textarea name="body" rows="6"
+            class="th-input mt-1 resize-y"
+            placeholder="Share your idea or concern…"></textarea>
+</label>
+
+    <button type="submit"
+            class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+      Publish Thread
+    </button>
+
+    <p id="create-thread-feedback" class="text-sm mt-2 hidden"></p>
+  </form>
+
+</main>
+
+<!-- Controller -->
+<script type="module" src="{{ "js/townhall/create-thread.js" | relURL }}" defer></script>
+{{ end }}
