@@ -1,44 +1,63 @@
+/* ─────────────────────────────────────────────────────────────
+   File: static/js/townhall/create-thread.js
+   Purpose: handle “Start a New Thread” form
+   Requires: Firebase (8.x) already initialised elsewhere
+   ──────────────────────────────────────────────────────────── */
+
 console.log("🆕 create-thread.js loaded");
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form      = document.getElementById("new-thread-form");
-  const feedback  = document.getElementById("create-thread-feedback");
-  if (!form) return;
+  const form     = document.getElementById("new-thread-form");
+  const feedback = document.getElementById("create-thread-feedback");
+  if (!form || !feedback) return;          // abort if markup missing
+
+  /* helper – show coloured feedback message */
+  const showMsg = (msg, clr /* red | green | yellow… */) => {
+    feedback.textContent = msg;
+    feedback.className   = `mt-2 text-${clr}-600`;
+    feedback.hidden      = false;
+  };
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const { title, location, body } = Object.fromEntries(new FormData(form));
 
-    const user = firebase.auth().currentUser;
-    if (!user) {
-      feedback.textContent = "🔐 Please sign in first.";
-      feedback.className   = "text-red-600 mt-2";
-      feedback.hidden      = false;
-      return;
+    /* grab & trim inputs -------------------------------------------------- */
+    const fd       = new FormData(form);
+    const title    = (fd.get("title")    || "").trim();
+    const location = (fd.get("location") || "").trim();
+    const body     = (fd.get("body")     || "").trim();
+
+    if (!title || !location || !body) {
+      return showMsg("⚠️  Please fill out all fields.", "red");
     }
 
-    /* Firestore add */
+    /* verify auth --------------------------------------------------------- */
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      return showMsg("🔐 Please sign in first.", "red");
+    }
+
+    /* write to Firestore -------------------------------------------------- */
     try {
-      await firebase.firestore()
-        .collection("townhall_threads")
+      await firebase
+        .firestore()
+        .collection("townhall_threads")          // same as list page
         .add({
-          title, body, location,
+          title,
+          body,
+          location,
           createdBy : user.uid,
           timestamp : firebase.firestore.FieldValue.serverTimestamp(),
           replyCount: 0,
         });
 
-      feedback.textContent = "✅ Thread published!";
-      feedback.className   = "text-green-600 mt-2";
-      feedback.hidden      = false;
+      showMsg("✅ Thread published!", "green");
 
-      // Optionally redirect to Town-Hall list
-      setTimeout(() => location.href = "/townhall/threads/", 800);
+      /* brief success pause, then return to Town-Hall landing  */
+      setTimeout(() => (window.location.href = "/townhall/"), 1000);
     } catch (err) {
-      console.error(err);
-      feedback.textContent = "❌ Error publishing thread.";
-      feedback.className   = "text-red-600 mt-2";
-      feedback.hidden      = false;
+      console.error("Error publishing thread:", err);
+      showMsg("❌ Error publishing thread – try again.", "red");
     }
   });
 });

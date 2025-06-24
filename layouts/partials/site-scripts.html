@@ -8,27 +8,21 @@
 <script>
   (function () {
     const dev = location.hostname === 'localhost' && location.port === '1313';
-    window.EVENTS_API_URL = dev ? 'https://this-is-us.org/api' : '/api';
+    window.EVENTS_API_URL = dev
+      ? 'https://this-is-us.org/api'   // remote Worker when running `hugo server -D`
+      : '/api';                        // relative path in production
     console.log(dev ? '🐛 Dev override →' : '🌐 Using API →', window.EVENTS_API_URL);
   })();
 </script>
 
 {{/* Quick helpers */}}
-{{- $rp          := .RelPermalink -}}
-{{- $needsLogin  := or (eq $rp "/login/") (eq $rp "/events/create/") -}}
+{{- $rp         := .RelPermalink -}}
+{{- $isTownHall := strings.HasPrefix $rp "/townhall" -}}
 
-{{/* 2️⃣ Site-specific Firebase helpers (core SDK is loaded in firebase-init) */}}
-<script src="/js/firebase-session.js" defer></script>
-
-{{/* 3️⃣ Optional FirebaseUI login */}}
-{{- if $needsLogin }}
-  <script src="/js/firebase-login.js" defer></script>
-{{- end }}
-
-{{/* 4️⃣ Town-Hall page bundles (ES-modules) */}}
-{{- if strings.HasPrefix $rp "/townhall/map"     }}<script type="module" src="/js/townhall/map.js"     defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/threads" }}<script type="module" src="/js/townhall/threads.js" defer></script>{{ end }}
-{{- if strings.HasPrefix $rp "/townhall/create"  }}<script type="module" src="/js/townhall/create.js"  defer></script>{{ end }}
+{{/* 2️⃣ Town-Hall page bundles (ES-modules) */}}
+{{- if eq $rp "/townhall/map/"     }}<script type="module" src="/js/townhall/map.js"     defer></script>{{ end }}
+{{- if eq $rp "/townhall/threads/" }}<script type="module" src="/js/townhall/threads.js" defer></script>{{ end }}
+{{- if eq $rp "/townhall/create/"  }}<script type="module" src="/js/townhall/create.js"  defer></script>{{ end }}
 
 {{/* NOTE ──────────────────────────────────────────────────────────
    home.js is NOT included here because layouts/section/townhall.html
@@ -37,7 +31,10 @@
    “Cannot use import statement outside a module” error.
    ───────────────────────────────────────────────────────────────*/}}
 
-{{/* 5️⃣ Dev-only Firebase config helper */}}
-{{- if hugo.IsServer }}
-  <script src="/js/firebase-config.js"></script>
-{{- end }}
+{{/* 3️⃣  No Firebase helpers here.
+        firebase-init.html (included once in baseof.html) already
+        loads:
+          ✓ firebase-config.js   ✓ firebase-login.js
+          ✓ firebase-session.js  ✓ firebase-ui-config.js
+        Keeping it single-source avoids the “Firebase is already
+        defined in the global scope” warning. */}}

@@ -1,16 +1,18 @@
 {{/* layouts/partials/events/map-controls.html */}}
 
 <div class="flex justify-center items-center mt4 space-x-2">
-  <input class="input-legacy"
-    id="zip-input"
-    type="text"
-    placeholder="Enter ZIP"
-    class="pa2 ba b--black-20 br2"
-  />
-  <button id="zip-zoom" class="pa2 bg-green white br2 hover-bg-dark-green">
-    Zoom to ZIP
+    <input id="addr-input"
+        class="input-legacy pa2 ba b--black-20 br2 w-50"
+        type="text"
+        placeholder="Street, City, ST or ZIP" />
+
+  <button id="addr-search"
+          class="pa2 bg-green white br2 hover-bg-dark-green">
+    Find &amp; Zoom
   </button>
-  <button id="view-toggle" class="pa2 bg-dark-blue white br2 hover-bg-blue-dark">
+
+  <button id="view-toggle"
+          class="pa2 bg-dark-blue white br2 hover-bg-blue-dark">
     Select List View
   </button>
 </div>

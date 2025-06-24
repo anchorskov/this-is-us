@@ -149,3 +149,17 @@ body.townhall-page {
   padding-top: 1rem;
   border-top: 1px solid #f3f4f6; /* gray-100 */
 }
+/* --- Form inputs (create-thread, reply form, etc.) ---------------- */
+.th-input {
+  /* 1 px darker grey border - matches gray-600 (#4b5563)            */
+  border: 1px solid #4b5563 !important; 
+
+  /* keep the rounded corners & padding that Uno already added       */
+  border-radius: 0.375rem;   /* md */
+  padding: 0.5rem;           /* p-2 */
+}
+
+/* keep Uno’s focus ring behaviour */
+.th-input:focus {
+  /* blue-500 border + ring come from Uno’s utilities, no change     */
+}

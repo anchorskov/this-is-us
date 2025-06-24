@@ -1,87 +1,91 @@
-/*
- * File: firestore.rules
- * Description: Security rules for the Firestore database. This version allows
- * public read access to townhall_threads to fix the "Trending"
- * tab functionality for all users.
- * Dependencies: None
- */
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{database}/documents {
+  match /databases/{db}/documents {
 
-    // 👤 User Profiles
+    /* ───────────────────────────────
+       👤  USER PROFILES
+       path: /users/{userId}
+    ─────────────────────────────── */
     match /users/{userId} {
-      // Full access to own profile
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      /* public read of SAFE fields only */
+      allow get: if
+        (resource.data.keys().hasOnly(['displayName', 'city', 'state'])) ||
+        (request.auth != null && request.auth.uid == userId);
 
-      // Optional: Throttle 'lastPostedAt' updates (1 minute delay)
-      allow update: if request.auth != null &&
-        request.auth.uid == userId &&
+      /* self-write (no throttling rules yet) */
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+
+      /* self-update, with optional lastPostedAt throttle (60 s) */
+      allow update: if request.auth != null && request.auth.uid == userId &&
         (
-          !request.resource.data.keys().hasAny(['lastPostedAt']) ||
-          request.resource.data.lastPostedAt > request.time - duration.value(1, 'm')
+          !request.resource.data.diff(resource.data).changedKeys().hasOnly(['lastPostedAt']) ||           // normal edits
+          request.resource.data.lastPostedAt > request.time - duration.value(60, 's')                     // throttled field
         );
     }
 
-    // 🗣️ Town Hall Posts (public-facing discussions) - Assuming this is an older collection.
+    /* ───────────────────────────────
+       🗣️  LEGACY /townhall_posts/*
+       (kept for backward compatibility)
+    ─────────────────────────────── */
     match /townhall_posts/{postId} {
       allow read: if true;
 
-      // Only verified users may post
-      allow create: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
-
-      // Creator may edit
-      allow update: if request.auth != null &&
-        request.auth.uid == resource.data.createdBy;
-
-      // Creator, admin, or moderator may delete
-      allow delete: if request.auth != null &&
-        (
-          request.auth.uid == resource.data.createdBy ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']
-        );
+      allow create: if isVerified();
+      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
+      allow delete: if isAdminOrMod() || (request.auth != null && request.auth.uid == resource.data.createdBy);
     }
 
-    // 💬 Town Hall Threads
+    /* ───────────────────────────────
+       💬  THREADS & NESTED REPLIES
+       path: /townhall_threads/{threadId}
+    ─────────────────────────────── */
     match /townhall_threads/{threadId} {
-      // CORRECTED: Allow anyone to read threads, even if not logged in.
-      allow read: if true;
 
-      // Verified users can post new threads
-      allow create: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+      /* ---------- THREAD DOC ---------- */
+      allow get, list: if true;        // public read
 
-      // Thread owner can update
+      allow create: if isVerified() &&
+        request.resource.data.keys().hasOnly([
+          'title','body','location','createdBy','timestamp','replyCount'
+        ]) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.replyCount == 0;
+
       allow update: if request.auth != null &&
         request.auth.uid == resource.data.createdBy;
 
-      // Admin/moderator can delete
-      allow delete: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator'];
+      allow delete: if isAdminOrMod() ||
+        (request.auth != null && request.auth.uid == resource.data.createdBy);
 
-      // 🔁 Nested Replies under threads
+      /* ---------- NESTED REPLIES ---------- */
       match /replies/{replyId} {
-        allow read: if true; // Public read allowed
+        allow get, list: if true;
 
-        allow create: if request.auth != null &&
-          request.resource.data.uid == request.auth.uid &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.verified == true;
+        allow create: if isVerified() &&
+          exists(/databases/$(db)/documents/townhall_threads/$(threadId)) &&
+          request.resource.data.keys().hasOnly(['content','displayName','uid','timestamp']) &&
+          request.resource.data.uid == request.auth.uid;
 
-        allow update: if request.auth != null &&
-          request.auth.uid == resource.data.uid;
+        allow update: if request.auth != null && request.auth.uid == resource.data.uid;
 
-        allow delete: if request.auth != null &&
-          (
-            request.auth.uid == resource.data.uid ||
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'moderator']
-          );
+        allow delete: if isAdminOrMod() ||
+          (request.auth != null && request.auth.uid == resource.data.uid);
       }
     }
 
-    // 🔐 Deny everything else by default
+    /* 🔒 deny everything else */
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    /* ─────────── helper functions ─────────── */
+    function isVerified() {
+      return request.auth != null &&
+        get(/databases/$(db)/documents/users/$(request.auth.uid)).data.verified == true;
+    }
+    function isAdminOrMod() {
+      return request.auth != null &&
+        get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role in ['admin','moderator'];
     }
   }
 }

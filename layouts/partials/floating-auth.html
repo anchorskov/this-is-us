@@ -1,70 +1,78 @@
 <!-- layouts/partials/floating-auth.html -->
 
-<div id="floating-auth" style="display:none; position:fixed; top:1rem; right:1rem; z-index:1000;">
+<div id="floating-auth"
+     class="fixed top-4 right-4 z-[1000] hidden">
   <button id="auth-btn" class="auth-btn">...</button>
 </div>
 
 <script>
+  // ─────────────────────────────────────────────
+  // FLOATING-AUTH  ·  Shows a small login/logout pill.
+  // ─────────────────────────────────────────────
   console.log("🔥 floating-auth partial script loaded");
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const container = document.getElementById("floating-auth");
-    const btn = document.getElementById("auth-btn");
+  // Guard against accidental double-binding
+  if (window.floatingAuthInitialized) {
+    console.log("⚠️ floating-auth already initialised – skipping");
+  } else {
+    window.floatingAuthInitialized = true;
 
-    // Check Firebase loaded
-    if (!container || typeof firebase === "undefined" || !firebase.auth) {
-      console.warn("⚠️ Firebase not ready, skipping floating-auth");
-      return;
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("floating-auth");
+      const btn       = document.getElementById("auth-btn");
 
-    // Defer until FirebaseAuth is stable
-    const waitForAuth = () => {
-      if (!firebase.auth) return setTimeout(waitForAuth, 100);
+      // Firebase available?
+      if (!container || typeof firebase === "undefined" || !firebase.auth) {
+        console.warn("⚠️ Firebase not ready, skipping floating-auth");
+        return;
+      }
+
+      const reveal = () => {
+        container.classList.remove("hidden");
+        console.log("🔲 floating-auth: shown");
+      };
+
       firebase.auth().onAuthStateChanged(user => {
         window.currentUser = user || null;
 
         if (user) {
           console.log("👤 Logged in:", user.email || user.phoneNumber);
           btn.textContent = "Logout";
-          btn.onclick = () => firebase.auth().signOut().then(() => {
-            console.log("👋 User signed out → reloading page");
-            location.reload();
-          });
+          btn.onclick = () =>
+            firebase.auth().signOut().then(() => {
+              console.log("👋 User signed out → reloading page");
+              location.reload();
+            });
         } else {
           console.log("🔒 Not signed in");
           btn.textContent = "Login";
           btn.onclick = () => {
-            const container = document.querySelector("#firebaseui-auth-container");
-            if (container && window.ui && window.uiConfig) {
+            const uiContainer = document.querySelector("#firebaseui-auth-container");
+            if (uiContainer && window.ui && window.uiConfig) {
               console.log("▶️ Launching FirebaseUI login");
               window.ui.start("#firebaseui-auth-container", window.uiConfig);
             } else {
               console.warn("⚠️ No FirebaseUI found → redirect fallback");
-              const redirectTo = encodeURIComponent(window.location.pathname);
-              location.href = `/login/?redirect=${redirectTo}`;
+              location.href = `/login/?redirect=${encodeURIComponent(location.pathname)}`;
             }
           };
         }
 
-        setTimeout(() => {
-          container.style.display = "block";
-          console.log("🔲 floating-auth: shown");
-        }, 1000);
+        // Reveal after the first auth state fires
+        reveal();
       });
-    };
-
-    waitForAuth();
-  });
+    });
+  }
 </script>
 
 <style>
-  .auth-btn {
+  .auth-btn{
     background: var(--tertiary, #1f2937);
     border: none;
     border-radius: 0.5rem;
     padding: 0.5rem 1.25rem;
-    color: #fff;
-    font-size: 1rem;
-    cursor: pointer;
+    color:#fff;
+    font-size:1rem;
+    cursor:pointer;
   }
 </style>

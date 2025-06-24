@@ -4,8 +4,8 @@
   "private": true,
 
   "scripts": {
-    "build:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/uno.css --minify",
-    "watch:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/main.dev.css --watch",
+    "build:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/js/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/uno.css --minify",
+    "watch:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/js/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/main.dev.css --watch",
     "hugo:dev": "hugo server -D --disableFastRender",
     "dev": "npm-run-all --parallel watch:css hugo:dev",
     "build:hugo": "hugo --gc --minify",

@@ -1,28 +1,22 @@
-// static/js/events/event-map.js
-
+// static/js/events/event-map.js – selectors first, callback third
 import { showError } from './ui-feedback.js';
 
 // ——————————————————————————————————————————
-// Simple selector
+// Tiny helper
 // ——————————————————————————————————————————
-function $(selector) {
-  return document.querySelector(selector);
-}
+const $ = sel => document.querySelector(sel);
 
 // ——————————————————————————————————————————
 // Defaults
 // ——————————————————————————————————————————
 const DEFAULT_VIEW = [39.5, -98.35];
 const DEFAULT_ZOOM = 4;
-const TILE_URL    = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_URL     = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-/**
- * Initialize the Leaflet map and return both map instance and marker-setter.
- * @param {string} [mapSelector="#map"]
- * @param {[number,number]} [view=DEFAULT_VIEW]
- * @param {number} [zoom=DEFAULT_ZOOM]
- */
-export function initMap(
+/* ------------------------------------------------------------------
+ * initMap → returns { map, setMarker }
+ * ----------------------------------------------------------------*/
+export function initMap (
   mapSelector = '#map',
   view        = DEFAULT_VIEW,
   zoom        = DEFAULT_ZOOM
@@ -30,7 +24,6 @@ export function initMap(
   const el = $(mapSelector);
   if (!el) throw new Error(`Map container ${mapSelector} not found`);
 
-  // Initialize map
   const id  = mapSelector.startsWith('#') ? mapSelector.slice(1) : mapSelector;
   const map = L.map(id).setView(view, zoom);
   setTimeout(() => map.invalidateSize(), 0);
@@ -38,57 +31,46 @@ export function initMap(
   L.tileLayer(TILE_URL).addTo(map);
   const markerGroup = L.layerGroup().addTo(map);
 
-  /** Place a marker and populate hidden lat/lng inputs. */
-  function setMarker(lat, lng) {
-    const latInput = $('#lat');
-    const lngInput = $('#lng');
-    if (latInput) latInput.value = lat;
-    if (lngInput) lngInput.value = lng;
+  function setMarker (lat, lng) {
+    const latEl = $('#lat');
+    const lngEl = $('#lng');
+    if (latEl) latEl.value = lat;
+    if (lngEl) lngEl.value = lng;
     markerGroup.clearLayers();
     L.marker([lat, lng]).addTo(markerGroup);
-    // Notify form logic
     document.dispatchEvent(new Event('locationSet'));
   }
 
-  // Click on map to set marker
-  map.on('click', (e) => {
-    setMarker(e.latlng.lat, e.latlng.lng);
-  });
+  map.on('click', e => setMarker(e.latlng.lat, e.latlng.lng));
 
   return { map, setMarker };
 }
 
-/**
- * Bind an address search box to your map’s marker setter.
- * @param {function} setMarker – from initMap()
- * @param {string}   [inputSelector="#address"]
- * @param {string}   [buttonSelector="#searchAddress"]
- */
-export function bindAddressSearch(
-  setMarker,
-  inputSelector  = '#address',
-  buttonSelector = '#searchAddress'
+/* ------------------------------------------------------------------
+ * bindAddressSearch(inputSel, buttonSel, onSelect)
+ * ----------------------------------------------------------------*/
+export function bindAddressSearch (
+  inputSel   = '#address',
+  buttonSel  = '#searchAddress',
+  onSelect   = () => {}
 ) {
-  const input  = $(inputSelector);
-  const button = $(buttonSelector);
+  const input  = $(inputSel);
+  const button = $(buttonSel);
   if (!input || !button) return;
 
   button.addEventListener('click', async () => {
-    const query = input.value.trim();
-    if (!query) return;
+    const q = input.value.trim();
+    if (!q) return;
 
     try {
-      const res  = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      if (!Array.isArray(data) || !data.length) {
-        showError('Location not found.');
-        return;
-      }
+      const url  = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`;
+      const data = await (await fetch(url)).json();
+      if (!data.length) return showError('Location not found.');
       const { lat, lon } = data[0];
-      setMarker(parseFloat(lat), parseFloat(lon));
+      onSelect(+lat, +lon);
     } catch (err) {
       console.error('Address lookup failed:', err);
-      showError('Location lookup failed: ' + err.message);
+      showError('Problem reaching location service.');
     }
   });
 }

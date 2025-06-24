@@ -1,87 +1,86 @@
 <!-- File: layouts/partials/event-form.html -->
-    <div id="event-form" class="hidden not-prose bg-gray-100 py-8 px-4">    <h2 class="text-xl font-semibold text-center mb-4">Create an Event</h2>
-    <form id="eventForm" class="flex flex-col space-y-4">
-      <div class="flex flex-col">
-        <label for="title" class="mb-2 font-semibold">Event Title</label>
-        <input type="text" id="title" required class="border border-gray-300 rounded p-2 w-full" />
-      </div>
+<div id="event-form" class="hidden not-prose bg-gray-100 py-8 px-4">
+  <h2 class="text-xl font-semibold text-center mb-4">Create an Event</h2>
 
-      <div class="flex flex-col">
-        <label for="datetime" class="mb-2 font-semibold">Event Date &amp; Time</label>
-        <input type="datetime-local" id="datetime" required class="border border-gray-300 rounded p-2 w-full" />
-      </div>
+  <form id="eventForm" class="flex flex-col space-y-4">
+    <!-- Title -->
+    <div class="flex flex-col">
+      <label for="title" class="mb-2 font-semibold">Event Title</label>
+      <input type="text" id="title" required class="border border-gray-300 rounded p-2 w-full" />
+    </div>
 
-      <div class="flex flex-col">
-        <label for="description" class="mb-2 font-semibold">Description</label>
-        <textarea id="description" required rows="4" class="border border-gray-300 rounded p-2 w-full"></textarea>
-      </div>
+    <!-- Date / Time -->
+    <div class="flex flex-col">
+      <label for="datetime" class="mb-2 font-semibold">Event Date &amp; Time</label>
+      <input type="datetime-local" id="datetime" required class="border border-gray-300 rounded p-2 w-full" />
+    </div>
 
-      <div class="flex flex-col">
-        <label for="address" class="mb-2 font-semibold">Event Address or ZIP Code</label>
-        <input type="text" id="address" class="border border-gray-300 rounded p-2 w-full mb-2" />
-        <button type="button" id="searchAddress" class="w-full rounded-md px-4 py-2 font-medium text-white bg-blue-600 hover:bg-blue-700">
-          🔍 Search Address
-        </button>
-        <small class="text-sm text-gray-600 mt-1">Enter an address and click 🔍, or click on the map below to set your location.</small>
-      </div>
+    <!-- Description -->
+    <div class="flex flex-col">
+      <label for="description" class="mb-2 font-semibold">Description</label>
+      <textarea id="description" required rows="4" class="border border-gray-300 rounded p-2 w-full"></textarea>
+    </div>
 
-      <div class="flex flex-col">
-        <label for="sponsor" class="mb-2 font-semibold">Sponsoring Organization (optional)</label>
-        <input type="text" id="sponsor" class="border border-gray-300 rounded p-2 w-full" />
-      </div>
-
-      <fieldset class="space-y-4">
-        <legend class="font-semibold">Contact Info (optional)</legend>
-        <div class="flex flex-col">
-          <label for="contactEmail" class="mb-2 font-semibold">Contact Email</label>
-          <input type="email" id="contactEmail" class="border border-gray-300 rounded p-2 w-full" />
-        </div>
-        <div class="flex flex-col">
-          <label for="contactPhone" class="mb-2 font-semibold">Contact Phone</label>
-          <input type="tel" id="contactPhone" class="border border-gray-300 rounded p-2 w-full" />
-        </div>
-      </fieldset>
-
-      <div id="map" class="h-64 sm:h-80 md:h-96 rounded-md"></div>
-
-      <div class="flex flex-col">
-        <label for="eventPdf" class="mb-2 font-semibold">Attach PDF Flyer <span class="text-sm text-gray-600">(Limit: 5 MB)</span></label>
-        <input type="file" id="eventPdf" accept="application/pdf" class="border border-gray-300 rounded p-2 w-full" />
-        <iframe id="pdfPreview" class="mt-2 w-full h-40 hidden"></iframe>
-      </div>
-
-      <input type="hidden" id="lat" />
-      <input type="hidden" id="lng" />
-
-      <button
-        type="button"
-        id="previewEvent"
-        class="w-full rounded-md px-4 py-2 font-medium text-white bg-green-600 hover:bg-green-700 opacity-50"
-        disabled
-        aria-disabled="true"
-      >
-        Next → Preview
+    <!-- Address search + hidden coords -->
+    <div class="flex flex-col">
+      <label for="address" class="mb-2 font-semibold">Event Address or ZIP Code</label>
+      <input type="text" id="address" class="border border-gray-300 rounded p-2 w-full mb-2" />
+      <button type="button" id="searchAddress" class="w-full rounded-md px-4 py-2 font-medium text-white bg-blue-600 hover:bg-blue-700">
+        🔍 Find &amp; Zoom
       </button>
-    </form>
+      <small class="text-sm text-gray-600 mt-1">Enter an address and click 🔍, or click on the map below to set your location.</small>
+    </div>
 
-    <div id="event-preview" class="hidden mt-4"></div>
-  </div>
+    <!-- Sponsor -->
+    <div class="flex flex-col">
+      <label for="sponsor" class="mb-2 font-semibold">Sponsoring Organization (optional)</label>
+      <input type="text" id="sponsor" class="border border-gray-300 rounded p-2 w-full" />
+    </div>
+
+    <!-- Optional contact info -->
+    <fieldset class="space-y-4">
+      <legend class="font-semibold">Contact Info (optional)</legend>
+      <div class="flex flex-col">
+        <label for="contactEmail" class="mb-2 font-semibold">Contact Email</label>
+        <input type="email" id="contactEmail" class="border border-gray-300 rounded p-2 w-full" />
+      </div>
+      <div class="flex flex-col">
+        <label for="contactPhone" class="mb-2 font-semibold">Contact Phone</label>
+        <input type="tel" id="contactPhone" class="border border-gray-300 rounded p-2 w-full" />
+      </div>
+    </fieldset>
+
+    <!-- Map -->
+    <div id="map" class="h-64 sm:h-80 md:h-96 rounded-md"></div>
+
+    <!-- PDF upload -->
+    <div class="flex flex-col">
+      <label for="eventPdf" class="mb-2 font-semibold">Attach PDF Flyer <span class="text-sm text-gray-600">(Limit: 5&nbsp;MB)</span></label>
+      <input type="file" id="eventPdf" accept="application/pdf" class="border border-gray-300 rounded p-2 w-full" />
+      <iframe id="pdfPreview" class="mt-2 w-full h-40 hidden"></iframe>
+    </div>
+
+    <!-- Hidden lat/lng populated by map click or geocode -->
+    <input type="hidden" id="lat" />
+    <input type="hidden" id="lng" />
+
+    <!-- Preview button -->
+    <button type="button" id="previewEvent" class="w-full rounded-md px-4 py-2 font-medium text-white bg-green-600 hover:bg-green-700 opacity-50" disabled aria-disabled="true">
+      Next → Preview
+    </button>
+  </form>
+
+  <!-- Dynamic preview container -->
+  <div id="event-preview" class="hidden mt-4"></div>
 </div>
 
 <!-- Success Modal -->
-<div
-  id="successModal"
-  class="cr-modal-overlay hidden"
-  role="dialog"
-  aria-modal="true"
-  aria-hidden="true"
-  aria-labelledby="successModalTitle"
->
+<div id="successModal" class="cr-modal-overlay hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="successModalTitle">
   <div class="cr-modal-content bg-white rounded-2xl shadow p-6 max-w-lg mx-auto">
     <h3 id="successModalTitle" class="text-xl font-semibold mb-3">Success!</h3>
     <p class="mb-4">Your event has been created.</p>
     <div class="flex justify-end space-x-2">
-      <button id="okEventBtn" class="rounded-md px-4 py-2 bg-gray-300 text-black">OK</button>
+      <button id="okEventBtn"   class="rounded-md px-4 py-2 bg-gray-300 text-black">OK</button>
       <button id="viewEventBtn" class="rounded-md px-4 py-2 bg-blue-600 text-white">View on Map</button>
     </div>
   </div>

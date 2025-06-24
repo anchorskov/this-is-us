@@ -15,6 +15,7 @@ export default defineConfig({
     include: [
       // Templates & partials
       'layouts/**/*.{html,js}',
+      'layouts/**/**/*.{html,js}',
       // Markdown & rendered HTML
       'content/**/*.{md,html}',
       // Client-side scripts (static/js/**)
@@ -47,7 +48,7 @@ shortcuts: {
 
   /* ── Town-Hall input (darker border + focus ring) ───────────── */
   'th-input':
-    'w-full border border-gray-500 rounded-md p-2 ' +
+    'w-full border-2 border-gray-600 rounded-md p-2 ' +
     'focus:(outline-none ring-2 ring-blue-500 border-blue-500)',
 },
 

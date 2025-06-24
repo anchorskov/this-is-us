@@ -74,7 +74,7 @@ export function renderForm(user) {
     originalSetMarker(...args);
     document.dispatchEvent(new Event('locationSet'));
   };
-  bindAddressSearch(setMarker);
+  bindAddressSearch('#address', '#searchAddress', setMarker);
 
   // 5) Enable Preview button once location is set
   document.addEventListener('locationSet', () => {

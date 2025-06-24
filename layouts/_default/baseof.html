@@ -13,9 +13,12 @@
     */}}
     {{ partial "head.html" . }}
 
-  {{/* The block and firebase-init partial are needed globally. */}}
-  {{ block "header" . }}{{ end }}
-  {{ partial "firebase-init.html" . }}
+    {{/*  ──➤ CUSTOM & UNO CSS  */}}
+    {{ partial "head-styles.html" . }}
+
+    {{/* The block and firebase-init partial are needed globally. */}}
+    {{ block "header" . }}{{ end }}
+    {{ partial "firebase-init.html" . }}
 </head>
 
 <body
@@ -29,7 +32,7 @@
 >
   {{/* The header is now loaded on all pages for consistency. */}}
   {{ partialCached "header.html" . .Page }}
-  {{ partial "floating-auth.html" . }}
+  {{ partial "floating-auth.html" . }} {{/* ⚠ Remove firebase-init.html from inside this partial */}}
 
   <main class="main">
     {{ block "main" . }}{{ end }}
