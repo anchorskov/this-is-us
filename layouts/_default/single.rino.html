@@ -1,0 +1,16 @@
+{{ define "main" }}
+  <!-- Hero Banner -->
+  <section class="bg-red-100 text-red-900 py-12 px-4 md:px-12 lg:px-24 text-center">
+    <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">🦏 The Red Rhino</h1>
+    <p class="text-xl md:text-2xl max-w-3xl mx-auto font-medium">
+      Ever try to manipulate a Rhino? You can’t. We think for ourselves. We stand our ground. We remember who we serve.
+    </p>
+  </section>
+
+  <!-- Main Content with vertical spacing between blocks -->
+  <section class="max-w-4xl mx-auto px-4 py-12">
+    <div class="flex flex-col gap-8 prose prose-lg">
+      {{ .Content }}
+    </div>
+  </section>
+{{ end }}

@@ -2,25 +2,25 @@
   "name": "this-is-us",
   "version": "1.0.0",
   "private": true,
-
+  "type": "module",
   "scripts": {
     "build:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/js/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/uno.css --minify",
     "watch:css": "unocss \"layouts/**/*.{html,js}\" \"content/**/*.{md,html}\" \"static/js/**/*.js\" assets/css/main.css --config uno.config.mjs -o static/css/main.dev.css --watch",
     "hugo:dev": "hugo server -D --disableFastRender",
     "dev": "npm-run-all --parallel watch:css hugo:dev",
     "build:hugo": "hugo --gc --minify",
-    "build": "npm run build:css && npm run build:hugo"
+    "build": "npm run build:css && npm run build:hugo",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-
-
   "dependencies": {
     "@octokit/rest": "^21.0.0",
     "dotenv": "^16.5.0",
     "firebase-admin": "^13.4.0",
     "itty-router": "^5.0.18"
   },
-
   "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
     "@unocss/cli": "^66.2.3",
     "@unocss/postcss": "^66.2.3",
     "@unocss/preset-attributify": "^66.2.3",
@@ -28,11 +28,31 @@
     "@unocss/preset-uno": "^66.2.3",
     "@unocss/preset-wind3": "^66.2.3",
     "autoprefixer": "^10.4.21",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.2",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
     "unocss": "^66.2.3"
   },
+  "engines": {
+    "node": ">=18"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFiles": ["./jest.setup.cjs"],
+    "transform": {
+      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
+    },
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    },
+  "testMatch": [
+      "**/__tests__/**/*.[jt]s?(x)",
+      "**/?(*.)+(spec|test).[tj]s?(x)",
+      "**/?(*.)+(spec|test).mjs"
 
-  "engines": { "node": ">=18" }
+    ]
+  }
 }

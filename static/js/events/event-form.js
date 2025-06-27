@@ -77,11 +77,11 @@ export function renderForm(user) {
   bindAddressSearch('#address', '#searchAddress', setMarker);
 
   // 5) Enable Preview button once location is set
-  document.addEventListener('locationSet', () => {
-    previewBtn.disabled             = false;
-    previewBtn.classList.remove('opacity-50');
-    previewBtn.setAttribute('aria-disabled', 'false');
-  });
+  // document.addEventListener('locationSet', () => {
+  //  previewBtn.disabled             = false;
+  // previewBtn.classList.remove('opacity-50');
+  //  previewBtn.setAttribute('aria-disabled', 'false');
+  //});
 
   // 6) Wire up preview & confirm
   bindFormLogic(user);

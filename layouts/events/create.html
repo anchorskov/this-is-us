@@ -1,21 +1,29 @@
+{{/* layouts/events/create.html — streamlined ZIP-first UI (updated 2025-06-25) */}}
+
 {{ define "main" }}
+
+  <!-- dev log -->
   <script>
-    console.log("🔥 inline JS loaded (from template)");
+    console.log(
+      `PAGE CTX Template={{ .Layout }} Kind={{ .Kind }} Section={{ .Section }} URL={{ .RelPermalink }}`
+    );
   </script>
 
   <article class="prose mx-auto">
     <h1>{{ .Title }}</h1>
 
-    <!-- LOGIN PROMPT + UI WIDGET -->
-    <div id="auth-container" class="flex flex-col items-center justify-center">
-      <p id="login-prompt">Please log in to create an event.</p>
-      <div id="firebaseui-auth-container" class="mt-2"></div>
-    </div>
+    <!-- FirebaseUI container (appears only if user not signed-in) -->
+    <div id="firebaseui-auth-container" class="mb-6"></div>
 
-    <!-- EVENT FORM UI -->
+    <!-- ZIP-first location picker + map -->
+    {{ partial "event-step-location.html" . }}
+
+    <!-- Event-detail form (hidden until locationSet) -->
     {{ partial "event-form.html" . }}
   </article>
 
   <!-- Page-specific JS -->
-  <script type="module" src="/js/events/index.js" defer></script>
+  <script type="module" src="{{ "js/events/create/bootstrap.js" | relURL }}" defer></script>
+  <script type="module" src="{{ "js/events/create/form-flow.js"  | relURL }}" defer></script>
+
 {{ end }}

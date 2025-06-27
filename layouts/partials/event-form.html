@@ -1,4 +1,4 @@
-<!-- File: layouts/partials/event-form.html -->
+<!-- layouts/partials/event-form.html – event‑detail form (location handled elsewhere) -->
 <div id="event-form" class="hidden not-prose bg-gray-100 py-8 px-4">
   <h2 class="text-xl font-semibold text-center mb-4">Create an Event</h2>
 
@@ -12,23 +12,19 @@
     <!-- Date / Time -->
     <div class="flex flex-col">
       <label for="datetime" class="mb-2 font-semibold">Event Date &amp; Time</label>
-      <input type="datetime-local" id="datetime" required class="border border-gray-300 rounded p-2 w-full" />
+      <div class="flex gap-2">
+        <input type="datetime-local" id="datetime" required class="border border-gray-300 rounded p-2 flex-1" />
+        <button type="button" id="confirmDateTime" class="rounded px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 shrink-0">
+          Done
+        </button>
+      </div>
+      <small class="text-sm text-gray-500 mt-1">Click the field to open the date‑time picker, then hit Done.</small>
     </div>
 
     <!-- Description -->
     <div class="flex flex-col">
       <label for="description" class="mb-2 font-semibold">Description</label>
       <textarea id="description" required rows="4" class="border border-gray-300 rounded p-2 w-full"></textarea>
-    </div>
-
-    <!-- Address search + hidden coords -->
-    <div class="flex flex-col">
-      <label for="address" class="mb-2 font-semibold">Event Address or ZIP Code</label>
-      <input type="text" id="address" class="border border-gray-300 rounded p-2 w-full mb-2" />
-      <button type="button" id="searchAddress" class="w-full rounded-md px-4 py-2 font-medium text-white bg-blue-600 hover:bg-blue-700">
-        🔍 Find &amp; Zoom
-      </button>
-      <small class="text-sm text-gray-600 mt-1">Enter an address and click 🔍, or click on the map below to set your location.</small>
     </div>
 
     <!-- Sponsor -->
@@ -50,17 +46,7 @@
       </div>
     </fieldset>
 
-    <!-- Map -->
-    <div id="map" class="h-64 sm:h-80 md:h-96 rounded-md"></div>
-
-    <!-- PDF upload -->
-    <div class="flex flex-col">
-      <label for="eventPdf" class="mb-2 font-semibold">Attach PDF Flyer <span class="text-sm text-gray-600">(Limit: 5&nbsp;MB)</span></label>
-      <input type="file" id="eventPdf" accept="application/pdf" class="border border-gray-300 rounded p-2 w-full" />
-      <iframe id="pdfPreview" class="mt-2 w-full h-40 hidden"></iframe>
-    </div>
-
-    <!-- Hidden lat/lng populated by map click or geocode -->
+    <!-- Hidden lat/lng populated by map click or geocode (location step) -->
     <input type="hidden" id="lat" />
     <input type="hidden" id="lng" />
 
