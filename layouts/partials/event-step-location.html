@@ -1,54 +1,65 @@
 <!-- layouts/partials/event-step-location.html – ZIP-first location step (map, draggable pin, OK button) -->
 
 <p class="text-sm text-gray-600 mb-2">
-  Start by choosing a location&mdash;search an address <em>or</em> drop a&nbsp;pin on the map.
+  Start by entering an address <em>or</em> drop a pin on the map to choose your event location.
 </p>
 
-<label class="block font-medium mb-1">Street Address</label>
+<label for="address" class="block font-medium mb-1">Street Address</label>
 <input id="address"
-       class="input-legacy w-full mb-2"
+       name="address"
+       class="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
        placeholder="123 Main St"
+       autocomplete="off"
        autofocus />
 
 <div class="grid grid-cols-6 gap-2 mb-2">
   <div class="col-span-2">
-    <label class="block font-medium mb-1">ZIP</label>
-    <input id="zip" class="input-legacy w-full" />
+    <label for="zip" class="block font-medium mb-1">ZIP</label>
+    <input id="zip"
+           name="zip"
+           class="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+           autocomplete="off" />
   </div>
   <div class="col-span-3">
-    <label class="block font-medium mb-1">City</label>
-    <input id="city" class="input-legacy w-full" />
+    <label for="city" class="block font-medium mb-1">City</label>
+    <input id="city"
+           name="city"
+           class="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+           autocomplete="off" />
   </div>
   <div>
-    <label class="block font-medium mb-1">ST</label>
-    <input id="state" class="input-legacy w-full" />
+    <label for="state" class="block font-medium mb-1">ST</label>
+    <input id="state"
+           name="state"
+           class="w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+           autocomplete="off" />
   </div>
 </div>
 
 <label class="inline-flex items-center gap-2 text-sm mb-2">
-  <input type="checkbox" id="isPark" class="form-checkbox" />
-  Event in a park / open&nbsp;field
+  <input type="checkbox" id="isPark" class="form-checkbox h-5 w-5 text-green-600" />
+  <span class="font-medium">Event in a park or open field</span>
 </label>
 
 <button id="searchAddress"
-        class="w-full rounded-md px-4 py-2 bg-blue-600 text-white hover:bg-blue-700
-               flex items-center justify-center gap-1 shadow transition duration-150">
+        type="button"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition duration-150 shadow">
   <span class="material-icons-outlined text-base">search</span>
-  <span>Find&nbsp;&amp;&nbsp;Zoom</span>
+  Find & Zoom
 </button>
 
 <small class="text-xs text-gray-500 mt-1 block">
-  Press <kbd>Enter</kbd> or click. City/State auto-fills when ZIP blurs.
+  Tip: Press <kbd>Enter</kbd> or click the button. City/State will auto-fill when ZIP is complete.
 </small>
 
 <!-- Map container -->
-<div id="map" class="h-56 sm:h-64 md:h-72 rounded-md mt-4"></div>
+<div id="map" class="h-56 sm:h-64 md:h-72 rounded-md mt-4 border border-gray-300"></div>
 
-<!-- OK / continue button (enabled once a pin is set) -->
+<!-- OK / continue button -->
 <button id="loc-ok"
-        class="mt-4 rounded-md px-4 py-2 bg-green-600 text-white hover:bg-green-700
-               opacity-50 w-full transition duration-150"
+        type="button"
         disabled
-        aria-disabled="true">
-  OK &mdash; Continue to event details
+        aria-disabled="true"
+        class="mt-4 w-full px-4 py-2 rounded-md bg-green-600 text-white opacity-50 hover:bg-green-700 transition duration-150">
+  ✅ OK – Continue to event details
 </button>

@@ -1,0 +1,41 @@
+{{/* layouts/partials/event-location-map.html — ZIP-first interactive map + address form */}}
+
+<section class="bg-white p-6 rounded-lg shadow-md border max-w-3xl mx-auto mt-6">
+  <h2 class="text-2xl font-bold mb-4">📍 Find Your Event Location</h2>
+  <form id="addressForm" class="space-y-4">
+    <div>
+      <label for="street" class="block font-semibold">Street Address</label>
+      <input id="street" type="text" placeholder="123 Main St" class="input input-bordered w-full" />
+    </div>
+    <div>
+      <label for="city" class="block font-semibold">City</label>
+      <input id="city" type="text" placeholder="Casper" class="input input-bordered w-full" />
+    </div>
+    <div>
+      <label for="state" class="block font-semibold">State</label>
+      <input id="state" type="text" placeholder="WY" class="input input-bordered w-full" />
+    </div>
+    <div>
+      <label for="zip" class="block font-semibold">ZIP Code</label>
+      <input id="zip" type="text" placeholder="82601" class="input input-bordered w-full" />
+    </div>
+    <div class="mt-4">
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" id="saveLocation" class="w-6 h-6 text-blue-600" />
+        <span class="text-gray-700 font-medium">Save this location for the event?</span>
+      </label>
+      <p class="text-sm text-gray-500 ml-8">This helps us remember your pin. You can move it after search.</p>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded">🔍 Search Location</button>
+      <button type="button" id="clearForm" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded">🧹 Clear Form</button>
+    </div>
+    <p id="errorMsg" class="text-red-600 font-medium mt-2"></p>
+    <p id="latlonDisplay" class="text-sm text-gray-600 mt-2"></p>
+  </form>
+  <div id="map" class="w-full h-96 mt-6 border border-gray-300 rounded-lg"></div>
+
+  <!-- Hidden fields to capture lat/lon -->
+  <input type="hidden" id="eventLat" name="eventLat" />
+  <input type="hidden" id="eventLon" name="eventLon" />
+</section>

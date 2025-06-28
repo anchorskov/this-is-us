@@ -1,29 +1,41 @@
-{{/* layouts/events/create.html — streamlined ZIP-first UI (updated 2025-06-25) */}}
+{{/* layouts/events/create.html — Updated ZIP-first UI with modular map locator (2025-06-27) */}}
 
 {{ define "main" }}
 
-  <!-- dev log -->
+  <!-- Dev Log -->
   <script>
     console.log(
       `PAGE CTX Template={{ .Layout }} Kind={{ .Kind }} Section={{ .Section }} URL={{ .RelPermalink }}`
     );
   </script>
 
+  <!-- Under Construction Notice -->
+  <section class="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6 max-w-3xl mx-auto my-12 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold mb-2">🚧 Page Under Construction</h1>
+    <p class="text-lg mb-4">
+      This feature is still being built. But we’re not just building tools—we're building a movement.
+    </p>
+    <a href="https://u-pac.org/volunteer" target="_blank" rel="noopener" class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition">
+      🙋‍♂️ Volunteers Wanted – Join Us
+    </a>
+  </section>
+
+  <!-- Main Content -->
   <article class="prose mx-auto">
     <h1>{{ .Title }}</h1>
 
-    <!-- FirebaseUI container (appears only if user not signed-in) -->
+    <!-- Firebase Auth -->
     <div id="firebaseui-auth-container" class="mb-6"></div>
 
-    <!-- ZIP-first location picker + map -->
+    <!-- Step 1: ZIP-first location tool -->
     {{ partial "event-step-location.html" . }}
 
-    <!-- Event-detail form (hidden until locationSet) -->
+    <!-- Step 2: Event details (hidden until 'OK') -->
     {{ partial "event-form.html" . }}
   </article>
 
-  <!-- Page-specific JS -->
-  <script type="module" src="{{ "js/events/create/bootstrap.js" | relURL }}" defer></script>
+  <!-- Page Scripts -->
+  <script type="module" src="{{ "js/events/create/map-locator.js" | relURL }}" defer></script>
   <script type="module" src="{{ "js/events/create/form-flow.js"  | relURL }}" defer></script>
 
 {{ end }}
