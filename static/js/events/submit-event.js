@@ -1,48 +1,44 @@
-// static/js/events/submit-event.js
+/* static/js/events/submit-event.js
+   — POST the event to the Cloud-Worker —                              */
 
-import { safeFetch } from '../utils/safe-fetch.js';
+import { safeFetch }            from '../utils/safe-fetch.js';
 import { getUserFriendlyError } from './error-manager.js';
 
-// ——————————————————————————————————————————
-// Configuration
-// ——————————————————————————————————————————
-const API_ROOT = (window.EVENTS_API_URL || '/api').replace(/\/$/, '');
+const API_ROOT   = (window.EVENTS_API_URL || '/api').replace(/\/$/, '');
 const CREATE_URL = `${API_ROOT}/events/create`;
 
 /**
- * Submits an event to the backend.
- * @param {Object} payload - Object with event fields and file.
- * @returns {Promise<{ok: boolean, id?: string, message?: string}>}
+ * @param {Object} payload – key/value pairs from the form + lat/lng
+ * @returns {Promise<{ok:boolean,id?:string,message?:string}>}
  */
 export async function submitEvent(payload) {
-  console.log('📡 Submitting event payload:', payload);
 
-  if (!payload.lat || !payload.lng) {
-    console.warn('⚠️ Missing lat/lng — map button may not render.');
-  }
-
-  const formData = new FormData();
-  Object.entries(payload).forEach(([key, value]) => {
-    formData.append(key, value);
-  });
+  /* build FormData so <input type="file"> could be handled later */
+  const fd = new FormData();
+  for (const [k, v] of Object.entries(payload)) fd.append(k, v);
 
   try {
-    const body = await safeFetch(CREATE_URL, {
-      method: 'POST',
-      body: formData,
-    });
+    const body = await safeFetch(CREATE_URL, { method: 'POST', body: fd });
 
-    if (body.success === true) {
-      console.log('✅ Submission succeeded:', body);
+    /* ✅ success path */
+    if (body?.success === true) {
+      console.log('✅ API success →', body);
       return { ok: true, id: body.id };
-    } else {
-      const message = getUserFriendlyError(body.code, body.error);
-      console.error('❌ Worker error:', message);
-      return { ok: false, message };
     }
+
+    /* ❌ server returned an error object */
+    console.warn('⚠️ API rejected →', body);
+    return {
+      ok: false,
+      message: getUserFriendlyError(body?.code, body?.error)
+    };
+
   } catch (err) {
-    const fallback = getUserFriendlyError(undefined, err.message);
-    console.error('❌ Submission failed:', fallback);
-    return { ok: false, message: fallback };
+    /* 🛑 network / CORS / timeout failure */
+    console.error('❌ fetch failed →', err);
+    return {
+      ok: false,
+      message: getUserFriendlyError(undefined, err.message)
+    };
   }
 }

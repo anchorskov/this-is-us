@@ -1,41 +1,44 @@
-{{/* layouts/events/create.html — Updated ZIP-first UI with modular map locator (2025-06-27) */}}
-
+{{/* ZIP-first “Create Event” page – fixed IDs */}}
 {{ define "main" }}
-
-  <!-- Dev Log -->
+  <!-- tiny dev-log -->
   <script>
     console.log(
-      `PAGE CTX Template={{ .Layout }} Kind={{ .Kind }} Section={{ .Section }} URL={{ .RelPermalink }}`
+      "%cPAGE CTX","background:#fde047;color:#000;padding:2px 5px;border-radius:3px",
+      "Template={{ .Layout }}","Kind={{ .Kind }}",
+      "Section={{ .Section }}","URL={{ .RelPermalink }}"
     );
   </script>
 
-  <!-- Under Construction Notice -->
-  <section class="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6 max-w-3xl mx-auto my-12 rounded-lg shadow-md">
+  <!-- 🚧 construction banner (unchanged) -->
+  <section class="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6
+                   max-w-3xl mx-auto my-12 rounded-lg shadow-md">
     <h1 class="text-3xl font-bold mb-2">🚧 Page Under Construction</h1>
     <p class="text-lg mb-4">
-      This feature is still being built. But we’re not just building tools—we're building a movement.
+      This feature is still being built. But we’re not just building tools—
+      we’re building a movement.
     </p>
-    <a href="https://u-pac.org/volunteer" target="_blank" rel="noopener" class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition">
-      🙋‍♂️ Volunteers Wanted – Join Us
-    </a>
+    <a href="https://u-pac.org/volunteer"
+       class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded
+              hover:bg-red-700 transition">🙋‍♂️ Volunteers Wanted – Join Us</a>
   </section>
 
-  <!-- Main Content -->
+  <!-- Main wizard -->
   <article class="prose mx-auto">
     <h1>{{ .Title }}</h1>
 
-    <!-- Firebase Auth -->
+    <!-- login UI if needed -->
     <div id="firebaseui-auth-container" class="mb-6"></div>
 
-    <!-- Step 1: ZIP-first location tool -->
+    <!-- Step 1 – address & map -->
     {{ partial "event-step-location.html" . }}
 
-    <!-- Step 2: Event details (hidden until 'OK') -->
+    <!-- Step 2 – details form -->
     {{ partial "event-form.html" . }}
+
   </article>
 
-  <!-- Page Scripts -->
-  <script type="module" src="{{ "js/events/create/map-locator.js" | relURL }}" defer></script>
-  <script type="module" src="{{ "js/events/create/form-flow.js"  | relURL }}" defer></script>
-
+  <!-- JS -->
+  <script type="module" src="{{ "js/events/create/form-flow.js" | relURL }}"></script>
+  <script type="module" src="{{ "js/events/submit-event.js"     | relURL }}"></script>
+  <script type="module">console.log("✅ inline module test – create.html")</script>
 {{ end }}

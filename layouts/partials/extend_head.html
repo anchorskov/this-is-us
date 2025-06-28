@@ -1,46 +1,52 @@
-{{- /* ------------------------------------------------------------
-     File:  /layouts/partials/extend_head.html
-     Purpose:
-       • In dev  – load hot-reloaded  main.dev.css
-       • In prod – load static-built   uno.css
-   ------------------------------------------------------------ */ -}}
-<!-- extend_head.html -->
+{{- /* layouts/partials/extend_head.html – updated for UnoCSS (2025-06-27) */ -}}
 
 <!-- ░░ META & FAVICON ░░ -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}">
 <meta name="theme-color" content="#2e2e33" />
 
-<!-- ░░ DEV-ONLY HELPERS (Alpine.js, etc.) ░░ -->
+<!-- ░░ DEV HELPERS: Alpine.js for sandbox/candidates ░░ -->
 {{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <style>[x-cloak]{display:none!important}</style>
   <script>console.log("✅ Alpine loaded for dev.")</script>
 {{ end }}
 
-<!-- ░░ FONTS ░░ -->
+<!-- ░░ GOOGLE FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- ░░ MASTER STYLESHEET ░░ -->
-{{ if hugo.IsServer }}
-  <link rel="stylesheet" href="{{ "css/main.dev.css" | relURL }}">
-{{ else }}
-  <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
-{{ end }}
+<!-- ░░ UnoCSS Stylesheet ░░ -->
+<link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 
-<!-- ░░ CONDITIONAL 3rd-PARTY CSS ░░ -->
+<!-- ░░ CONDITIONAL MAP / TIMELINE STYLES ░░ -->
+{{/* 
+  Determine whether to load Leaflet CSS (for maps) and Timeline CSS based on the current page context 
+*/}}
 {{ $needsMap := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
-{{ $filePath := "" }}{{ with .File }}{{ $filePath = .Path }}{{ end }}
+{{ $filePath := "" }}
+{{ with .File }}{{ $filePath = .Path }}{{ end }}
 {{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
+  <!-- ✅ Leaflet CSS injected -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+  <script>console.log("🗺️ Leaflet CSS included for map support.");</script>
+
   {{ if eq .Section "townhall" }}
+    <!-- ✅ MarkerCluster CSS for townhall maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <script>console.log("🔵 MarkerCluster styles added.");</script>
   {{ end }}
 {{ end }}
+
+{{ if and $needsTimeline (not hugo.IsServer) }}
+  <!-- 📅 Timeline CSS -->
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <script>console.log("⏱️ Timeline styles included.");</script>
+{{ end }}
+
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
   <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
@@ -49,7 +55,7 @@
 <!-- ░░ ICONS ░░ -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
-<!-- ░░ HEAD-SCOPE JS ░░ -->
+<!-- ░░ MAP/TIMELINE JS ░░ -->
 {{ if $needsMap }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin defer></script>
@@ -63,9 +69,7 @@
   <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js" defer></script>
 {{ end }}
 
-<!-- ░░ PAGE-SPECIFIC ES MODULES ░░ -->
-
-<!-- ░░ DEBUG ░░ -->
+<!-- ░░ DEBUG LOG ░░ -->
 <script>
   console.log(
     "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",

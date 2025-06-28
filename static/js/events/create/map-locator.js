@@ -1,107 +1,84 @@
-// static/js/events/create/map-locator.js
-// 📍 Modular ZIP-first map locator with draggable pin + clear/reset
+// 📍 ZIP-first map locator helper (no auto-run)
 
-import { findLatLon } from '/js/findLatLon.js';
+import { findLatLon } from "/js/findLatLon.js";
 
 export function setupMapLocator({
-  mapId = "map",
-  formId = "addressForm",
-  errorId = "errorMsg",
-  resultId = "latlonDisplay"
+  mapId    = "map",
+  formId   = "addressForm",
+  errorId  = "errorMsg",
+  resultId = "latlonDisplay",
 } = {}) {
-  const mapContainer = document.getElementById(mapId);
-  const form = document.getElementById(formId);
-  const errorMsg = document.getElementById(errorId);
-  const resultOutput = document.getElementById(resultId);
 
-  if (!mapContainer || !form) {
-    console.warn("🛑 Required elements not found. Map setup aborted.");
-    return;
-  }
+  /* 0️⃣ sanity checks */
+  if (!window.L) { console.error("❌ Leaflet not loaded"); return; }
+  const mapEl  = document.getElementById(mapId);
+  const formEl = document.getElementById(formId);
+  if (!mapEl || !formEl) { console.warn("🛑 Map or form missing"); return; }
 
-  const map = L.map(mapId).setView([43.0, -107.5], 6); // Wyoming default
+  /* 1️⃣ build map (prevent dupes) */
+  if (mapEl._leaflet_id) return;           // already built
+  const map = L.map(mapId).setView([43,-107.5], 6);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; OpenStreetMap contributors',
+    attribution: "© OpenStreetMap",
   }).addTo(map);
 
   let marker = null;
 
-  // 🔄 Form Reset on Window Focus
-  window.addEventListener("focus", () => {
-    form.reset();
-    if (marker) map.removeLayer(marker);
-    if (errorMsg) errorMsg.textContent = "";
-    if (resultOutput) resultOutput.textContent = "";
-    console.log("🔄 Form reset on focus");
-  });
+  /* 2️⃣ clear helpers */
+  function resetOutputs() {
+    document.getElementById(errorId).textContent  = "";
+    document.getElementById(resultId).textContent = "";
+  }
 
-  // 🧹 Clear Button
+  /* 3️⃣ clear-form button */
   const clearBtn = document.createElement("button");
-  clearBtn.type = "button";
-  clearBtn.textContent = "🧹 Clear Form";
-  clearBtn.className = "ml-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded";
-  form.appendChild(clearBtn);
+  clearBtn.type      = "button";
+  clearBtn.textContent = "🧹 Clear";
+  clearBtn.className   = "ml-4 px-3 py-1 bg-gray-300 rounded";
+  formEl.appendChild(clearBtn);
 
   clearBtn.addEventListener("click", () => {
-    form.reset();
-    if (marker) {
-      map.removeLayer(marker);
-      marker = null;
-    }
-    if (errorMsg) errorMsg.textContent = "";
-    if (resultOutput) resultOutput.textContent = "";
-    console.log("🧼 Cleared manually");
+    formEl.reset(); resetOutputs();
+    if (marker) { map.removeLayer(marker); marker = null; }
   });
 
-  // 🔍 Handle Submit
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  /* 4️⃣ address submit */
+  formEl.addEventListener("submit", async (e) => {
+    e.preventDefault(); resetOutputs();
 
-    const street = form.querySelector("#street")?.value.trim();
-    const city = form.querySelector("#city")?.value.trim();
-    const state = form.querySelector("#state")?.value.trim();
-    const zip = form.querySelector("#zip")?.value.trim();
-
-    if (errorMsg) errorMsg.textContent = "";
-    if (resultOutput) resultOutput.textContent = "";
-    console.clear();
-    console.log("📨 Submitting form...");
-
-    if (!street || !city || !state || !zip) {
-      if (errorMsg) errorMsg.textContent = "❗ Please fill in all fields before searching.";
-      console.warn("⚠️ Missing one or more address fields.");
+    const street = formEl.querySelector("#street")?.value.trim();
+    const city   = formEl.querySelector("#city")?.value.trim();
+    const state  = formEl.querySelector("#state")?.value.trim();
+    const zip    = formEl.querySelector("#zip")?.value.trim();
+    if (![street, city, state, zip].every(Boolean)) {
+      document.getElementById(errorId).textContent = "Fill all fields";
       return;
     }
 
-    const fullAddress = `${street}, ${city}, ${state} ${zip}`;
-    console.log("📬 Address:", fullAddress);
-
     try {
-      const { lat, lon, displayName, source } = await findLatLon(fullAddress);
+      const { lat, lon, displayName } =
+        await findLatLon(`${street}, ${city}, ${state} ${zip}`);
 
-      if (isNaN(lat) || isNaN(lon)) {
-        if (errorMsg) errorMsg.textContent = "⚠️ Invalid coordinates received. Check address.";
-        return;
-      }
-
+      /* drop / move marker */
       if (marker) map.removeLayer(marker);
       marker = L.marker([lat, lon], { draggable: true })
-        .addTo(map)
-        .bindPopup(`${displayName}<br/><em>Adjust pin location if needed.</em>`)
-        .openPopup();
-
+        .addTo(map).bindPopup(displayName).openPopup();
       map.setView([lat, lon], 14);
-      if (resultOutput) resultOutput.textContent = `📌 ${lat.toFixed(5)}, ${lon.toFixed(5)} (${source})`;
-      console.log("✅ Coordinates set:", lat, lon);
 
-      // Dispatch locationSet event for downstream UI logic (e.g., enabling OK button)
-      document.dispatchEvent(new CustomEvent("locationSet", {
-        detail: { lat, lon, displayName }
-      }));
+      /* show coords + stash in hidden fields */
+      document.getElementById(resultId).textContent =
+        `📌 ${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      document.getElementById("lat").value = lat;
+      document.getElementById("lng").value = lon;
+
+      /* broadcast success */
+      document.dispatchEvent(
+        new CustomEvent("locationSet", { detail: { lat, lon, displayName } })
+      );
 
     } catch (err) {
-      if (errorMsg) errorMsg.textContent = "🚫 Address lookup failed.";
-      console.error("Geolocation error:", err.message);
+      document.getElementById(errorId).textContent = "Lookup failed";
+      console.error(err);
     }
   });
 }

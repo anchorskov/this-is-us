@@ -1,32 +1,31 @@
-// static/js/events/create/form-flow.js
-
-// 1) Focus helper for Date-picker
-document.addEventListener('DOMContentLoaded', () => {
-  const doneBtn   = document.getElementById('confirmDateTime');
-  const nextField = document.getElementById('description');
-  doneBtn?.addEventListener('click', () => nextField?.focus());
-});
-
-// 2) Setup interactive location tool
+/*  zip-first locator → full form → preview
+    --------------------------------------------------------------- */
 import { setupMapLocator } from './map-locator.js';
+import { renderPreview    } from './preview-renderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('📋 form-flow.js loaded');
+
+  /* 1️⃣  Date-picker helper */
+  document.getElementById('confirmDateTime')
+    ?.addEventListener('click', () =>
+      document.getElementById('description')?.focus()
+    );
+
+  /* 2️⃣  Bootstrap map-locator */
   setupMapLocator({
-    mapId: "map",
-    formId: "addressForm",
-    errorId: "errorMsg",
-    resultId: "latlonDisplay"
+    mapId   : 'map',
+    formId  : 'addressForm',
+    errorId : 'errorMsg',
+    resultId: 'latlonDisplay',
   });
-});
 
-// 3) Location → enable OK button
-document.addEventListener('DOMContentLoaded', () => {
-  const okBtn   = document.getElementById('loc-ok');     // green OK button
-  const formBox = document.getElementById('event-form'); // wrapper that starts hidden
+  /* 3️⃣  OK-button → reveal full form (and wire preview once) */
+  const okBtn   = document.getElementById('loc-ok');
+  const formBox = document.getElementById('event-form');
+  if (!okBtn || !formBox) return;                    // hard-fail early
 
-  if (!okBtn || !formBox) return;
-
-  // Enable OK when location is confirmed
+  /* Enable OK only after the map fires locationSet */
   document.addEventListener('locationSet', () => {
     okBtn.disabled = false;
     okBtn.classList.remove('opacity-50');
@@ -34,15 +33,36 @@ document.addEventListener('DOMContentLoaded', () => {
     okBtn.focus();
   });
 
-  // OK reveals the form and enables preview
+  /* First (and only) click on OK shows the form and binds preview */
   okBtn.addEventListener('click', () => {
-    if (okBtn.disabled) return;
+    if (okBtn.disabled) return;                      // guard
+
+    okBtn.disabled = true;                           // lock OK
     formBox.classList.remove('hidden');
-    formBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    document.getElementById('title')?.focus();
+    formBox.scrollIntoView({ behavior:'smooth', block:'start' });
+
     const previewBtn = document.getElementById('previewEvent');
+    if (!previewBtn) return;
+
     previewBtn.disabled = false;
     previewBtn.classList.remove('opacity-50');
     previewBtn.setAttribute('aria-disabled', 'false');
-  });
+
+    /* Bind preview exactly ONCE */
+    previewBtn.addEventListener('click', () => {
+      if (!document.getElementById('lat')?.value) {
+        alert('Please pick a location first.');
+        return;
+      }
+
+      renderPreview();                               // build preview card
+
+      formBox.classList.add('hidden');
+      const pane = document.getElementById('event-preview');
+      pane.classList.remove('hidden');
+      pane.scrollIntoView({ behavior:'smooth' });
+    }, { once:true });
+
+    document.getElementById('title')?.focus();
+  }, { once:true });                                 // prevent re-bindings
 });
