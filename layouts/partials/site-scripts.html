@@ -4,16 +4,36 @@
      Only assets that truly belong at the end of the page go here.
    ───────────────────────────────────────────────────────────── */ -}}
 
-{{/* 1️⃣ Dynamic API root (dev vs prod) */}}
+{{/* 1️⃣ Dynamic API root (dev ⇆ prod ⇆ local-worker) */}}
 <script>
-  (function () {
-    const dev = location.hostname === 'localhost' && location.port === '1313';
-    window.EVENTS_API_URL = dev
-      ? 'https://this-is-us.org/api'   // remote Worker when running `hugo server -D`
-      : '/api';                        // relative path in production
-    console.log(dev ? '🐛 Dev override →' : '🌐 Using API →', window.EVENTS_API_URL);
-  })();
+(function () {
+  const onHugoServer = location.hostname === 'localhost' && location.port === '1313';
+
+  /* default:
+       – prod build  →  /api
+       – hugo server →  remote Worker on production */
+  window.EVENTS_API_URL = onHugoServer
+    ? 'https://this-is-us.org/api'
+    : '/api';
+
+  /* optional local Worker probe (wrangler dev --port 8787) */
+  if (onHugoServer) {
+    const local = 'http://127.0.0.1:8787';
+    fetch(local + '/api/_health', { mode: 'no-cors' })
+      .then(() => {
+        window.EVENTS_API_URL = local + '/api';
+        console.log('🔄 Local Worker detected – API →', window.EVENTS_API_URL);
+      })
+      .catch(() => {
+        console.log('🐛 Using remote Worker →', window.EVENTS_API_URL);
+      });
+  } else {
+    console.log('🌐 Using API →', window.EVENTS_API_URL);
+  }
+})();
 </script>
+
+
 
 {{/* Quick helpers */}}
 {{- $rp         := .RelPermalink -}}

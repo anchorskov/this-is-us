@@ -11,24 +11,37 @@ export function renderPreview() {
     return;
   }
 
-  /* ── 1)  harvest form data ──────────────────────────────────── */
+  /* ── 1) harvest form data ─────────────────────────────────────── */
   const data = Object.fromEntries(new FormData(form).entries());
-  data.title       = (data.title       || '').trim();
+
+  // Map front-end names → Worker names
+  data.name        = (data.title || '').trim();           // title  ➜ name
+  data.date        =  data.datetime;                      // datetime ➜ date
+  data.location    =  data.location ||
+                      document.getElementById('street')?.value || '';
+
   data.description = (data.description || '').trim();
   data.lat = document.getElementById('lat')?.value || '';
   data.lng = document.getElementById('lng')?.value || '';
 
-  /* ── 2)  inject a read-only card ────────────────────────────── */
+  /* Worker requires a File field; use a 1-byte dummy until a real
+     file-input is added. Remove this stub when you add <input type="file">. */
+  data.file = new File(['%'], 'placeholder.pdf', {
+    type : 'application/pdf',
+    lastModified: Date.now()
+  });
+
+  /* ── 2) inject read-only card ─────────────────────────────────── */
   pane.innerHTML = /* html */`
     <div class="border rounded p-4 bg-white shadow">
       <h3 class="text-xl font-semibold mb-2">
-        ${data.title || 'Untitled event'}
+        ${data.name || 'Untitled event'}
       </h3>
 
       <p class="text-sm text-gray-500 mb-2">
-        ${data.datetime
-            ? new Date(data.datetime).toLocaleString()
-            : 'No date chosen'}
+        ${data.date
+          ? new Date(data.date).toLocaleString()
+          : 'No date chosen'}
       </p>
 
       <p class="whitespace-pre-wrap mb-4">${data.description || ''}</p>
@@ -41,7 +54,7 @@ export function renderPreview() {
       <p id="publishError" class="text-red-600 text-sm mt-2 hidden"></p>
     </div>`;
 
-  /* ── 3)  wire Publish  ──────────────────────────────────────── */
+  /* ── 3) wire Publish ─────────────────────────────────────────── */
   const btn      = document.getElementById('publishBtn');
   const errLabel = document.getElementById('publishError');
 
@@ -63,7 +76,7 @@ export function renderPreview() {
 
       if (ok) {
         console.log('🎉 submitEvent OK → id:', id);
-        showSuccess(id);              // open success modal
+        showSuccess(id);                // open success modal
       } else {
         throw new Error(message || 'Unexpected API error');
       }
@@ -75,5 +88,5 @@ export function renderPreview() {
       btn.disabled   = false;
       btn.textContent = '✅ Publish Event';
     }
-  }, { once: true });                 // ← prevent double submit
+  }, { once:true }); // prevent double-submits
 }
