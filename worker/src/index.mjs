@@ -1,215 +1,174 @@
-// worker/src/index.mjs
+/* worker/src/index.mjs -------------------------------------------------- */
+/* Cloudflare Worker (events, PDFs, Town-Hall, sandbox)                    */
 
-import { Router } from 'itty-router';
+import { Router }                     from 'itty-router';
+import { handleSandboxAnalyze }       from './routes/sandbox.js';
+import { handleCreateTownhallPost }   from './townhall/createPost.js';
+import { handleListTownhallPosts }    from './townhall/listPosts.js';
+import { handleDeleteTownhallPost }   from './townhall/deletePost.js';
+
 const router = Router();
-import { handleSandboxAnalyze } from './routes/sandbox.js';
-import { handleCreateTownhallPost } from './townhall/createPost.js';
-import { handleListTownhallPosts } from './townhall/listPosts.js';
-import { handleDeleteTownhallPost } from './townhall/deletePost.js';
 
-// Serve PDF files via Worker to avoid cross-origin issues
-router.get('/api/events/pdf/:key', async (request, env) => {
-  const { key } = request.params;
-  const obj = await env.EVENT_PDFS.get(key, { allowScripting: true });
+/* ────────────────────────────  Health probe  ─────────────────────────── */
+router.get('/api/_health', () =>
+  new Response(JSON.stringify({ ok: true }), {
+    headers: { 'Content-Type': 'application/json' },
+  })
+);
 
-  if (!obj) {
-    return new Response('Not found', {
-      status: 404,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-  }
+/* ────────────────────────────  PDF proxy  ────────────────────────────── */
+router.get('/api/events/pdf/:key', async ({ params }, env) => {
+  const obj = await env.EVENT_PDFS.get(params.key, { allowScripting: true });
+  if (!obj)
+    return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
 
   return new Response(obj.body, {
-    status: 200,
     headers: {
-      'Content-Type': obj.httpMetadata.contentType || 'application/pdf',
-      'Content-Disposition': `inline; filename=\"${key}\"`,
-      'Cache-Control': 'public, max-age=31536000',
+      'Content-Type'     : obj.httpMetadata.contentType || 'application/pdf',
+      'Content-Disposition': `inline; filename="${params.key}"`,
+      'Cache-Control'    : 'public, max-age=31536000',
     },
   });
 });
 
-// List future events for display
+/* ───────────────────────  GET /api/events  (future)  ─────────────────── */
 router.get('/api/events', async (request, env) => {
   const { results } = await env.EVENTS_DB.prepare(`
-    SELECT id, name, date, location, pdf_key, lat, lng
-    FROM events
-    WHERE date >= date('now')
-    ORDER BY date
+    SELECT id,name,date,location,pdf_key,lat,lng
+      FROM events
+      WHERE date >= date('now')
+      ORDER BY date
   `).all();
 
   const origin = new URL(request.url).origin;
-  const events = results.map(ev => ({
-    id: ev.id,
-    name: ev.name,
-    date: ev.date,
-    location: ev.location,
-    lat: ev.lat,
-    lng: ev.lng,
-    pdf_url: `${origin}/api/events/pdf/${ev.pdf_key}`
-  }));
-
-  return new Response(JSON.stringify(events), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify(results.map(e => ({ ...e, pdf_url: `${origin}/api/events/pdf/${e.pdf_key}` }))),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
 });
 
-// Debug endpoint: see table schema
+/* ────────────────────────  GET /api/_debug/schema  ───────────────────── */
 router.get('/api/_debug/schema', async (_, env) => {
   const { results } = await env.EVENTS_DB.prepare(`PRAGMA table_info(events)`).all();
-  return new Response(JSON.stringify(results), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
 });
 
-// Create a new event
+/* ───────────────────────  POST /api/events/create  ───────────────────── */
 router.post('/api/events/create', async (request, env) => {
-  const form = await request.formData();
+  const fd = await request.formData();
 
-  const userId        = form.get('userId')        ?? form.get('user_id')        ?? 'anonymous';
-  const name          = form.get('name');
-  const date          = form.get('date');
-  const location      = form.get('location');
-  const file          = form.get('file');
-  const description   = form.get('description')   || '';
-  const lat           = form.get('lat');
-  const lng           = form.get('lng');
-  const sponsor       = form.get('sponsor')       || '';
-  const contactEmail  = form.get('contactEmail')  ?? form.get('contact_email')  ?? '';
-  const contactPhone  = form.get('contactPhone')  ?? form.get('contact_phone')  ?? '';
+  /* required + optional fields */
+  const userId       = fd.get('userId') ?? fd.get('user_id') ?? 'anonymous';
+  const name         = fd.get('name');
+  const date         = fd.get('date');
+  const location     = fd.get('location');
+  const lat          = fd.get('lat');
+  const lng          = fd.get('lng');
+  const description  = fd.get('description') ?? '';
+  const sponsor      = fd.get('sponsor') ?? '';
+  const contactEmail = fd.get('contactEmail') ?? fd.get('contact_email') ?? '';
+  const contactPhone = fd.get('contactPhone') ?? fd.get('contact_phone') ?? '';
+  const file         = fd.get('file');                       // may be null
 
-  // Enforce max file size (5 MB)
+  if (!name || !date || !location)
+    return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+      status: 400, headers: { 'Content-Type': 'application/json' }
+    });
+
+  /* optional flyer upload (dedupe by SHA-256) */
   const MAX_SIZE = 5 * 1024 * 1024;
-  if (!file || file.size > MAX_SIZE) {
-    return new Response(JSON.stringify({ error: `File too large (max ${MAX_SIZE / (1024 * 1024)} MB)` }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
+  let pdf_key = null, pdf_hash = null;
 
-  console.log("📝 Incoming event submission:", {
-    userId, name, date, location, lat, lng,
-    description, sponsor, contactEmail, contactPhone,
-    file: file.name, size: file.size
-  });
+  if (file instanceof File) {
+    if (file.size > MAX_SIZE)
+      return new Response(JSON.stringify({ error: 'File too large (max 5 MB)' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' }
+      });
 
-  if (!name || !date || !location) {
-    return new Response(JSON.stringify({ error: 'Missing fields' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
+    const buf  = await file.arrayBuffer();
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    pdf_hash   = [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, '0')).join('');
 
-  try {
-    // Compute file hash for deduplication
-    const buffer = await file.arrayBuffer();
-    const hashBuf = await crypto.subtle.digest('SHA-256', buffer);
-    const pdf_hash = Array.from(new Uint8Array(hashBuf))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
+    /* if local DB is old, pdf_hash column may be missing → ignore dedupe */
+    let dedupeSupported = true;
+    try {
+      await env.EVENTS_DB.prepare('SELECT pdf_key FROM events WHERE pdf_hash = ? LIMIT 1')
+                          .bind(pdf_hash).all();
+    } catch { dedupeSupported = false; }
 
-    // Check for existing PDF by hash
-    const { results: existing } = await env.EVENTS_DB.prepare(
-      `SELECT pdf_key FROM events WHERE pdf_hash = ?`
-    ).bind(pdf_hash).all();
+    if (dedupeSupported) {
+      const { results: dup } = await env.EVENTS_DB
+        .prepare('SELECT pdf_key FROM events WHERE pdf_hash = ?')
+        .bind(pdf_hash).all();
 
-    let key;
-    if (existing.length > 0) {
-      key = existing[0].pdf_key;
-      console.log(`🔁 Duplicate PDF detected, reusing key ${key}`);
-    } else {
-      key = `event-${crypto.randomUUID()}.pdf`;
-      await env.EVENT_PDFS.put(key, file.stream());
-      console.log(`📄 Uploaded new PDF: ${key}`);
+      if (dup.length) pdf_key = dup[0].pdf_key;
     }
 
-    // Rebuild the public URL from origin
-    const origin = new URL(request.url).origin;
-    const pdf_url = `${origin}/api/events/pdf/${key}`;
-
-    // Insert the event record
-    await env.EVENTS_DB.prepare(`
-      INSERT INTO events (
-        user_id, name, date, location,
-        pdf_key, lat, lng, sponsor,
-        contact_email, contact_phone,
-        pdf_hash, description
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).bind(
-      userId, name, date, location,
-      key, lat, lng, sponsor,
-      contactEmail, contactPhone,
-      pdf_hash, description
-    ).run();
-
-    console.log("✅ Event successfully saved to database");
-
-    const { results } = await env.EVENTS_DB.prepare(
-      `SELECT last_insert_rowid() AS lastInsertRowid`
-    ).all();
-    const lastInsertRowid = results?.[0]?.lastInsertRowid || null;
-
-    return new Response(JSON.stringify({ success: true, id: lastInsertRowid }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-  } catch (err) {
-    console.error("❌ Error submitting event:", err.stack || err.message || err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    if (!pdf_key) {
+      pdf_key = `event-${crypto.randomUUID()}.pdf`;
+      await env.EVENT_PDFS.put(pdf_key, file.stream());
+    }
   }
+
+  /* insert */
+  await env.EVENTS_DB.prepare(`
+      INSERT INTO events (
+        user_id,name,date,location,
+        pdf_key,lat,lng,sponsor,
+        contact_email,contact_phone,
+        pdf_hash,description
+      ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+  `).bind(
+    userId,name,date,location,
+    pdf_key,lat,lng,sponsor,
+    contactEmail,contactPhone,
+    pdf_hash,description
+  ).run();
+
+  const { results } = await env.EVENTS_DB.prepare('SELECT last_insert_rowid() AS id').all();
+  return new Response(JSON.stringify({ success: true, id: results?.[0]?.id }), {
+    status: 201, headers: { 'Content-Type': 'application/json' }
+  });
 });
 
-router.post('/api/sandbox/analyze', handleSandboxAnalyze);
-// Create a new Town Hall post
+/* ────────────────  Town-Hall & Sandbox sub-routes  ───────────────────── */
 router.post('/api/townhall/create', handleCreateTownhallPost);
-router.get('/api/townhall/posts', handleListTownhallPosts);
+router.get ('/api/townhall/posts',  handleListTownhallPosts);
 router.post('/api/townhall/delete', handleDeleteTownhallPost);
+router.post('/api/sandbox/analyze', handleSandboxAnalyze);
 
-// Fallback for unmatched routes
+/* fallback */
 router.all('*', () => new Response('Not found', { status: 404 }));
 
+/* ───────────────────────  Worker export  ─────────────────────────────── */
 export default {
   async fetch(request, env, ctx) {
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': request.headers.get('Origin') || '*',
+    /* CORS */
+    const cors = {
+      'Access-Control-Allow-Origin' : request.headers.get('Origin') || '*',
       'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
+    if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
-    const response = await router.fetch(request, env, ctx);
-    const newHeaders = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([k, v]) => newHeaders.set(k, v));
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: newHeaders
-    });
+    const res  = await router.fetch(request, env, ctx);
+    const hdrs = new Headers(res.headers);
+    Object.entries(cors).forEach(([k, v]) => hdrs.set(k, v));
+    return new Response(res.body, { status: res.status, headers: hdrs });
   },
 
-  async scheduled(event, env, ctx) {
-    // Clean up expired events
-    const { results: expiredEvents } = await env.EVENTS_DB.prepare(
-      `SELECT id, pdf_key FROM events WHERE date < date('now','-1 day')`
-    ).all();
+  /* nightly cleanup */
+  async scheduled(_, env) {
+    const { results } = await env.EVENTS_DB.prepare(`
+      SELECT pdf_key FROM events WHERE date < date('now','-1 day')
+    `).all();
 
-    for (const ev of expiredEvents) {
-      try {
-        await env.EVENT_PDFS.delete(ev.pdf_key);
-      } catch (e) {
-        console.error(`🧨 Failed to delete expired event asset ID ${ev.id}:`, e);
-      }
-    }
+    for (const { pdf_key } of results)
+      try   { await env.EVENT_PDFS.delete(pdf_key); }
+      catch (e) { console.error('🧨 failed to delete', pdf_key, e); }
 
-    await env.EVENTS_DB.prepare(
-      `DELETE FROM events WHERE date < date('now','-1 day')`
-    ).run();
-  }
+    await env.EVENTS_DB.prepare(`
+      DELETE FROM events WHERE date < date('now','-1 day')
+    `).run();
+  },
 };

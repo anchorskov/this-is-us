@@ -1,77 +1,101 @@
-# Python test & coverage artifacts
+# === Python ===
+*.pyc
+__pycache__/
+.venv/
+venv/
+env/
 .coverage
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+*.log
+*.tmp
 
-# Python packaging build dirs
+# Python packaging
 build/
 dist/
 *.egg-info/
 
-# Virtual environments
-venv/
-env/
-.venv/
-
-# JetBrains IDEs
-.idea/
-*.iml
-
-# VSCode workspace
-*.code-workspace
-
-# Node modules
+# === Node ===
 node_modules/
 worker/node_modules/
+npm-debug.log*
+yarn-error.log*
 
-# Hugo build artifacts & cache
+# === Hugo ===
 public/
 resources/
 .hugo_cache/
-
-# Hugo temporary & backup files
 hugo.toml.bak
 content_bak/
 layouts_bak/
 partial_calls.txt
 content/test.md
 
-# Local databases & caches
+# === Firebase ===
+.env
+*.env
+serviceAccountKey.json
+firebase-seeder/
+
+# === Local Dev Tools ===
 .wrangler/
 d1-local/
 r2-local/
 worker/d1-local/
 ballots/d1-local/
-
-# Worker test PDF
 worker/dummy.pdf
 
-# Environment files
-.env
-*.env
-
-# Logs and temporary files
-npm-debug.log*
-yarn-error.log*
-*.log
-*.tmp
-
-# OS & editor artifacts
+# === IDE/Editor ===
+.idea/
+*.iml
+*.code-workspace
 .DS_Store
 Thumbs.db
 *.swp
 *.swo
 
-# Bundled archives
+# === Archives ===
 *.zip
 
-# Add to .gitignore
+# === Project Specific ===
 isablefastrender/
-public/
 
-serviceAccountKey.json
-# Firebase seeding scripts
-firebase-seeder/
+# === git Specific ===
+.git/
 
-static/css/main.dev.css
+# === Scripts ===
+scripts/
+
+##############################################################################
+# === Drive/Git sync sanitation ===
+#   – database shards / local emulators
+worker/d1_local/
+**/*.sqlite*
+**/*.sqlite-wal
+**/*.sqlite-shm
+
+#   – test suites & fixtures
+tests/
+archive_content/
+mcp/
+ballots/
+#   – CI / patch scratch
+*.patch
+dryrun.txt
+
+#   – large static assets & compiled CSS
+static/files/
+static/css/*.built.css
+assets/css/            # raw SCSS/CSS sources if not needed upstream
+
+#   – seed SQL & data dumps
+data/*.sql
+
+#   – everything Git already stores internally
+.git/**                # pathspec likes ** for recursion
+
+#   – utility scripts (only keep the ones you *really* need on Drive)
+scripts/**
+# ─── Hugo themes (don’t sync or commit) ───────────────────
+themes/

@@ -8,8 +8,9 @@ account_id         = "8bfd3f60fbdcc89183e9e312fb03e86e"
 # ✅ Enable bindings for local development
 [[d1_databases]]
 binding       = "EVENTS_DB"
-database_name = "events_db"
+database_name = "events_db_local"
 database_id   = "1624450c-f228-4802-8a76-9c65f29295fa"
+migrations_dir = "worker/migrations"   
 
 [[r2_buckets]]
 binding             = "EVENT_PDFS"

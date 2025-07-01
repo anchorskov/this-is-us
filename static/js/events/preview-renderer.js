@@ -49,9 +49,21 @@ export function renderPreview(data) {
           <p class="font-semibold mb-2">Flyer Preview:</p>
           <iframe src="${flyerURL}" class="w-full h-72 rounded border border-gray-300"></iframe>
         </div>` : ''}
-      <div class="flex justify-between">
-        <button id="cancelPreview" class="rounded-md px-4 py-2 bg-red-600 text-white">✖ Cancel</button>
-        <button id="confirmSubmit" class="rounded-md px-4 py-2 bg-green-600 text-white">✅ Confirm & Submit</button>
+      <div class="flex justify-between gap-4 mt-4">
+        <button
+          id="cancelPreview"
+          type="button"
+          class="flex-1 rounded-md px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition duration-150"
+        >
+          ✖ Cancel
+        </button>
+        <button
+          id="confirmSubmit"
+          type="button"
+          class="flex-1 rounded-md px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition duration-150"
+        >
+          ✅ Confirm &amp; Submit
+        </button>
       </div>
     </div>
   `;

@@ -1,45 +1,52 @@
+// ────────────────────────────────────────────────────────────────
 // static/js/events/create/bootstrap.js
-// 🧭 Bootstrap Create Event Page: Auth, Map, Profile ZIP, Form
+// 🧭  Bootstrap “Create Event” page
+//     – waits for Firebase auth
+//     – zooms to saved ZIP (if any)
+//     – wires ZIP→city/state auto-fill
+//     – mounts Leaflet map / locator UI
+//     – finally shows the event-details form
+// ────────────────────────────────────────────────────────────────
 
-import { setupMapLocator } from './map-locator.js';
+import { setupMapLocator   } from './map-locator.js';
 import { initAddressFields } from './address-fields.js';
-import { getUserZip } from '../../lib/firestore-profile.js';
-import geocode from '../../lib/geocode.js';
-import { renderForm } from '../event-form.js';
+import { getUserZip        } from '../../lib/firestore-profile.js';
+import  geocode              from '../../lib/geocode.js';
+import { renderForm        } from '../event-form.js';
 
-(async function () {
-  // 1️⃣ Wait for Firebase auth to initialize
+/*  Run **only after** the DOM is fully parsed so #map exists  */
+document.addEventListener('DOMContentLoaded', async () => {
+  /* 1️⃣  Wait for Firebase Auth to settle */
   await firebase.auth().authStateReady;
   const user = firebase.auth().currentUser;
-  const uid = user?.uid || null;
-  const db = firebase.firestore();
+  const uid  = user?.uid ?? null;
+  const db   = firebase.firestore();
 
-  // 2️⃣ If user has saved ZIP, zoom map to it
+  /* 2️⃣  If the user has a saved ZIP → centre the map there   */
   const savedZip = await getUserZip(db, uid);
   if (savedZip) {
     try {
       const { lat, lon } = await geocode(savedZip);
-      // Dispatch custom event to center map
-      document.dispatchEvent(new CustomEvent("zoomToZip", {
+      document.dispatchEvent(new CustomEvent('zoomToZip', {
         detail: { lat, lon, zoom: 10 }
       }));
-      console.log("📦 Zoomed to saved ZIP:", savedZip);
+      console.log('📦 Zoomed to saved ZIP:', savedZip);
     } catch (err) {
-      console.warn("❗ Failed to geocode saved ZIP:", err.message);
+      console.warn('❗ Failed to geocode saved ZIP:', err.message);
     }
   }
 
-  // 3️⃣ Setup ZIP-based city/state auto-fill
+  /* 3️⃣  ZIP → city/state auto-fill                            */
   initAddressFields();
 
-  // 4️⃣ Setup Map + Locator UI
+  /* 4️⃣  Build the map & locator UI                            */
   setupMapLocator({
-    mapId: "map",
-    formId: "addressForm",
-    errorId: "errorMsg",
-    resultId: "latlonDisplay"
+    mapId   : 'map',
+    formId  : 'addressForm',
+    errorId : 'errorMsg',
+    resultId: 'latlonDisplay',
   });
 
-  // 5️⃣ Render Form (hidden by default until locationSet)
+  /* 5️⃣  Inject & manage the event-details form                */
   renderForm(user);
-})();
+});

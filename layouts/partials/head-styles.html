@@ -1,6 +1,10 @@
-<!-- UnoCSS -->
+{{/* layouts/partials/head-styles.html */}}
+
+<!-- UnoCSS utility classes -->
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 
-<!-- Custom overrides: lock them in place -->
-<link id="cr-event-css"  data-persist rel="stylesheet" href="{{ "css/cr-event.css" | relURL }}">
-<link id="events-css"    data-persist rel="stylesheet" href="{{ "css/events.css"   | relURL }}">
+<!-- Create-event overrides -->
+<link id="cr-event-css"
+      data-persist
+      rel="stylesheet"
+      href="{{ "css/cr-event.css" | relURL }}">

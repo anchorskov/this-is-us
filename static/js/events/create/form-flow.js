@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderPreview();                               // build preview card
 
-      formBox.classList.add('hidden');
+      formBox.parentElement.classList.add('hidden');
       const pane = document.getElementById('event-preview');
       pane.classList.remove('hidden');
       pane.scrollIntoView({ behavior:'smooth' });

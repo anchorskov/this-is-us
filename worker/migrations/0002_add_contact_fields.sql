@@ -4,3 +4,4 @@ ALTER TABLE events ADD COLUMN contact_email TEXT;
 ALTER TABLE events ADD COLUMN contact_phone TEXT;
 ALTER TABLE events ADD COLUMN lat REAL;
 ALTER TABLE events ADD COLUMN lng REAL;
+ALTER TABLE events ADD COLUMN pdf_key TEXT;

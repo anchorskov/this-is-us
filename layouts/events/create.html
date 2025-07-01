@@ -1,4 +1,4 @@
-{{/* ZIP-first “Create Event” page – fixed IDs */}}
+{{/* layouts/events/create.html – ZIP-first “Create Event” page (fixed IDs) */}}
 {{ define "main" }}
   <!-- tiny dev-log -->
   <script>
@@ -17,28 +17,34 @@
       This feature is still being built. But we’re not just building tools—
       we’re building a movement.
     </p>
-    <a href="https://u-pac.org/volunteer"
-       class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded
-              hover:bg-red-700 transition">🙋‍♂️ Volunteers Wanted – Join Us</a>
+    <a
+      href="https://u-pac.org/volunteer"
+      class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded
+             hover:bg-red-700 transition"
+    >
+      🙋‍♂️ Volunteers Wanted – Join Us
+    </a>
   </section>
 
   <!-- Main wizard -->
   <article class="prose mx-auto">
     <h1>{{ .Title }}</h1>
 
-    <!-- login UI if needed -->
+    <!-- FirebaseUI login container -->
     <div id="firebaseui-auth-container" class="mb-6"></div>
 
-    <!-- Step 1 – address & map -->
+    <!-- Step 1 – Address & Map -->
     {{ partial "event-step-location.html" . }}
 
-    <!-- Step 2 – details form -->
+    <!-- Step 2 – Details Form -->
     {{ partial "event-form.html" . }}
-
   </article>
 
-  <!-- JS -->
-  <script type="module" src="{{ "js/events/create/form-flow.js" | relURL }}"></script>
-  <script type="module" src="{{ "js/events/submit-event.js"     | relURL }}"></script>
-  <script type="module">console.log("✅ inline module test – create.html")</script>
+  <!-- Page-specific scripts: -->
+  <script type="module" src="/js/events/create/bootstrap.js" defer></script>
+  <script type="module" src="/js/events/create/form-flow.js"  defer></script>
+  <script type="module" src="/js/events/submit-event.js"      defer></script>
+  <script type="module">
+    console.log("✅ inline module test – create.html");
+  </script>
 {{ end }}
