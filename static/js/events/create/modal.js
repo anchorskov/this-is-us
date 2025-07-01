@@ -9,7 +9,7 @@ export function showSuccess(id = '') {
          .setAttribute('href', `/events/${id}/`);
   }
 
-  modal.classList.remove('hidden');          // make it visible
+  modal.classList.remove('hidden');          
   modal.removeAttribute('aria-hidden');
 
   // simple close handler
