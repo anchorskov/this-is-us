@@ -1,20 +1,19 @@
 <!-- layouts/partials/event-form.html – event-detail form (map handled elsewhere) -->
 
-<!-- ───────── Event-form wrapper ───────────────────────────────────────── -->
 <div id="event-form-wrapper" class="not-prose bg-gray-100 py-8 px-4">
   <!-- 🔒 Hidden until the “OK – Continue” button reveals it -->
   <div id="event-form" class="hidden">
     <h2 class="text-xl font-semibold text-center mb-4">Create an Event</h2>
 
     <form id="eventForm" class="flex flex-col space-y-4" autocomplete="off">
-      <!-- Title ---------------------------------------------------------- -->
+      <!-- Title -->
       <div class="flex flex-col">
         <label for="title" class="mb-2 font-semibold">Event Title</label>
         <input id="title" name="title" required
                class="w-full border border-gray-300 rounded p-2" />
       </div>
 
-      <!-- Date / Time ---------------------------------------------------- -->
+      <!-- Date / Time -->
       <div class="flex flex-col">
         <label for="datetime" class="mb-2 font-semibold">
           Event Date&nbsp;&amp;&nbsp;Time
@@ -32,14 +31,14 @@
         </small>
       </div>
 
-      <!-- Description ---------------------------------------------------- -->
+      <!-- Description -->
       <div class="flex flex-col">
         <label for="description" class="mb-2 font-semibold">Description</label>
         <textarea id="description" name="description" rows="4" required
                   class="w-full border border-gray-300 rounded p-2"></textarea>
       </div>
 
-      <!-- Sponsor (optional) -------------------------------------------- -->
+      <!-- Sponsor (optional) -->
       <div class="flex flex-col">
         <label for="sponsor" class="mb-2 font-semibold">
           Sponsoring Organisation <span class="text-gray-500">(optional)</span>
@@ -48,7 +47,7 @@
                class="w-full border border-gray-300 rounded p-2" />
       </div>
 
-      <!-- Contact (optional) -------------------------------------------- -->
+      <!-- Contact (optional) -->
       <fieldset class="space-y-4">
         <legend class="font-semibold">Contact Info (optional)</legend>
         <div class="flex flex-col">
@@ -63,11 +62,23 @@
         </div>
       </fieldset>
 
-      <!-- Hidden lat/lng (set by map step) ------------------------------ -->
+      <!-- 📄 Flyer upload (optional) -->
+      <div class="flex flex-col">
+        <label for="eventPdf" class="mb-2 font-semibold">
+          PDF Flyer <span class="text-gray-500">(optional · max&nbsp;5 MB)</span>
+        </label>
+        <input id="eventPdf" name="eventPdf" type="file" accept="application/pdf"
+               class="w-full border border-gray-300 rounded p-2 file:border-0 file:bg-indigo-600
+                      file:text-white file:px-3 file:py-2 file:rounded file:cursor-pointer" />
+        <!-- The error message is injected by JS; keep the placeholder -->
+        <p id="file-error" class="text-red-600 text-sm mt-1 hidden"></p>
+      </div>
+
+      <!-- Hidden lat/lng (set by map step) -->
       <input type="hidden" id="lat" name="lat" />
       <input type="hidden" id="lng" name="lng" />
 
-      <!-- Preview trigger ------------------------------------------------ -->
+      <!-- Preview trigger -->
       <button id="previewEvent" type="button"
               class="w-full px-4 py-2 rounded-md bg-green-600 text-white
                      hover:bg-green-700 opacity-50"
@@ -78,7 +89,7 @@
   </div>
 </div>
 
-<!-- ───────── Read-only preview (injected by JS) ───────────────────────── -->
+<!-- Read-only preview (injected by JS) -->
 <div id="event-preview" class="hidden mt-6"></div>
 
 <!-- ───────── Success Modal (unchanged) ────────────────────────────────── -->

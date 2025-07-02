@@ -1,145 +1,126 @@
 // static/js/events/event-form.js
-
-import { initMap, bindAddressSearch } from './event-map.js';
-import { bindPdfPreview, showError, showSuccessModal, toggleLoading } from './ui-feedback.js';
-import { renderPreview } from './preview-renderer.js';
-import { submitEvent } from './submit-event.js';
-import {
-  isValidEmail,
-  isValidPhone,
-  areRequiredFieldsPresent,
-} from './validation-utils.js';
+import { initMap, bindAddressSearch }       from './event-map.js';
+import { bindPdfPreview, showError,
+         showSuccessModal, toggleLoading }   from './ui-feedback.js';
+import { renderPreview }                    from './preview-renderer.js';
+import { submitEvent }                      from './submit-event.js';
+import { isValidEmail, isValidPhone,
+         areRequiredFieldsPresent }         from './validation-utils.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-let formDataCache = {};
+let   formDataCache = {};
 
-/**
- * Initialize the Event Creation Flow once DOM is ready and user is authenticated.
- * @param {Object} user  Authenticated user object
- */
+/* -------------------------------------------------- */
+/* helper: stitch the address pieces back together    */
+/* -------------------------------------------------- */
+const buildAddress = () => {
+  const street = document.getElementById('street')?.value.trim();
+  const city   = document.getElementById('city')?.value.trim();
+  const state  = document.getElementById('state')?.value.trim();
+  const zip    = document.getElementById('zip')?.value.trim();
+  return [street, city, state, zip].filter(Boolean).join(', ');
+};
+
+/* -------------------------------------------------- */
+/* main bootstrap after auth                          */
+/* -------------------------------------------------- */
 export function renderForm(user) {
-  const container = document.querySelector('#event-form');
-  if (!container) {
-    console.warn('No #event-form container found—skipping Event Form init');
-    return;
-  }
+  const wrapper = document.querySelector('#event-form');
+  if (!wrapper) return console.warn('No #event-form wrapper found.');
 
-  // 1) PDF size guard
-  const fileInput  = document.getElementById('eventPdf');
+  /* 1️⃣ PDF size guard ---------------------------------------- */
+  const fileInput  = document.getElementById('eventPdf');  // <input id="eventPdf" name="file">
   const previewBtn = document.getElementById('previewEvent');
   if (!fileInput || !previewBtn) {
-    console.warn('Form inputs not found—check event-form.html markup');
+    console.warn('PDF or Preview button missing in markup.');
     return;
   }
 
-  const fileError = document.createElement('p');
-  fileError.id        = 'file-error';
-  fileError.className = 'text-red-600 text-sm';
-  fileError.textContent = 'File too large. Maximum size is 5 MB.';
-  fileError.hidden    = true;
+  const fileError = Object.assign(document.createElement('p'), {
+    id:        'file-error',
+    className: 'text-red-600 text-sm',
+    hidden:    true,
+    textContent: 'File too large. Maximum size is 5 MB.',
+  });
   fileInput.after(fileError);
 
   fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (file && file.size > MAX_FILE_SIZE) {
-      fileError.hidden      = false;
-      previewBtn.disabled   = true;
-      previewBtn.classList.add('opacity-50');
-    } else {
-      fileError.hidden      = true;
-      previewBtn.disabled   = false;
-      previewBtn.classList.remove('opacity-50');
-    }
+    const f = fileInput.files[0];
+    const bad = f && f.size > MAX_FILE_SIZE;
+    fileError.hidden    = !bad;
+    previewBtn.disabled = bad;
+    previewBtn.classList.toggle('opacity-50', bad);
   });
 
-  // 2) Hide success modal initially
-  const successModal = document.getElementById('successModal');
-  if (successModal) {
-    successModal.classList.add('hidden');
-    successModal.setAttribute('aria-hidden', 'true');
-  }
+  /* 2️⃣ success modal hidden, past-date min, map preview ------ */
+  document.getElementById('successModal')?.classList.add('hidden');
 
-  // 3) Prevent past dates
-  const dateInput = document.getElementById('datetime');
-  if (dateInput) {
-    const now   = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    dateInput.min = local.toISOString().slice(0, 16);
-  }
+  const dt = document.getElementById('datetime');
+  if (dt) dt.min = new Date(Date.now() - new Date().getTimezoneOffset()*6e4)
+                    .toISOString().slice(0,16);
 
-  // 4) Initialize map & PDF preview
   bindPdfPreview();
-  const { map, setMarker: originalSetMarker } = initMap();
-  const setMarker = (...args) => {
-    originalSetMarker(...args);
-    document.dispatchEvent(new Event('locationSet'));
-  };
-  bindAddressSearch('#address', '#searchAddress', setMarker);
 
-  // 5) Enable Preview button once location is set
-  // document.addEventListener('locationSet', () => {
-  //  previewBtn.disabled             = false;
-  // previewBtn.classList.remove('opacity-50');
-  //  previewBtn.setAttribute('aria-disabled', 'false');
-  //});
+  /* 3️⃣ map --------------------------------------------------- */
+  const { setMarker: rawSetMarker } = initMap();
+  const setMarker = (...xy) => { rawSetMarker(...xy); document.dispatchEvent(new Event('locationSet')); };
+  bindAddressSearch('#address', '#searchAddress', setMarker); // still wires Street+ZIP search
 
-  // 6) Wire up preview & confirm
+  /* 4️⃣ enable preview after location ------------------------- */
+  document.addEventListener('locationSet', () => {
+    previewBtn.disabled = false;
+    previewBtn.classList.remove('opacity-50');
+  });
+
+  /* 5️⃣ wire buttons ----------------------------------------- */
   bindFormLogic(user);
 }
 
+/* -------------------------------------------------- */
+/* preview / confirm                                  */
+/* -------------------------------------------------- */
 function bindFormLogic(user) {
   const previewBtn = document.getElementById('previewEvent');
   if (!previewBtn) return;
 
   previewBtn.addEventListener('click', () => {
     if (previewBtn.disabled) {
-      showError('Please select a location first: search an address or click on the map.');
-    } else {
-      console.log('🔍 Preview button clicked — running handlePreview');
-      handlePreview(user);
-      bindConfirm();
+      return showError('Pick a map location first.');
     }
+    handlePreview(user);
+    bindConfirm();            // only after preview shown
   });
 }
 
 function bindConfirm() {
-  const confirmBtn = document.getElementById('confirmSubmit');
-  if (!confirmBtn) return;
-
-  confirmBtn.addEventListener('click', async () => {
-    await handleSubmit();
-  }, { once: true });
+  const btn = document.getElementById('confirmSubmit');
+  if (btn) btn.addEventListener('click', handleSubmit, { once:true });
 }
 
 async function handleSubmit() {
-  const confirmBtn = document.getElementById('confirmSubmit');
-  toggleLoading(true, confirmBtn, 'Submitting…');
-
+  const btn = document.getElementById('confirmSubmit');
+  toggleLoading(true, btn, 'Submitting…');
   try {
     const { ok, id, message } = await submitEvent(formDataCache);
-    if (ok) {
-      showSuccessModal(() => {
-        window.location.href = `/events?highlight=${id}`;
-      });
-      resetForm();
-    } else {
-      showError(message);
-    }
+    ok
+      ? showSuccessModal(() => location.href = `/events?highlight=${id}`)
+      : showError(message);
   } catch (err) {
     console.error(err);
-    showError('An unexpected error occurred. Please try again.');
-  } finally {
-    toggleLoading(false, confirmBtn, 'Confirm & Submit');
-  }
+    showError('Unexpected error; please retry.');
+  } finally { toggleLoading(false, btn, 'Confirm & Submit'); }
 }
 
+/* -------------------------------------------------- */
+/* preview pane                                       */
+/* -------------------------------------------------- */
 function handlePreview(user) {
   const $ = id => document.getElementById(id);
   const values = {
     title:        $('title').value.trim(),
     datetime:     $('datetime').value.trim(),
     description:  $('description').value.trim(),
-    address:      $('address').value.trim(),
+    address:      buildAddress(),
     sponsor:      $('sponsor').value.trim(),
     contactEmail: $('contactEmail').value.trim(),
     contactPhone: $('contactPhone').value.trim(),
@@ -148,11 +129,10 @@ function handlePreview(user) {
     file:         $('eventPdf').files[0],
   };
 
-  // … validation as before …
+  /* TODO: run validation utils here */
 
-  // Cache payload
   formDataCache = {
-    user_id:       user.uid,
+    user_id:       user?.uid ?? 'anonymous',
     name:          values.title,
     date:          new Date(values.datetime).toISOString(),
     description:   values.description,
@@ -162,47 +142,25 @@ function handlePreview(user) {
     contact_phone: values.contactPhone,
     lat:           values.lat,
     lng:           values.lng,
-    file:          values.file,
+    file:          values.file,          // <-- the actual File object
   };
 
- // Render the preview
-renderPreview(formDataCache);
+  renderPreview(formDataCache);
 
-// Now swap out the heading + form for the preview pane
-const wrapper = document.getElementById('event-form');
-const heading = wrapper.querySelector('h2');
-const formEl  = document.getElementById('eventForm');
-const preview = document.getElementById('event-preview');
-
-if (wrapper && heading && formEl && preview) {
-  // 1) Hide the heading
-  heading.classList.add('hidden');
-  
-  // 2) Hide the form
-  formEl.classList.add('hidden');
-
-  // 3) Show the preview
-  preview.classList.remove('hidden');
-
-  // 4) Keep the wrapper flex-centered
-  wrapper.classList.add('flex', 'items-center', 'justify-center');
+  // Swap form → preview
+  const heading = document.querySelector('#event-form h2');
+  document.getElementById('eventForm').classList.add('hidden');
+  document.getElementById('event-preview').classList.remove('hidden');
+  heading?.classList.add('hidden');
 }
 
-}
-
-
+/* -------------------------------------------------- */
 function resetForm() {
   formDataCache = {};
-  const form = document.getElementById('eventForm');
-  form.reset();
-  form.hidden = false;
-
-  const previewPane = document.getElementById('event-preview');
-  previewPane.innerHTML = '';
-  previewPane.hidden    = true;
-
-  const previewBtn = document.getElementById('previewEvent');
-  previewBtn.disabled             = true;
-  previewBtn.classList.add('opacity-50');
-  previewBtn.setAttribute('aria-disabled', 'true');
+  const f = document.getElementById('eventForm');
+  f.reset(); f.hidden = false;
+  const pane = document.getElementById('event-preview');
+  pane.innerHTML = ''; pane.hidden = true;
+  const pb = document.getElementById('previewEvent');
+  pb.disabled = true; pb.classList.add('opacity-50');
 }
