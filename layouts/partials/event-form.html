@@ -63,14 +63,23 @@
       </fieldset>
 
       <!-- 📄 Flyer upload (optional) -->
+
       <div class="flex flex-col">
         <label for="eventPdf" class="mb-2 font-semibold">
           PDF Flyer <span class="text-gray-500">(optional · max&nbsp;5 MB)</span>
         </label>
-        <input id="eventPdf" name="eventPdf" type="file" accept="application/pdf"
-               class="w-full border border-gray-300 rounded p-2 file:border-0 file:bg-indigo-600
-                      file:text-white file:px-3 file:py-2 file:rounded file:cursor-pointer" />
-        <!-- The error message is injected by JS; keep the placeholder -->
+        
+        <input id="eventPdf" name="eventPdf" type="file" accept="application/pdf" class="sr-only" />
+
+        <div class="flex items-center border border-gray-300 rounded">
+          <label for="eventPdf" class="cursor-pointer bg-indigo-600 text-white px-4 py-2 rounded-l">
+            Choose File
+          </label>
+          <span id="file-chosen" class="text-gray-600 italic px-4 py-2 w-full">
+            No file chosen
+          </span>
+        </div>
+
         <p id="file-error" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
 

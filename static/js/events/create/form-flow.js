@@ -6,6 +6,27 @@ import { renderPreview    } from './preview-renderer.js';
 document.addEventListener('DOMContentLoaded', () => {
   console.log('📋 form-flow.js loaded');
 
+  /* ✨ NEW: PDF Uploader UI Logic */
+  const actualPdfInput = document.getElementById('eventPdf');
+  const fileChosenDisplay = document.getElementById('file-chosen');
+
+  if (actualPdfInput && fileChosenDisplay) {
+    actualPdfInput.addEventListener('change', function() {
+      // Check if any file is selected
+      if (this.files.length > 0) {
+        // Display the name of the first file
+        fileChosenDisplay.textContent = this.files[0].name;
+        fileChosenDisplay.classList.remove('italic', 'text-gray-600');
+        fileChosenDisplay.classList.add('text-black');
+      } else {
+        // If the user cancels the file dialog
+        fileChosenDisplay.textContent = 'No file chosen';
+        fileChosenDisplay.classList.add('italic', 'text-gray-600');
+        fileChosenDisplay.classList.remove('text-black');
+      }
+    });
+  }
+
   /* 1️⃣  Date-picker helper */
   document.getElementById('confirmDateTime')
     ?.addEventListener('click', () =>
