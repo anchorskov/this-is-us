@@ -42,7 +42,7 @@ firebase-seeder/
 .wrangler/
 d1-local/
 r2-local/
-worker/d1-local/
+worker/d1_local/
 ballots/d1-local/
 worker/dummy.pdf
 
@@ -61,41 +61,33 @@ Thumbs.db
 # === Project Specific ===
 isablefastrender/
 
-# === git Specific ===
+# === Git Specific ===
 .git/
+.git/**
 
 # === Scripts ===
 scripts/
+scripts/**
 
-##############################################################################
-# === Drive/Git sync sanitation ===
-#   – database shards / local emulators
-worker/d1_local/
+# === Drive/Git Sync Sanitation ===
 **/*.sqlite*
 **/*.sqlite-wal
 **/*.sqlite-shm
 
-#   – test suites & fixtures
+# Test & content archives
 tests/
 archive_content/
 mcp/
 ballots/
-#   – CI / patch scratch
+
+# CI / patch scratch
 *.patch
 dryrun.txt
 
-#   – large static assets & compiled CSS
+# Large static assets & compiled CSS
 static/files/
 static/css/*.built.css
-assets/css/            # raw SCSS/CSS sources if not needed upstream
+assets/css/
 
-#   – seed SQL & data dumps
-data/*.sql
-
-#   – everything Git already stores internally
-.git/**                # pathspec likes ** for recursion
-
-#   – utility scripts (only keep the ones you *really* need on Drive)
-scripts/**
-# ─── Hugo themes (don’t sync or commit) ───────────────────
+# Hugo themes (don’t sync or commit)
 themes/
