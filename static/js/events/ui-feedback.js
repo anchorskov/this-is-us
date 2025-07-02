@@ -1,5 +1,5 @@
 // ——————————————————————————————————————————
-// Simple DOM selector
+// Simple DOM selector static/js/events/ui-feedback.js
 // ——————————————————————————————————————————
 /**
  * Accept either a selector string or an Element.
@@ -121,39 +121,39 @@ export function bindPdfPreview(inputSel = '#eventPdf', iframeSel = '#pdfPreview'
 }
 
 // ——————————————————————————————————————————
+// ——————————————————————————————————————————
 // Success Modal
 // ——————————————————————————————————————————
 /**
- * Display the success modal with View and OK buttons.
- * @param {Function} onView callback when user clicks "View on Map"
+ * Display the success modal; wires OK / View buttons once.
+ * @param {Function} onView  callback when "View on Map" is clicked
  */
 export function showSuccessModal(onView) {
   const modal = document.getElementById('successModal');
-  if (!modal) return;
+  if (!modal) return console.warn('❌ successModal not found');
 
-  // Remove Tailwind's hidden class and update ARIA
+  // Reveal overlay
   modal.classList.remove('hidden');
+  modal.style.display = 'flex';          // UnoCSS sets nothing -> force flex
   modal.setAttribute('aria-hidden', 'false');
-  modal.style.display = 'flex';
 
-  // Wire up the buttons
-  const viewBtn = document.getElementById('viewEventBtn');
   const okBtn   = document.getElementById('okEventBtn');
+  const viewBtn = document.getElementById('viewEventBtn');
 
-  if (viewBtn) {
-    viewBtn.onclick = () => {
-      onView();
-      // Hide again
-      modal.classList.add('hidden');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.style.display = 'none';
-    };
+  // ensure we wire only once
+  if (okBtn  && !okBtn._wired) {
+    okBtn._wired = true;
+    okBtn.addEventListener('click', hide);
   }
-  if (okBtn) {
-    okBtn.onclick = () => {
-      modal.classList.add('hidden');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.style.display = 'none';
-    };
+  if (viewBtn && !viewBtn._wired) {
+    viewBtn._wired = true;
+    viewBtn.addEventListener('click', () => { onView?.(); hide(); });
+  }
+
+  function hide() {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
   }
 }
+

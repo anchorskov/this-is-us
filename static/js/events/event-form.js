@@ -97,18 +97,33 @@ function bindConfirm() {
   if (btn) btn.addEventListener('click', handleSubmit, { once:true });
 }
 
+/* -------------------------------------------------- */
+/* submit → show success OR error                     */
+/* -------------------------------------------------- */
 async function handleSubmit() {
   const btn = document.getElementById('confirmSubmit');
   toggleLoading(true, btn, 'Submitting…');
+
   try {
     const { ok, id, message } = await submitEvent(formDataCache);
-    ok
-      ? showSuccessModal(() => location.href = `/events?highlight=${id}`)
-      : showError(message);
+
+    if (ok) {
+      /* 1️⃣  clear the UI state so the user can start over if they want */
+      resetForm();
+
+      /* 2️⃣  show the success modal and wire the “View on Map” button   */
+      showSuccessModal(() => {
+        location.href = `/events?highlight=${id}`;
+      });
+    } else {
+      showError(message);
+    }
   } catch (err) {
     console.error(err);
     showError('Unexpected error; please retry.');
-  } finally { toggleLoading(false, btn, 'Confirm & Submit'); }
+  } finally {
+    toggleLoading(false, btn, 'Confirm & Submit');
+  }
 }
 
 /* -------------------------------------------------- */
