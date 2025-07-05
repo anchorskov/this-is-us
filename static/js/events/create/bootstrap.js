@@ -1,20 +1,19 @@
 // ────────────────────────────────────────────────────────────────
 // static/js/events/create/bootstrap.js
 // 🧭  Bootstrap “Create Event” page
-//     – waits for Firebase auth
-//     – zooms to saved ZIP (if any)
-//     – wires ZIP→city/state auto-fill
-//     – mounts Leaflet map / locator UI
-//     – finally shows the event-details form
+//    – waits for Firebase auth
+//    – zooms to saved ZIP (if any)
+//    – wires ZIP→city/state auto-fill
+//    – mounts Leaflet map / locator UI
 // ────────────────────────────────────────────────────────────────
 
 import { setupMapLocator   } from './map-locator.js';
 import { initAddressFields } from './address-fields.js';
 import { getUserZip        } from '../../lib/firestore-profile.js';
-import  geocode              from '../../lib/geocode.js';
-import { renderForm        } from '../event-form.js';
+import   geocode             from '../../lib/geocode.js';
+// The renderForm function is no longer called from this file.
 
-/*  Run **only after** the DOM is fully parsed so #map exists  */
+/* Run **only after** the DOM is fully parsed so #map exists  */
 document.addEventListener('DOMContentLoaded', async () => {
   /* 1️⃣  Wait for Firebase Auth to settle */
   await firebase.auth().authStateReady;
@@ -36,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  /* 3️⃣  ZIP → city/state auto-fill                            */
+  /* 3️⃣  ZIP → city/state auto-fill                          */
   initAddressFields();
 
   /* 4️⃣  Build the map & locator UI                            */
@@ -47,6 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     resultId: 'latlonDisplay',
   });
 
-  /* 5️⃣  Inject & manage the event-details form                */
-  renderForm(user);
+  /* 5️⃣  The event-details form is now managed by form-flow.js based on user interaction. */
+  // renderForm(user); // This line was removed to prevent re-initializing the map.
 });

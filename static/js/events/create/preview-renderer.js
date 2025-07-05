@@ -1,7 +1,8 @@
-/*  Renders the read-only preview card and handles the “Publish” step
+/* Renders the read-only preview card and handles the “Publish” step
     ---------------------------------------------------------------- */
 import { submitEvent } from '../submit-event.js';
-import { showSuccess } from './modal.js';
+// Updated import: Get the right modal function and the loading helper
+import { showSuccessModal, toggleLoading } from '../ui-feedback.js';
 
 export function renderPreview() {
   const pane = document.getElementById('event-preview');
@@ -13,23 +14,18 @@ export function renderPreview() {
 
   /* ── 1) harvest form data ─────────────────────────────────────── */
   const data = Object.fromEntries(new FormData(form).entries());
+  const fileInput = document.getElementById('eventPdf');
 
   // Map front-end names → Worker names
-  data.name        = (data.title || '').trim();           // title  ➜ name
-  data.date        =  data.datetime;                      // datetime ➜ date
-  data.location    =  data.location ||
-                      document.getElementById('street')?.value || '';
-
+  data.name = (data.title || '').trim();
+  data.date = data.datetime;
+  data.location = data.location || document.getElementById('street')?.value || '';
   data.description = (data.description || '').trim();
   data.lat = document.getElementById('lat')?.value || '';
   data.lng = document.getElementById('lng')?.value || '';
 
-  /* Worker requires a File field; use a 1-byte dummy until a real
-     file-input is added. Remove this stub when you add <input type="file">. */
-  data.file = new File(['%'], 'placeholder.pdf', {
-    type : 'application/pdf',
-    lastModified: Date.now()
-  });
+  // Get the actual selected file, if it exists
+  data.file = fileInput.files[0];
 
   /* ── 2) inject read-only card ─────────────────────────────────── */
   pane.innerHTML = /* html */`
@@ -37,25 +33,22 @@ export function renderPreview() {
       <h3 class="text-xl font-semibold mb-2">
         ${data.name || 'Untitled event'}
       </h3>
-
       <p class="text-sm text-gray-500 mb-2">
         ${data.date
           ? new Date(data.date).toLocaleString()
           : 'No date chosen'}
       </p>
-
       <p class="whitespace-pre-wrap mb-4">${data.description || ''}</p>
-
       <button id="publishBtn"
               class="px-6 py-3 rounded bg-indigo-600 text-white
-                     hover:bg-indigo-700 transition">
-        ✅ Publish Event
+                     hover:bg-indigo-700 transition w-full sm:w-auto">
+        📤 Submit Event
       </button>
       <p id="publishError" class="text-red-600 text-sm mt-2 hidden"></p>
     </div>`;
 
   /* ── 3) wire Publish ─────────────────────────────────────────── */
-  const btn      = document.getElementById('publishBtn');
+  const btn = document.getElementById('publishBtn');
   const errLabel = document.getElementById('publishError');
 
   btn.addEventListener('click', async () => {
@@ -69,14 +62,18 @@ export function renderPreview() {
     }
 
     try {
-      btn.disabled   = true;
-      btn.textContent = 'Publishing…';
+      // Use the toggleLoading helper for a better UX
+      toggleLoading(true, btn);
 
       const { ok, message, id } = await submitEvent(data);
 
       if (ok) {
         console.log('🎉 submitEvent OK → id:', id);
-        showSuccess(id);                // open success modal
+        // Correctly call the success MODAL function
+        // It takes a callback for the "View on Map" button
+        showSuccessModal(() => {
+          window.location.href = `/events//`; // Redirect to the new event page
+        });
       } else {
         throw new Error(message || 'Unexpected API error');
       }
@@ -85,8 +82,8 @@ export function renderPreview() {
       errLabel.textContent = err.message;
       errLabel.classList.remove('hidden');
     } finally {
-      btn.disabled   = false;
-      btn.textContent = '✅ Publish Event';
+      // Always restore the button's state
+      toggleLoading(false, btn, '📤 Submit Event');
     }
-  }, { once:true }); // prevent double-submits
+  }, { once: true });
 }

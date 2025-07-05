@@ -121,7 +121,6 @@ export function bindPdfPreview(inputSel = '#eventPdf', iframeSel = '#pdfPreview'
 }
 
 // ——————————————————————————————————————————
-// ——————————————————————————————————————————
 // Success Modal
 // ——————————————————————————————————————————
 /**
@@ -132,15 +131,17 @@ export function showSuccessModal(onView) {
   const modal = document.getElementById('successModal');
   if (!modal) return console.warn('❌ successModal not found');
 
-  // Reveal overlay
+  // ── reveal overlay ─────────────────────────────────────────────
   modal.classList.remove('hidden');
-  modal.style.display = 'flex';          // UnoCSS sets nothing -> force flex
+  modal.style.display = 'flex';              // UnoCSS sets nothing → force flex
   modal.setAttribute('aria-hidden', 'false');
+  modal.tabIndex = -1;                       // allow focus-trap helpers
+  modal.focus({ preventScroll: true });
 
+  // ── buttons ───────────────────────────────────────────────────
   const okBtn   = document.getElementById('okEventBtn');
   const viewBtn = document.getElementById('viewEventBtn');
 
-  // ensure we wire only once
   if (okBtn  && !okBtn._wired) {
     okBtn._wired = true;
     okBtn.addEventListener('click', hide);
@@ -150,10 +151,19 @@ export function showSuccessModal(onView) {
     viewBtn.addEventListener('click', () => { onView?.(); hide(); });
   }
 
+  // ── new: close on ⎋ or overlay click ──────────────────────────
+  function onKey(e) { if (e.key === 'Escape') hide(); }
+  document.addEventListener('keydown', onKey, { once: true });
+  modal.addEventListener('click', e => {
+    if (e.target === modal) hide();          // click outside the card
+  }, { once: true });
+
+  // ── hide helper ───────────────────────────────────────────────
   function hide() {
     modal.classList.add('hidden');
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
   }
 }
+
 
