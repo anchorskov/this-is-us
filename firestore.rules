@@ -2,74 +2,96 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{db}/documents {
 
-    /* ───────────────────────────────
-       👤  USER PROFILES
-       path: /users/{userId}
-    ─────────────────────────────── */
-    match /users/{userId} {
-      /* public read of SAFE fields only */
-      allow get: if
-        (resource.data.keys().hasOnly(['displayName', 'city', 'state'])) ||
-        (request.auth != null && request.auth.uid == userId);
-
-      /* self-write (no throttling rules yet) */
-      allow create, delete: if request.auth != null && request.auth.uid == userId;
-
-      /* self-update, with optional lastPostedAt throttle (60 s) */
-      allow update: if request.auth != null && request.auth.uid == userId &&
-        (
-          !request.resource.data.diff(resource.data).changedKeys().hasOnly(['lastPostedAt']) ||           // normal edits
-          request.resource.data.lastPostedAt > request.time - duration.value(60, 's')                     // throttled field
-        );
+    // Helper function to check the role level from the user's auth token.
+    // This is much more efficient than the old isAdminOrMod() function.
+    function getRoleLevel() {
+      return request.auth.token.roleLevel;
     }
 
     /* ───────────────────────────────
-       🗣️  LEGACY /townhall_posts/*
-       (kept for backward compatibility)
+        👤  USER PROFILES
+        path: /users/{userId}
+    ─────────────────────────────── */
+    match /users/{userId} {
+      // Public can read only specific, safe fields.
+      // A logged-in user can read their own entire document.
+      allow get: if (resource.data.keys().hasOnly(['displayName', 'city', 'state'])) ||
+                    (request.auth != null && request.auth.uid == userId);
+
+      // A user can create or delete their own profile.
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+
+      // An Admin (or higher) can also delete a user's profile.
+      allow delete: if getRoleLevel() >= 80;
+
+      // A user can update their own profile.
+      allow update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    /* ───────────────────────────────
+        🗓️  EVENTS
+        path: /events/{eventId}
+    ─────────────────────────────── */
+    match /events/{eventId} {
+        // Anyone can read events.
+        allow read: if true;
+
+        // Creating events requires "Editor" level or higher.
+        allow create: if getRoleLevel() >= 50;
+
+        // Updating is allowed by the author OR an Editor (or higher).
+        allow update: if (request.auth != null && request.auth.uid == resource.data.authorId) ||
+                         getRoleLevel() >= 50;
+
+        // Deleting is allowed by the author OR an Admin (or higher).
+        allow delete: if (request.auth != null && request.auth.uid == resource.data.authorId) ||
+                         getRoleLevel() >= 80;
+    }
+
+
+    /* ───────────────────────────────
+        🗣️  LEGACY /townhall_posts/*
     ─────────────────────────────── */
     match /townhall_posts/{postId} {
       allow read: if true;
-
       allow create: if isVerified();
+
+      // Allow update by the author.
       allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
-      allow delete: if isAdminOrMod() || (request.auth != null && request.auth.uid == resource.data.createdBy);
+
+      // Deleting is allowed by the author OR a Moderator (or higher).
+      allow delete: if (request.auth != null && request.auth.uid == resource.data.createdBy) ||
+                       getRoleLevel() >= 30;
     }
 
     /* ───────────────────────────────
-       💬  THREADS & NESTED REPLIES
-       path: /townhall_threads/{threadId}
+        💬  THREADS & NESTED REPLIES
+        path: /townhall_threads/{threadId}
     ─────────────────────────────── */
     match /townhall_threads/{threadId} {
 
       /* ---------- THREAD DOC ---------- */
-      allow get, list: if true;        // public read
+      allow get, list: if true;
+      allow create: if isVerified() && request.resource.data.createdBy == request.auth.uid;
 
-      allow create: if isVerified() &&
-        request.resource.data.keys().hasOnly([
-          'title','body','location','createdBy','timestamp','replyCount'
-        ]) &&
-        request.resource.data.createdBy == request.auth.uid &&
-        request.resource.data.replyCount == 0;
+      // Allow update by the author.
+      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
 
-      allow update: if request.auth != null &&
-        request.auth.uid == resource.data.createdBy;
-
-      allow delete: if isAdminOrMod() ||
-        (request.auth != null && request.auth.uid == resource.data.createdBy);
+      // Deleting is allowed by the author OR a Moderator (or higher).
+      allow delete: if (request.auth != null && request.auth.uid == resource.data.createdBy) ||
+                       getRoleLevel() >= 30;
 
       /* ---------- NESTED REPLIES ---------- */
       match /replies/{replyId} {
         allow get, list: if true;
+        allow create: if isVerified() && request.resource.data.uid == request.auth.uid;
 
-        allow create: if isVerified() &&
-          exists(/databases/$(db)/documents/townhall_threads/$(threadId)) &&
-          request.resource.data.keys().hasOnly(['content','displayName','uid','timestamp']) &&
-          request.resource.data.uid == request.auth.uid;
-
+        // Allow update by the author.
         allow update: if request.auth != null && request.auth.uid == resource.data.uid;
 
-        allow delete: if isAdminOrMod() ||
-          (request.auth != null && request.auth.uid == resource.data.uid);
+        // Deleting is allowed by the author OR a Moderator (or higher).
+        allow delete: if (request.auth != null && request.auth.uid == resource.data.uid) ||
+                         getRoleLevel() >= 30;
       }
     }
 
@@ -79,13 +101,11 @@ service cloud.firestore {
     }
 
     /* ─────────── helper functions ─────────── */
+    // This function is kept for creating posts, but could be replaced
+    // by checking request.auth.token.email_verified in the future.
     function isVerified() {
       return request.auth != null &&
         get(/databases/$(db)/documents/users/$(request.auth.uid)).data.verified == true;
-    }
-    function isAdminOrMod() {
-      return request.auth != null &&
-        get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role in ['admin','moderator'];
     }
   }
 }

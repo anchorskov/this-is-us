@@ -148,8 +148,8 @@ export function showSuccessModal(onView) {
   }
   if (viewBtn && !viewBtn._wired) {
     viewBtn._wired = true;
-    viewBtn.addEventListener('click', () => { onView?.(); hide(); });
-  }
+    viewBtn.addEventListener('click', () => { hide(); onView?.(); });
+   }
 
   // ── new: close on ⎋ or overlay click ──────────────────────────
   function onKey(e) { if (e.key === 'Escape') hide(); }

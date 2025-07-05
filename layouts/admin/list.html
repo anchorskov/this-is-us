@@ -1,0 +1,56 @@
+{{/* /layouts/admin/list.html - Template for the /admin section */}}
+
+{{ define "main" }}
+<div class="bg-gray-50 min-h-screen">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-2xl font-bold leading-tight text-gray-900">
+                Admin Dashboard
+            </h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Admin content will be dynamically loaded here -->
+        <div id="admin-root" class="px-4 py-6 sm:px-0">
+
+            <!-- Initial Loading State -->
+            <div id="admin-loading" class="text-center text-gray-500">
+                <p>Loading Admin Panel...</p>
+                <!-- You can add a spinner here later -->
+            </div>
+
+            <!-- Access Denied Message -->
+            <div id="admin-access-denied" class="hidden text-center text-red-600 bg-red-100 p-6 rounded-lg">
+                <h2 class="font-bold text-lg">Access Denied</h2>
+                <p>You do not have sufficient permissions to view this page.</p>
+                <p class="mt-2 text-sm">Redirecting you to the homepage...</p>
+            </div>
+
+            <!-- The main dashboard UI will be built here -->
+            <div id="admin-dashboard-ui" class="hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Sidebar Navigation -->
+                    <nav id="admin-sidebar" class="w-full md:w-1/4 bg-white p-4 rounded-lg shadow">
+                        <ul class="space-y-2">
+                            <!-- Links will be added by JavaScript based on user role -->
+                        </ul>
+                    </nav>
+
+                    <!-- Content Panel -->
+                    <section id="admin-content-panel" class="w-full md:w-3/4 bg-white p-6 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold">Welcome to the Admin Dashboard</h2>
+                        <p class="mt-2 text-gray-600">Please select a section from the menu to begin.</p>
+                    </section>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+{{ end }}
+
+{{ define "scripts" }}
+    <!-- Main script for the admin dashboard -->
+    <script type="module" src="{{ "js/admin/dashboard.js" | relURL }}" defer></script>
+{{ end }}
