@@ -1,47 +1,60 @@
 <!-- layouts/partials/firebase-init.html -->
+<script>console.log("🔥 firebase-init partial loaded (v9 modules)");</script>
+
+<!-- 1️⃣ Initialise the [DEFAULT] modular app -->
+<script type="module" src="/js/firebase-config.js"></script>
+
+<!-- 2️⃣ Core Firebase v9 services (ES-modules) -->
+<script type="module"
+        src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+<script type="module"
+        src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+<!-- 3️⃣ Compat shim (already present) -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+
+<!-- 🔑 Initialise compat **before** Firebase-UI -->
 <script>
-  console.log("🔥 firebase-init partial loaded");
+  (function () {
+    const cfg = {
+      apiKey: "AIzaSyB2JqSDeOgNOdMHCfHqaC78Rgr-l7LqIkU",
+      authDomain: "this-is-us-events.firebaseapp.com",
+      projectId: "this-is-us-events",
+      storageBucket: "this-is-us-events.appspot.com",
+      messagingSenderId: "215038360222",
+      appId: "1:215038360222:web:98677c77158d282c9ad98f",
+      measurementId: "G-DKHTH767TD"
+    };
+    if (window.firebase && !firebase.apps.length) {
+      firebase.initializeApp(cfg);      // makes firebase.app() available
+    }
+  })();
 </script>
 
-<!-- 1) Firebase core (v8-compatible UMD builds) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<!-- 4️⃣ Firebase-UI -->
+<link rel="stylesheet"
+      href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css">
+<script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
 
-<!-- 2) Firebase Auth -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<!-- 5️⃣ Project logic (all ES-modules) -->
+<script type="module" src="/js/firebase-ui-config.js"></script>
+<script type="module" src="/js/firebase-login.js"></script>
+<script type="module" src="/js/firebase-session.js"></script>
+<script type="module" src="/js/firebase-idle-logout.js"></script>
+<!-- (auth guard is injected once in extend_head.html) -->
 
-<!-- 3) Firebase Firestore -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<!-- 6️⃣ Early auth status log -->
+<script type="module">
+  import { getAuth, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-<!-- 4) FirebaseUI styles & logic -->
-<link
-  href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
-  rel="stylesheet"
-/>
-<script src="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.js"></script>
-
-<!-- 5) Your Firebase project config and logic -->
-<script src="/js/firebase-config.js"></script>
-<script src="/js/firebase-ui-config.js"></script>
-<script src="/js/firebase-login.js"></script>
-<script src="/js/firebase-session.js"></script>
-
-<!-- 6) Optional: Auto logout after inactivity -->
-<script src="/js/firebase-idle-logout.js"></script>
-
-<!-- 7) Early status check -->
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    if (typeof firebase !== "undefined") {
-      firebase.auth().onAuthStateChanged((user) => {
-        window.currentUser = user || null;
-        if (user) {
-          console.log("🟢 firebase-init: Logged in as", user.email || user.phoneNumber);
-        } else {
-          console.log("🔴 firebase-init: No user signed in");
-        }
-      });
-    } else {
-      console.warn("⚠️ Firebase not loaded yet in firebase-init");
-    }
+  onAuthStateChanged(getAuth(), (user) => {
+    window.currentUser = user ?? null;
+    console.log(
+      user
+        ? "🟢 firebase-init: Logged in as " + (user.email ?? user.phoneNumber)
+        : "🔴 firebase-init: No user signed in"
+    );
   });
 </script>

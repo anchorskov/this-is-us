@@ -1,48 +1,41 @@
-// /static/js/firebase-auth-guard.js
+/* firebase-auth-guard.js – final minimal v9 */
+import {
+  getApps
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-console.log("🛡️ firebase-auth-guard.js loaded");
+/* Bail if app didn't initialise */
+if (!getApps().length) {
+  console.warn("⚠️ Firebase app missing – auth guard skipped.");
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Paths that require a logged-in user
-  const protectedPaths = [
-    "/townhall",
-    "/townhall/interactive",
-    "/events/create",
-    "/account",
-    "/admin",
-    "/sandbox"
-  ];
+/* Paths that need a signed-in user */
+const NEED_AUTH = [
+  "/townhall",
+  "/events/create",
+  "/account",
+  "/admin",
+  "/sandbox"
+].map((p) => p.replace(/\/+$/, ""));
 
-  const normalizePath = path => path.replace(/\/+$/, "");
+/* Only run redirect logic once */
+let redirected = false;
 
-  // Wait until Firebase is ready
-  const waitForFirebase = () => {
-    if (typeof firebase === "undefined" || !firebase.auth) {
-      console.warn("⚠️ Firebase not ready, retrying...");
-      return setTimeout(waitForFirebase, 100);
-    }
+onAuthStateChanged(getAuth(), (user) => {
+  if (redirected) return; // stop double redirects
 
-    firebase.auth().onAuthStateChanged(user => {
-      const currentPath = normalizePath(window.location.pathname);
+  const path = location.pathname.replace(/\/+$/, "");
+  const mustAuth = NEED_AUTH.some(
+    (root) => path === root || path.startsWith(root + "/")
+  );
 
-      const isProtected = protectedPaths.some(protected =>
-        currentPath === normalizePath(protected) ||
-        currentPath.startsWith(normalizePath(protected) + "/")
-      );
-
-      if (!user && isProtected) {
-        console.log("🔐 Not signed in → redirecting to login");
-
-        const redirectParam = encodeURIComponent(window.location.pathname);
-
-        // Optional: scroll to top for UX polish
-        window.scrollTo({ top: 0, behavior: "smooth" });
-
-        // Redirect to login page with original page as query param
-        window.location.href = `/login/?redirect=${redirectParam}`;
-      }
-    });
-  };
-
-  waitForFirebase();
+  if (!user && mustAuth) {
+    redirected = true;
+    console.log("🔐 redirecting anonymous user → /login/");
+    const q = encodeURIComponent(location.pathname + location.search);
+    location.href = `/login/?redirect=${q}`;
+  }
 });

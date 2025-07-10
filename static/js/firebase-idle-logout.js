@@ -1,34 +1,33 @@
-// static/js/firebase-idle-logout.js
-console.log("🕒 firebase-idle-logout.js loaded");
+// static/js/firebase-idle-logout.js  – v9 module
+console.log("🕒 firebase-idle-logout.js loaded (v9)");
 
-if (typeof firebase === "undefined") {
-  console.error("❌ Firebase not available.");
-} else {
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      console.log("🛡️ Idle logout monitoring active for", user.email || user.uid);
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-      const TIMEOUT = 30 * 60 * 1000; // 30 minutes in ms
-      let idleTimer;
+const auth = getAuth();
+const TIMEOUT = 30 * 60 * 1000; // 30 min
+let idleTimer;
 
-      const resetTimer = () => {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(() => {
-          firebase.auth().signOut().then(() => {
-            alert("You’ve been logged out due to inactivity.");
-            location.reload();
-          });
-        }, TIMEOUT);
-      };
+const resetTimer = () => {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(async () => {
+    await signOut(auth);
+    alert("You’ve been logged out due to inactivity.");
+    location.reload();
+  }, TIMEOUT);
+};
 
-      // User activity events to reset timer
-      ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach(event =>
-        window.addEventListener(event, resetTimer, true)
-      );
-
-      resetTimer();
-    } else {
-      console.log("⏸️ No active user session — idle logout not enabled.");
-    }
-  });
-}
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("🛡️ Idle logout monitoring active for", user.email || user.uid);
+    ["click", "mousemove", "keydown", "scroll", "touchstart"].forEach((evt) =>
+      window.addEventListener(evt, resetTimer, true)
+    );
+    resetTimer();
+  } else {
+    console.log("⏸️ No active user session — idle logout not enabled.");
+  }
+});

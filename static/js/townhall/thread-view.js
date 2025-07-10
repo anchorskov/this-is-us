@@ -1,159 +1,174 @@
-/* static/js/townhall/thread-view.js
-   ------------------------------------------------------------------
-   Single-thread controller (modular version)
+/* ──────────────────────────────────────────────────────────────
+   static/js/townhall/thread-view.js
+   Single-thread controller – Firebase v9 modular
    ------------------------------------------------------------------ */
+console.log("🧵 Modular thread-view.js loaded (v9)");
 
-console.log("🧵 Modular thread-view.js loaded");
-
-/* ─── Helpers & sub-modules ─────────────────────────────────────── */
+/* ─── Helpers & sub-modules ───────────────────────────────────── */
 import { qs, $$, niceDate }           from "./thread/dom-utils.js";
 import {
-  initFirestore,      //  ❇️  NEW
+  initFirestore,        // exposes THREADS() / REPLIES() helpers
   THREADS,
   REPLIES
-}                                    from "./thread/firestore-helpers.js";
+}                                     from "./thread/firestore-helpers.js";
 import {
   renderSkeleton,
   renderThreadHTML
-}                                    from "./thread/render-thread.js";
-import { renderReplies }             from "./thread/reply-renderer.js";
-import { wireReplyForm }             from "./thread/reply-form-handler.js";
-import { showError }                 from "./thread/error-banner.js";
+}                                     from "./thread/render-thread.js";
+import { renderReplies }              from "./thread/reply-renderer.js";
+import { wireReplyForm }              from "./thread/reply-form-handler.js";
+import { showError }                  from "./thread/error-banner.js";
 
-/* ─── State ─────────────────────────────────────────────────────── */
-let threadId,
-    unsubscribeThread  = null,
-    unsubscribeReplies = null,
-    currentUser        = null;
+/* ─── Firebase v9 imports ────────────────────────────────────── */
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  query,
+  where,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-/* ─── Main bootstrap ────────────────────────────────────────────── */
-document.addEventListener("DOMContentLoaded", () => {
+/* ─── State ──────────────────────────────────────────────────── */
+let threadId;
+let unsubscribeThread  = null;
+let unsubscribeReplies = null;
+let currentUser        = null;
+
+/* ─── Main bootstrap ────────────────────────────────────────── */
+document.addEventListener("DOMContentLoaded", async () => {
   const wrap = qs("#thread-container");
   if (!wrap) {
-    console.warn("🧵 No #thread-container on page.");
-    return;
-  }
-  if (!window.firebase || !firebase.firestore || !firebase.auth) {
-    wrap.innerHTML =
-      `<p class="text-red-600">
-         Firebase not available. Ensure Firebase SDKs are loaded.
-       </p>`;
+    console.warn("🧵 No #thread-container on page");
     return;
   }
 
-  /* 1.  Initialise Firestore for helper modules —–––––––––––––––– */
-  const db = firebase.firestore();
-  initFirestore(db);                     //  ←  Important!
+  /* 1. Initialise Firestore helpers ------------------------- */
+  const auth = getAuth();
+  const db   = getFirestore();
+  initFirestore(db);      // make db available to THREADS()/REPLIES()
 
-  /* 2.  Auth state listener (unchanged) —––––––––––––––––––––––– */
-firebase.auth().onAuthStateChanged(async user => {
-  currentUser = user;
+  /* 2. Auth state listener ---------------------------------- */
+  onAuthStateChanged(auth, async (user) => {
+    currentUser = user;
 
-  /* ─── Auto-populate “Your name” field ─── */
-  const form = document.querySelector("#reply-form");
-  const nameInput = form?.elements?.name;       // <input name="name">
-  const replyButton = form?.querySelector("button[type='submit']");
-  const noticeId = "verification-notice";
+    /* auto-populate “Your name” ---------------------------- */
+    const form         = qs("#reply-form");
+    const nameInput    = form?.elements?.name;
+    const replyButton  = form?.querySelector("button[type='submit']");
+    const noticeId     = "verification-notice";
 
-  if (nameInput) {
-    nameInput.value    = user?.displayName || "";
-    nameInput.readOnly = !!user?.displayName;   // lock if we have a name
-  }
-
-  // Remove any previous notice banner
-  document.getElementById(noticeId)?.remove();
-  if (!form || !replyButton) return;
-
-  /* ─── Verified-user gating ─── */
-  if (user) {
-    try {
-      const snap     = await db.collection("users").doc(user.uid).get();
-      const verified = snap.exists && snap.data().verified === true;
-
-      if (!verified) {
-        replyButton.disabled = true;
-        replyButton.classList.add("opacity-50", "cursor-not-allowed");
-
-        const msg = document.createElement("div");
-        msg.id = noticeId;
-        msg.className = "text-yellow-700 bg-yellow-100 p-2 rounded text-sm mt-2";
-        msg.innerHTML =
-          `⚠️ You must <strong>verify your account</strong> to post a reply.
-           <a href="/account"
-              class="underline text-blue-600 hover:text-blue-800">
-           Request verification</a>.`;
-        form.appendChild(msg);
-      } else {
-        replyButton.disabled = false;
-        replyButton.classList.remove("opacity-50", "cursor-not-allowed");
-      }
-
-    } catch (err) {
-      console.error("Verification lookup failed:", err);
-      showError(form, "Verification check failed.");
+    if (nameInput) {
+      nameInput.value    = user?.displayName || "";
+      nameInput.readOnly = !!user?.displayName;
     }
 
-  } else {
-    // Not signed in
-    replyButton.disabled = true;
-    replyButton.classList.add("opacity-50", "cursor-not-allowed");
+    // clear old notice
+    $$("#" + noticeId).forEach((n) => n.remove());
+    if (!form || !replyButton) return;
 
-    const msg = document.createElement("div");
-    msg.id = noticeId;
-    msg.className = "text-gray-600 text-sm mt-2";
-    msg.innerHTML =
-      `🔐 Please <a href="/login"
-          class="underline text-blue-600 hover:text-blue-800">
-       sign in</a> to post a reply.`;
-    form.appendChild(msg);
-  }
-});
+    if (user) {
+      try {
+        const profileSnap = await getDoc(doc(db, "users", user.uid));
+        const verified    = profileSnap.exists() && profileSnap.data().verified;
 
-  /* 3.  Resolve threadId from query/path —–––––––––––––––––––––– */
+        if (!verified) {
+          replyButton.disabled = true;
+          replyButton.classList.add("opacity-50", "cursor-not-allowed");
+
+          const msg         = document.createElement("div");
+          msg.id            = noticeId;
+          msg.className     = "text-yellow-700 bg-yellow-100 p-2 rounded text-sm mt-2";
+          msg.innerHTML =
+            `⚠️ You must <strong>verify your account</strong> to post a reply.
+             <a href="/account" class="underline text-blue-600 hover:text-blue-800">
+             Request verification</a>.`;
+          form.appendChild(msg);
+        } else {
+          replyButton.disabled = false;
+          replyButton.classList.remove("opacity-50", "cursor-not-allowed");
+        }
+      } catch (err) {
+        console.error("Verification lookup failed:", err);
+        showError(form, "Verification check failed.");
+      }
+    } else {
+      replyButton.disabled = true;
+      replyButton.classList.add("opacity-50", "cursor-not-allowed");
+
+      const msg       = document.createElement("div");
+      msg.id          = noticeId;
+      msg.className   = "text-gray-600 text-sm mt-2";
+      msg.innerHTML   =
+        `🔐 Please <a href="/login"
+            class="underline text-blue-600 hover:text-blue-800">
+         sign in</a> to post a reply.`;
+      form.appendChild(msg);
+    }
+  });
+
+  /* 3. Resolve threadId ------------------------------------ */
   const params = new URLSearchParams(location.search);
-  threadId = params.get("id") ||
-             location.pathname.split("/").filter(Boolean).pop();
+  threadId =
+    params.get("id") ||
+    location.pathname.split("/").filter(Boolean).pop();
 
   if (!threadId) {
     wrap.innerHTML = `<p class="text-red-600">Invalid thread ID.</p>`;
     return;
   }
 
-  /* 4.  Skeleton UI then realtime listeners —––––––––––––––––––– */
+  /* 4. Skeleton + realtime listeners ----------------------- */
   renderSkeleton(wrap);
 
-  unsubscribeThread = THREADS().doc(threadId).onSnapshot(doc => {
-    if (!doc.exists) {
-      wrap.innerHTML =
-        `<p class="text-gray-600">Thread not found or you lack permission.</p>`;
-      return;
-    }
+  unsubscribeThread = THREADS()
+    .doc(threadId)
+    .onSnapshot(
+      (docSnap) => {
+        if (!docSnap.exists()) {
+          wrap.innerHTML =
+            `<p class="text-gray-600">Thread not found or you lack permission.</p>`;
+          return;
+        }
 
-    wrap.innerHTML = renderThreadHTML(doc.data(), niceDate);
+        wrap.innerHTML = renderThreadHTML(docSnap.data(), niceDate);
 
-    qs("#back-to-townhall-btn")?.addEventListener(
-      "click", () => (location.href = "/townhall/threads/"));
+        qs("#back-to-townhall-btn")?.addEventListener(
+          "click",
+          () => (location.href = "/townhall/threads/")
+        );
 
-    const list = qs("#reply-list");
-    const form = qs("#reply-form");
+        const list = qs("#reply-list");
+        const form = qs("#reply-form");
 
-    unsubscribeReplies?.();
-    unsubscribeReplies = REPLIES(threadId)
-      .orderBy("timestamp","asc")
-      .onSnapshot(
-        snap => renderReplies(snap, list, currentUser),
-        err  => { console.error("Replies error:", err);
-                  showError(wrap,"Error loading replies."); }
-      );
+        // Replies listener
+        unsubscribeReplies?.();
+        unsubscribeReplies = REPLIES(threadId)
+          .orderBy("timestamp", "asc")
+          .onSnapshot(
+            (snap) => renderReplies(snap, list, currentUser),
+            (err)   => {
+              console.error("Replies error:", err);
+              showError(wrap, "Error loading replies.");
+            }
+          );
 
-    wireReplyForm(form, list, threadId, currentUser, db);
-  }, err => {
-    console.error("Thread listener error:", err);
-    wrap.innerHTML = `<p class="text-red-600">Error loading thread.</p>`;
-  });
+        wireReplyForm(form, list, threadId, currentUser, db);
+      },
+      (err) => {
+        console.error("Thread listener error:", err);
+        wrap.innerHTML =
+          `<p class="text-red-600">Error loading thread.</p>`;
+      }
+    );
 });
 
-/* ─── Clean-up ────────────────────────────────────────────────── */
+/* ─── Clean-up on page unload ─────────────────────────────── */
 window.addEventListener("beforeunload", () => {
   unsubscribeThread?.();
   unsubscribeReplies?.();

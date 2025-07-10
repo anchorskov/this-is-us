@@ -1,0 +1,31 @@
+{{ define "main" }}
+<section class="container p-6">
+  <h1 class="text-2xl font-bold mb-4">Topics You Care About</h1>
+  <p class="mb-4 text-sm">
+    Only verified users can edit preferences. Want something added? Submit a new topic below.
+  </p>
+
+  <!-- preferences check-box list will be injected here -->
+  <form id="preferences-form" class="mb-8 space-y-2">
+    <!-- JS injects <label><input …></label> rows -->
+    <button type="submit" class="btn btn-primary mt-4">
+      Save Preferences
+    </button>
+  </form>
+
+  <h2 class="text-xl font-semibold mb-2">Request a New Topic</h2>
+  <form id="request-topic-form" class="space-y-2">
+    <input
+      type="text"
+      id="new-topic-name"
+      class="w-full p-2 border"
+      placeholder="Enter topic name…"
+      required
+    />
+    <button type="submit" class="btn btn-secondary">Submit Request</button>
+  </form>
+</section>
+
+<!-- JS after DOM -->
+<script type="module" src="/js/account/preferences.js"></script>
+{{ end }}

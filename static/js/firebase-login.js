@@ -1,68 +1,86 @@
-// static/js/firebase-login.js
-console.log("📦 firebase-login.js loaded");
+/* static/js/firebase-login.js – Firebase v9 + Firebase-UI (UMD) */
+console.log("📦 firebase-login.js loaded (v9)");
 
-if (typeof firebase === "undefined" || typeof firebaseui === "undefined") {
-  console.error("❌ Firebase or FirebaseUI not loaded.");
-} else {
-  const auth = firebase.auth();
-  window.ui = firebaseui.auth.AuthUI.getInstance() || new firebaseui.auth.AuthUI(auth);
+import {
+  getApps,
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  PhoneAuthProvider
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
-  window.uiConfig = {
-    signInOptions: [
-      {
-        provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-        requireDisplayName: true,
-      },
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-    ],
-    signInFlow: "popup",
-    tosUrl: "/manifesto/",
-    privacyPolicyUrl: "/about/",
-    callbacks: {
-      async signInSuccessWithAuthResult(authResult) {
-        const user = authResult.user;
+/* ------------------------------------------------------------------ */
+/*  Everything lives inside an IIFE so we can `return` early safely   */
+/* ------------------------------------------------------------------ */
+(function initLoginUI() {
+  /* 1️⃣  Ensure a default app exists (user may arrive before firebase-config) */
+  if (!getApps().length) {
+    const cfgScript = document.getElementById("__fbCfg");
+    if (cfgScript) {
+      try {
+        initializeApp(JSON.parse(cfgScript.textContent));
+        console.log("✅ Firebase app initialised manually by login script");
+      } catch (err) {
+        console.error("❌ Failed to init Firebase app:", err);
+        return;                           // abort – no app, no UI
+      }
+    } else {
+      console.warn("⚠️  Firebase config not found – aborting login UI");
+      return;                             // abort – no config
+    }
+  }
 
-        console.log("✅ Login success:", {
-          uid: user?.uid,
-          email: user?.email,
-          phone: user?.phoneNumber,
-          verified: user?.emailVerified,
-        });
+  /* 2️⃣  Require the UMD build of Firebase-UI (adds `window.firebaseui`) */
+  if (!window.firebaseui) {
+    console.error(
+      "❌ window.firebaseui missing – " +
+      "https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js " +
+      "must load BEFORE this module."
+    );
+    return;                               // abort – widget can’t run
+  }
 
-        if (user && (user.emailVerified || user.phoneNumber)) {
-          const redirect =
-            new URLSearchParams(window.location.search).get("redirect") ||
-            "/account/";
-          console.log("🔁 Redirecting to:", redirect);
-          window.location.href = redirect;
-        } else {
-          alert("Please verify your email before continuing.");
-          await firebase.auth().signOut(); // Use full path if `auth` is not in scope
-        }
+  /* 3️⃣  Create (or reuse) the Auth-UI instance */
+  const auth = getAuth();
+  const ui =
+    window.firebaseui.auth.AuthUI.getInstance() ||
+    new window.firebaseui.auth.AuthUI(auth);
 
-        return false; // Prevent default FirebaseUI redirect
-      },
-      uiShown() {
-        console.log("🧠 FirebaseUI rendered.");
-      },
-    },
-  };
+  /*  Expose so /login/ template can call `window.firebaseUI.ui.start()`  */
+  window.firebaseUI = { ui };
 
+  /* 4️⃣  Launch the widget only when container is present & user is signed-out */
   document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("firebaseui-auth-container");
+    if (!container) return;
 
-    if (container && !window.__handledLoginUI) {
-      firebase.auth().onAuthStateChanged((user) => {
-        if (!user || !(user.emailVerified || user.phoneNumber)) {
-          console.log("🚀 Launching FirebaseUI");
-          window.__handledLoginUI = true;
-          window.ui.start("#firebaseui-auth-container", window.uiConfig);
-        } else {
-          console.log("🔐 User already logged in — hiding login UI");
-          container.style.display = "none";
-        }
-      });
-    }
+    /* Don’t start twice */
+    if (container.dataset.uiReady) return;
+    container.dataset.uiReady = "true";
+
+    const uiConfig = {
+      signInFlow   : "popup",
+      signInOptions: [
+        { provider: EmailAuthProvider.PROVIDER_ID, requireDisplayName: true },
+        GoogleAuthProvider.PROVIDER_ID,
+        PhoneAuthProvider.PROVIDER_ID
+      ],
+      tosUrl          : "/manifesto/",
+      privacyPolicyUrl: "/about/"
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("🔐 Already signed in – hiding login UI");
+        container.style.display = "none";
+      } else {
+        console.log("🚀 Launching Firebase-UI widget");
+        ui.start("#firebaseui-auth-container", uiConfig);
+      }
+    });
   });
-}
+})();   // <-- IIFE ends here

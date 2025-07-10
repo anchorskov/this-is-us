@@ -1,5 +1,11 @@
 // static/js/admin/dashboard.js
 
+// Import the new modular functions from the Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+
 // Helper function to get DOM elements
 const $ = (selector) => document.querySelector(selector);
 
@@ -40,13 +46,14 @@ async function renderUsersPanel(currentUserRole) {
   panel.innerHTML = `<h2 class="text-xl font-semibold">User Management</h2><p class="mt-2 text-gray-600">Loading users...</p>`;
 
   try {
-    // Get the callable function
-    const listUsers = firebase.functions().httpsCallable('listUsers');
+    // Get a reference to the functions service using the new modular syntax
+    const functions = getFunctions();
+    const listUsers = httpsCallable(functions, 'listUsers');
+    
     const result = await listUsers();
     const users = result.data.users;
 
     let tableRows = users.map(user => {
-      // Super Admins see a dropdown to change roles
       const roleSelector = currentUserRole === 100
         ? `
           <select data-uid="${user.uid}" class="role-selector border border-gray-300 rounded p-1">
@@ -57,7 +64,7 @@ async function renderUsersPanel(currentUserRole) {
             <option value="0" ${user.roleLevel === 0 ? 'selected' : ''}>User</option>
           </select>
         `
-        : ROLES[user.roleLevel] || 'User'; // Other admins just see the role name
+        : ROLES[user.roleLevel] || 'User';
 
       return `
         <tr>
@@ -88,7 +95,6 @@ async function renderUsersPanel(currentUserRole) {
       <p id="roles-status" class="mt-2 text-sm"></p>
     `;
 
-    // Add event listener for the save button if it exists
     $('#save-roles-btn')?.addEventListener('click', handleSaveRoles);
 
   } catch (error) {
@@ -102,14 +108,14 @@ async function handleSaveRoles() {
     statusEl.textContent = 'Saving...';
     statusEl.classList.remove('text-red-500', 'text-green-500');
 
-    const setUserRole = firebase.functions().httpsCallable('setUserRole');
+    const functions = getFunctions();
+    const setUserRole = httpsCallable(functions, 'setUserRole');
     const roleSelectors = document.querySelectorAll('.role-selector');
     const promises = [];
 
     roleSelectors.forEach(selector => {
         const userId = selector.dataset.uid;
         const newRoleLevel = parseInt(selector.value, 10);
-        // Here you could add logic to check if the role actually changed before calling the function
         promises.push(setUserRole({ userId, newRoleLevel }));
     });
 
@@ -124,10 +130,6 @@ async function handleSaveRoles() {
     }
 }
 
-
-/**
- * Hides all main panels and then shows the specified one.
- */
 function showPanel(panelId) {
   $('#admin-loading').classList.add('hidden');
   $('#admin-access-denied').classList.add('hidden');
@@ -141,10 +143,6 @@ function showPanel(panelId) {
     $('#admin-dashboard-ui').classList.remove('hidden');
   }
 }
-
-/**
- * Builds the sidebar navigation links based on the user's role level.
- */
 function buildSidebar(roleLevel) {
   const sidebarList = $('#admin-sidebar ul');
   if (!sidebarList) return;
@@ -168,10 +166,6 @@ function buildSidebar(roleLevel) {
     sidebarList.appendChild(li);
   });
 }
-
-/**
- * Simple hash-based router to show content based on the URL fragment.
- */
 function handleRouting(currentUserRole) {
     const hash = window.location.hash || '#';
     console.log(`Routing to: ${hash}`);
@@ -191,11 +185,6 @@ function handleRouting(currentUserRole) {
             break;
     }
 }
-
-
-/**
- * Initializes the admin dashboard.
- */
 async function initializeDashboard(user) {
   try {
     const idTokenResult = await user.getIdTokenResult();
@@ -204,6 +193,7 @@ async function initializeDashboard(user) {
 
     console.log(`Admin Dashboard: User role level is ${userRole}`);
 
+    const MIN_ACCESS_LEVEL = 30;
     if (userRole < MIN_ACCESS_LEVEL) {
       showPanel('denied');
       setTimeout(() => { window.location.href = '/'; }, 3000);
@@ -213,10 +203,9 @@ async function initializeDashboard(user) {
     buildSidebar(userRole);
     showPanel('ui');
 
-    // Pass the current user's role to the router
     const routerWithRole = () => handleRouting(userRole);
     window.addEventListener('hashchange', routerWithRole);
-    routerWithRole(); // Initial call
+    routerWithRole();
 
   } catch (error) {
     console.error("Error initializing admin dashboard:", error);
@@ -226,13 +215,20 @@ async function initializeDashboard(user) {
 
 // Main execution starts here
 document.addEventListener('DOMContentLoaded', () => {
-  // This needs to be configured to use the emulators during development
+  // This assumes another script (firebase-config.js) has placed the config
+  // object on the window. We call initializeApp safely here.
+  const app = initializeApp(window.firebaseConfig);
+  const functions = getFunctions(app);
+  const auth = getAuth(app);
+
   if (window.location.hostname === 'localhost') {
-      console.log('Using local function emulators');
-      firebase.functions().useEmulator('localhost', 5001);
+      console.log('Using local function emulators on port 5001');
+      // Use '127.0.0.1' instead of 'localhost' to avoid potential IPv6 issues
+      connectFunctionsEmulator(functions, '127.0.0.1', 5001);
   }
 
-  firebase.auth().onAuthStateChanged(user => {
+  // Use the new modular onAuthStateChanged listener
+  onAuthStateChanged(auth, user => {
     if (user) {
       initializeDashboard(user);
     } else {

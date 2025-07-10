@@ -15,8 +15,22 @@
 {{ end }}
 
 {{ define "main" }}
-<article class="prose mx-auto">
-  <script>console.log("👉 using custom events/section.html")</script>
+ <!-- 🚧 construction banner (unchanged) -->
+  <section class="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6
+                   max-w-3xl mx-auto my-12 rounded-lg shadow-md">
+    <h1 class="text-3xl font-bold mb-2">🚧 Page Under Construction</h1>
+    <p class="text-lg mb-4">
+      This feature is working so USE it! Select the pin on the map and then details to view the event.
+      Send me your feedback, ideas, and any issues you find. 
+    </p>
+    <a
+      href="https://u-pac.org/volunteer"
+      class="inline-block px-6 py-3 bg-red-600 text-white font-semibold rounded
+             hover:bg-red-700 transition"
+    >
+      🙋‍♂️ Volunteers Wanted – Join Us
+    </a>
+  </section>
 
   <!-- Render markdown content from _index.md -->
   {{ .Content }}

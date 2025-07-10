@@ -1,44 +1,63 @@
-console.log("🔥 Firebase UI config loaded");
+/* firebase-ui-config.js – Firebase v9 */
+console.log("🔥 Firebase UI config loaded (v9)");
 
-if (typeof firebase === "undefined") {
-  console.error("❌ Firebase not initialized. Aborting uiConfig setup.");
+import {
+  getAuth,
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  PhoneAuthProvider
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+/* ------------------------------------------------------------------ */
+/* Wait until the UMD build is present. If it's missing, just warn.   */
+/* ------------------------------------------------------------------ */
+let ui = null;
+let uiConfig = null;
+
+if (!window.firebaseui) {
+  console.error(
+    "❌ firebaseui global missing – ensure " +
+      "https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js " +
+      "is loaded before this module."
+  );
 } else {
-  const auth = firebase.auth();
+  const auth = getAuth();
 
-  window.uiConfig = {
-    signInOptions: [
-      { provider: firebase.auth.EmailAuthProvider.PROVIDER_ID, requireDisplayName: true },
-      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-      firebase.auth.PhoneAuthProvider.PROVIDER_ID
-    ],
+  ui =
+    window.firebaseui.auth.AuthUI.getInstance() ||
+    new window.firebaseui.auth.AuthUI(auth);
+
+  uiConfig = {
     signInFlow: "popup",
+    signInOptions: [
+      { provider: EmailAuthProvider.PROVIDER_ID, requireDisplayName: true },
+      GoogleAuthProvider.PROVIDER_ID,
+      PhoneAuthProvider.PROVIDER_ID
+    ],
     tosUrl: "/manifesto/",
     privacyPolicyUrl: "/about/",
     callbacks: {
-      signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-        const user = authResult.user;
-        window.currentUser = user;
+      signInSuccessWithAuthResult({ user }) {
         console.log("✅ FirebaseUI login complete:", {
           uid: user?.uid,
           email: user?.email,
           phone: user?.phoneNumber,
-          verified: user?.emailVerified,
+          verified: user?.emailVerified
         });
-
-        const params = new URLSearchParams(window.location.search);
-        const target = params.get("redirect") || "/events/create/";
-        console.log("🚀 Redirecting user to:", target);
-
-        // Delay to ensure auth state is synced
-        setTimeout(() => {
-          window.location.href = target;
-        }, 500);
-
-        return false; // Prevent auto-redirect
+        const target =
+          new URLSearchParams(location.search).get("redirect") || "/account/";
+        setTimeout(() => (location.href = target), 300);
+        return false; // prevent auto-redirect
       },
-      uiShown: function () {
+      uiShown() {
         console.log("🧩 FirebaseUI shown");
       }
     }
   };
+
+  /* Expose globally so /login/ page can call ui.start() */
+  window.firebaseUI = { ui, uiConfig };
 }
+
+/* Top-level export (ES-module compliant) */
+export { uiConfig };

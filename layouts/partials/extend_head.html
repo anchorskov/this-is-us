@@ -19,37 +19,32 @@
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 
 <!-- ░░ CONDITIONAL MAP / TIMELINE STYLES ░░ -->
-{{/* 
-  Determine whether to load Leaflet CSS (for maps) and Timeline CSS based on the current page context 
-*/}}
-{{ $needsMap := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
-{{ $filePath := "" }}
+{{/* decide whether Leaflet & Timeline CSS are needed */}}
+{{ $needsMap      := or (eq .Section "events") (eq .Section "townhall") (in .Params.tags "leaflet") }}
+{{ $filePath      := "" }}
 {{ with .File }}{{ $filePath = .Path }}{{ end }}
 {{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
-  <!-- ✅ Leaflet CSS injected -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin>
   <script>console.log("🗺️ Leaflet CSS included for map support.");</script>
 
   {{ if eq .Section "townhall" }}
-    <!-- ✅ MarkerCluster CSS for townhall maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
     <script>console.log("🔵 MarkerCluster styles added.");</script>
   {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
-  <!-- 📅 Timeline CSS -->
-  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <link rel="stylesheet"
+        href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
   <script>console.log("⏱️ Timeline styles included.");</script>
-{{ end }}
-
-
-{{ if and $needsTimeline (not hugo.IsServer) }}
-  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
 {{ end }}
 
 <!-- ░░ ICONS ░░ -->
@@ -58,7 +53,9 @@
 <!-- ░░ MAP/TIMELINE JS ░░ -->
 {{ if $needsMap }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin defer></script>
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin
+          defer></script>
   {{ if eq .Section "townhall" }}
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
@@ -77,5 +74,5 @@
   );
 </script>
 
-<!-- ░░ AUTH GUARD ░░ -->
-<script src="{{ "js/firebase-auth-guard.js" | relURL }}" defer></script>
+<!-- ░░ AUTH GUARD – disabled until Firebase finishes loading ░░ -->
+<!-- <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> -->

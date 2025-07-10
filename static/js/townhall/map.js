@@ -1,38 +1,49 @@
 /* ──────────────────────────────────────────────────────────────
    static/js/townhall/map.js – controller for /townhall/map/
+   Firebase v9 + Leaflet 1.9.4
    ──────────────────────────────────────────────────────────── */
+console.log("🧭 townhall/map.js loaded (v9)");
 
-console.log("🧭 townhall/map.js loaded");
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  onSnapshot,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
+/* 0 ▸ pre-flight ------------------------------------------------------- */
 document.addEventListener("DOMContentLoaded", async () => {
-
-  /* helper -------------------------------------------------- */
-  const debounce = (fn, ms = 400) => {
-    let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
-  };
-
-  /* 0 • pre-flight ----------------------------------------- */
   const mapEl = document.getElementById("townhall-map");
-  if (!mapEl)             { console.warn("🔕 #townhall-map missing"); return; }
-  if (!window.L)          { console.error("❌ Leaflet not loaded");   return; }
-  if (!firebase?.firestore){console.error("❌ Firebase not ready");  return; }
+  if (!mapEl)            return console.warn("🔕 #townhall-map missing");
+  if (typeof L === "undefined")
+    return console.error("❌ Leaflet not loaded");
 
-  /* 1 • map ------------------------------------------------- */
-  const map = L.map(mapEl, { scrollWheelZoom: false })
-               .setView([42.8666, -106.3131], 6);
+  /* 1 ▸ Leaflet map --------------------------------------------------- */
+  const map = L.map(mapEl, { scrollWheelZoom: false }).setView(
+    [42.8666, -106.3131],
+    6
+  );
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18,
     attribution: "&copy; OpenStreetMap contributors"
   }).addTo(map);
 
-  /* 2 • cluster layer (load plugin once on-demand) ---------- */
+  /* cluster plugin (lazy-load) --------------------------------------- */
   let markerLayer = map;
   if (!window.L.markerClusterGroup) {
-    await new Promise((res, rej) => {
+    await new Promise((res) => {
       const s = document.createElement("script");
-      s.src = "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js";
-      s.onload = () => res();
-      s.onerror = () => { console.warn("ℹ️ cluster plugin failed"); res(); };
+      s.src =
+        "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js";
+      s.onload = res;
+      s.onerror = () => {
+        console.warn("ℹ️  cluster plugin failed, continuing without it"); res();
+      };
       document.head.appendChild(s);
     });
   }
@@ -41,65 +52,73 @@ document.addEventListener("DOMContentLoaded", async () => {
     map.addLayer(markerLayer);
   }
 
-  /* 3 • realtime Firestore stream --------------------------- */
-  const db     = firebase.firestore();
+  /* 2 ▸ Firestore realtime stream ----------------------------------- */
+  const db   = getFirestore();
+  const auth = getAuth();
   const bounds = L.latLngBounds([]);
 
-  db.collection("townhall_threads").onSnapshot(
-    snap => {
-      markerLayer.clearLayers?.();  // works for cluster & plain map
+  onSnapshot(collection(db, "townhall_threads"), (snap) => {
+    markerLayer.clearLayers?.();
+    bounds.clear();
 
-      snap.forEach(doc => {
-        const { lat, lng } = doc.data().coordinates || {};
-        if (typeof lat !== "number" || typeof lng !== "number") return;
+    snap.forEach((d) => {
+      const { lat, lng } = d.data().coordinates || {};
+      if (typeof lat !== "number" || typeof lng !== "number") return;
 
-        const m = L.marker([lat, lng]).bindPopup(`
-          <strong>${doc.data().title || "Untitled"}</strong><br>
-          ${doc.data().location || "Unknown"}<br>
-          <a class="text-blue-600 underline" href="/townhall/thread/?id=${doc.id}">
-            Open ↗
-          </a>
-        `);
-        markerLayer.addLayer ? markerLayer.addLayer(m) : m.addTo(map);
-        bounds.extend(m.getLatLng());
-      });
+      const m = L.marker([lat, lng]).bindPopup(`
+        <strong>${d.data().title || "Untitled"}</strong><br>
+        ${d.data().location || "Unknown"}<br>
+        <a href="/townhall/thread/${d.id}/" class="text-blue-600 underline">Open ↗</a>
+      `);
 
-      if (bounds.isValid()) map.fitBounds(bounds.pad(0.25));
-    },
-    err => console.error("🚨 Firestore listener error:", err)
-  );
+      markerLayer.addLayer ? markerLayer.addLayer(m) : m.addTo(map);
+      bounds.extend(m.getLatLng());
+    });
 
-  /* 4 • ZIP quick-zoom ------------------------------------- */
+    if (bounds.isValid()) map.fitBounds(bounds.pad(0.25));
+  }, (err) => console.error("🚨 Firestore listener error:", err));
+
+  /* 3 ▸ ZIP quick-zoom ---------------------------------------------- */
+  const debounce = (fn, ms = 400) => {
+    let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+  };
+
   const zipInput = document.getElementById("zip-input");
   const zoomBtn  = document.getElementById("zoom-btn");
 
   async function zoomToZip(zip) {
     if (!zip) return;
     try {
-      const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
-      if (!res.ok) throw new Error("ZIP not found");
-      const place = (await res.json()).places[0];
+      const r = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (!r.ok) throw new Error("ZIP not found");
+      const place = (await r.json()).places[0];
       map.setView([+place.latitude, +place.longitude], 11);
-    } catch { alert("❌ Couldn’t find that ZIP code"); }
+    } catch {
+      alert("❌ Couldn’t find that ZIP code");
+    }
   }
 
   zoomBtn?.addEventListener("click", () => zoomToZip(zipInput.value.trim()));
-  zipInput?.addEventListener("keyup", debounce(() => {
-    if (zipInput.value.length === 5) zoomToZip(zipInput.value.trim());
-  }));
+  zipInput?.addEventListener(
+    "keyup",
+    debounce(() => {
+      if (zipInput.value.length === 5) zoomToZip(zipInput.value.trim());
+    })
+  );
 
-  /* 5 • auto-zoom to stored home ZIP (non-fatal) ------------ */
-  firebase.auth().onAuthStateChanged(async user => {
+  /* 4 ▸ Auto-zoom to stored home ZIP ------------------------------- */
+  onAuthStateChanged(auth, async (user) => {
     if (!user) return;
     try {
-      const doc = await db.collection("profiles").doc(user.uid).get();
-      const zip = doc.exists && doc.data().homeZip;
+      const snap = await getDoc(doc(db, "profiles", user.uid));
+      const zip  = snap.exists() && snap.data().homeZip;
       if (zip && !zipInput?.value) {
-        zipInput && (zipInput.value = zip);
+        zipInput.value = zip;
         zoomToZip(zip);
         console.log("📍 Auto-zoom to user ZIP", zip);
       }
-    } catch (e) { console.warn("Profile lookup failed:", e.message); }
+    } catch (e) {
+      console.warn("Profile lookup failed:", e.message);
+    }
   });
-
 });
