@@ -1,12 +1,4 @@
-/* worker/src/account/preferences.js – v2025-07-11 r6
-   ---------------------------------------------------
-   GET  /api/preferences
-        • guests  → public topic list (no “interested” flags)
-        • users   → list + “interested” flags
-   POST /api/preferences
-        • save selections  (verified e-mail required)
-        • OR queue a new-topic request
-   --------------------------------------------------- */
+/* worker/src/account/preferences.js – v2025-07-14 patched */
 
 import { verifySession } from "../lib/auth.js";
 import { withCORS }      from "../utils/cors.js";
@@ -19,9 +11,9 @@ const json = (data, status = 200, extra = {}) =>
   });
 
 /* ------------- public entry that always wraps errors ------------- */
-export async function handlePreferencesRequest(request, env) {
+export async function handlePreferencesRequest(c) {
   try {
-    return await _handlePreferences(request, env);   // 🌳 normal flow
+    return await _handlePreferences(c);   // 🌳 normal flow
   } catch (err) {
     console.error("🔥 prefs API crash:", err);
     return json({ error: "server" }, 500);           // still CORS-safe
@@ -29,7 +21,8 @@ export async function handlePreferencesRequest(request, env) {
 }
 
 /* ------------------------- main logic ---------------------------- */
-async function _handlePreferences(request, env) {
+async function _handlePreferences(c) {
+  const { request, env } = c;
   console.log(
     `🛂 ${request.method} /api/preferences | has-auth-hdr:`,
     !!request.headers.get("Authorization")
@@ -87,7 +80,7 @@ async function userTopics(uid, db) {
       LEFT JOIN user_topic_prefs p ON t.id = p.topic_id AND p.user_id = ?
      ORDER BY t.name`;
   const { results } = await db.prepare(q).bind(uid).all();
-  console.log(`📤 topics for ${uid} →`, results.length, "rows");   // ← fixed line
+  console.log(`📤 topics for ${uid} →`, results.length, "rows");
   const firstTime = results.every(r => r.interested === 0);
   return json({ topics: results, firstTime });
 }
