@@ -10,7 +10,7 @@ account_id         = "8bfd3f60fbdcc89183e9e312fb03e86e"
 binding       = "EVENTS_DB"
 database_name = "events_db_local"
 database_id   = "1624450c-f228-4802-8a76-9c65f29295fa"
-migrations_dir = "worker/migrations"   
+migrations_dir = "migrations"   
 
 [[r2_buckets]]
 binding             = "EVENT_PDFS"

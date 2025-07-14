@@ -1,16 +1,18 @@
-/**
- *  worker/src/routes/preferences.js
- *  Thin wrapper that plugs the preferences handler into an itty-router instance.
- */
+/* worker/src/routes/preferences.js – mounts /api/preferences endpoints */
+
 import { handlePreferencesRequest } from "../account/preferences.js";
+import { handleCORSPreflight }      from "../utils/cors.js";
 
 /**
  * register(router)
- *   Adds  GET /api/preferences
- *        POST /api/preferences
+ *   Adds:
+ *     • OPTIONS /api/preferences  (CORS pre-flight)
+ *     • GET     /api/preferences
+ *     • POST    /api/preferences
  */
 export function register(router) {
   router
-    .get ("/api/preferences", handlePreferencesRequest)
-    .post("/api/preferences", handlePreferencesRequest);
+    .options("/api/preferences", handleCORSPreflight)
+    .get    ("/api/preferences", handlePreferencesRequest)
+    .post   ("/api/preferences", handlePreferencesRequest);
 }

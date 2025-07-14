@@ -33,8 +33,6 @@
 })();
 </script>
 
-
-
 {{/* Quick helpers */}}
 {{- $rp         := .RelPermalink -}}
 {{- $isTownHall := strings.HasPrefix $rp "/townhall" -}}
@@ -58,3 +56,6 @@
           ✓ firebase-session.js  ✓ firebase-ui-config.js
         Keeping it single-source avoids the “Firebase is already
         defined in the global scope” warning. */}}
+{{ if in .RelPermalink "/account" }}
+  <script type="module" src="/js/account.js"></script>
+{{ end }}

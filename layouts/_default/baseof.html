@@ -1,48 +1,59 @@
 <!DOCTYPE html>
-{{/* ------------  BASEOF  ------------- */}}
+{{/* ------------------------------------------------------------
+     BASEOF — shared frame for every page
+     • Guarantees one head, one firebase-init, one header/footer
+     • Page-specific modules go in the “scripts” block (last)
+   ------------------------------------------------------------ */}}
+
 <html
-  {{/* language attr: multilingual-safe */}}
-  {{ with .Site.Language }}lang="{{ .Lang }}" dir="{{ .LanguageDirection | default "auto" }}"
-  {{ else }}lang="{{ .Site.LanguageCode | default "en" }}"{{ end }}
+  {{ with .Site.Language }}
+    lang="{{ .Lang }}" dir="{{ .LanguageDirection | default "auto" }}"
+  {{ else }}
+    lang="{{ .Site.LanguageCode | default "en" }}"
+  {{ end }}
 >
 <head>
-    {{/*
-      The conditional logic has been removed.
-      This now loads the head.html partial on ALL pages to ensure
-      a consistent header and global script/style loading.
-    */}}
-    {{ partial "head.html" . }}
+  {{/* 1️⃣ Common <head> (meta, favicons, etc.) */}}
+  {{ partial "head.html" . }}
 
-    {{/*  ──➤ CUSTOM & UNO CSS  */}}
-    {{ partial "head-styles.html" . }}
+  {{/* 2️⃣ Global CSS pipelines (UNO + overrides) */}}
+  {{ partial "head-styles.html" . }}
 
-    {{/* The block and firebase-init partial are needed globally. */}}
-    {{ block "header" . }}{{ end }}
-    {{ partial "firebase-init.html" . }}
+  {{/* 3️⃣ Optional per-layout “header” block (rare) */}}
+  {{ block "header" . }}{{ end }}
+
+  {{/* 4️⃣ One-time Firebase boot-strap — MUST be in <head> so the
+         compat + v9 modules are ready before any body script. */}}
+  {{ partial "firebase-init.html" . }}
 </head>
 
 <body
   id="top"
   class="
-    {{/* add .list class on list/section/search/archives */}}
     {{ if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) }}list{{ end }}
-    {{/* dark-theme toggle only if param exists & == "dark" */}}
     {{ with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end }}
   "
 >
-  {{/* The header is now loaded on all pages for consistency. */}}
+  {{/* 5️⃣ Site-wide navigation (cached for perf) */}}
   {{ partialCached "header.html" . .Page }}
-  {{ partial "floating-auth.html" . }} {{/* ⚠ Remove firebase-init.html from inside this partial */}}
+
+  {{/* 6️⃣ Floating auth button / overlay (no duplicate Firebase here) */}}
+  {{ partial "floating-auth.html" . }}
 
   <main class="main">
     {{ block "main" . }}{{ end }}
   </main>
 
-  {{/* The footer is now loaded on all pages for consistency. */}}
+  {{/* 7️⃣ Footer (cached) */}}
   {{ partialCached "footer.html" . .Layout .Kind (.Param "hideFooter") (.Param "ShowCodeCopyButtons") }}
 
+  {{/* 8️⃣ Global helper scripts (API root switcher, town-hall bundles) */}}
   {{ partial "site-scripts.html" . }}
 
+  {{/* 9️⃣ Page-specific ES-module bundles —
+         e.g. <script type="module" src="/js/account.js"></script>
+         This block *must* stay AFTER site-scripts so module imports
+         can rely on globals (window.EVENTS_API_URL, etc.). */}}
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>

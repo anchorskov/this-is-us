@@ -91,3 +91,6 @@ assets/css/
 
 # Hugo themes (don’t sync or commit)
 themes/
+
+# internal documentation
+documentation/*.pdf

@@ -11,17 +11,25 @@ import { setupMapLocator   } from './map-locator.js';
 import { initAddressFields } from './address-fields.js';
 import { getUserZip        } from '../../lib/firestore-profile.js';
 import   geocode             from '../../lib/geocode.js';
-// The renderForm function is no longer called from this file.
+
+import {
+  getFirestore
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import {
+  getAuth
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 /* Run **only after** the DOM is fully parsed so #map exists  */
 document.addEventListener('DOMContentLoaded', async () => {
   /* 1️⃣  Wait for Firebase Auth to settle */
-  await firebase.auth().authStateReady;
-  const user = firebase.auth().currentUser;
+  const auth = getAuth();
+  await auth.authStateReady;
+  const user = auth.currentUser;
   const uid  = user?.uid ?? null;
-  const db   = firebase.firestore();
 
-  /* 2️⃣  If the user has a saved ZIP → centre the map there   */
+  const db = getFirestore();
+
+  /* 2️⃣  If the user has a saved ZIP → centre the map there */
   const savedZip = await getUserZip(db, uid);
   if (savedZip) {
     try {
@@ -35,10 +43,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  /* 3️⃣  ZIP → city/state auto-fill                          */
+  /* 3️⃣  ZIP → city/state auto-fill */
   initAddressFields();
 
-  /* 4️⃣  Build the map & locator UI                            */
+  /* 4️⃣  Build the map & locator UI */
   setupMapLocator({
     mapId   : 'map',
     formId  : 'addressForm',
@@ -47,5 +55,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   /* 5️⃣  The event-details form is now managed by form-flow.js based on user interaction. */
-  // renderForm(user); // This line was removed to prevent re-initializing the map.
 });

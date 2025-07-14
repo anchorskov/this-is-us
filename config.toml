@@ -64,12 +64,6 @@ buildFuture   = false
   weight     = 1
 
 [[menu.main]]
-  identifier = "rino"
-  name       = "🦏 Red Rhino"
-  url        = "/rino/"
-  weight     = 1.5
-
-[[menu.main]]
   identifier = "about"
   name       = "Our Why"
   url        = "/about/"

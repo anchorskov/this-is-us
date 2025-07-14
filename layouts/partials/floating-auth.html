@@ -53,7 +53,11 @@
               window.ui.start("#firebaseui-auth-container", window.uiConfig);
             } else {
               console.warn("⚠️ No FirebaseUI found → redirect fallback");
-              location.href = `/login/?redirect=${encodeURIComponent(location.pathname)}`;
+              if (!window.location.pathname.startsWith("/login")) {
+                sessionStorage.setItem("redirectAfterLogin", location.pathname);
+                location.href = `/login/?redirect=${encodeURIComponent(location.pathname)}`;
+              }
+              return;
             }
           };
         }

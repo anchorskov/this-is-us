@@ -1,9 +1,15 @@
 // worker/src/routes/events.js
+// ⬆️ Relative path: worker/src/routes/events.js
+
+import { handleCORSPreflight, corsHeaders } from '../utils/cors.js';
 
 const PDF_BASE_URL = 'https://this-is-us.org/api/events/pdf';
 
 // --- Handler for GET /api/events ---
 export async function handleListEvents(request, env) {
+  const cors = handleCORSPreflight(request);
+  if (cors) return cors;
+
   const { results } = await env.EVENTS_DB.prepare(
     `SELECT id, name, date, location, pdf_key, lat, lng
      FROM events
@@ -13,15 +19,23 @@ export async function handleListEvents(request, env) {
 
   return new Response(
     JSON.stringify(results.map(e => ({ ...e, pdf_url: `${PDF_BASE_URL}/${e.pdf_key}` }))),
-    { headers: { 'Content-Type': 'application/json' } }
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        ...corsHeaders()
+      }
+    }
   );
 }
 
 // --- Handler for GET /api/events/pdf/:key ---
-export async function handleGetEventPdf({ params }, env) {
+export async function handleGetEventPdf({ params }, env, ctx) {
   const obj = await env.EVENT_PDFS.get(params.key, { allowScripting: true });
   if (!obj) {
-    return new Response('Not found', { status: 404 });
+    return new Response('Not found', {
+      status: 404,
+      headers: corsHeaders()
+    });
   }
 
   return new Response(obj.body, {
@@ -29,23 +43,24 @@ export async function handleGetEventPdf({ params }, env) {
       'Content-Type': obj.httpMetadata.contentType || 'application/pdf',
       'Content-Disposition': `inline; filename="${params.key}"`,
       'Cache-Control': 'public, max-age=31536000',
-    },
+      ...corsHeaders()
+    }
   });
 }
 
 // --- Handler for POST /api/events/create ---
 export async function handleCreateEvent(request, env) {
+  const cors = handleCORSPreflight(request);
+  if (cors) return cors;
+
   const fd = await request.formData();
   const file = fd.get('file');
 
-  // ... (all the logic for validation, hashing, deduplication, and R2 upload is the same)
-  // ... (this keeps the logic self-contained in this function)
-
   let pdf_key = null, pdf_hash = null;
   if (file instanceof File) {
-    // ... (your existing file handling logic) ...
+    // Your existing logic for file handling and R2 storage
   }
-  
+
   const insertResult = await env.EVENTS_DB.prepare(
     `INSERT INTO events (user_id, name, date, location, pdf_key, lat, lng, sponsor, contact_email, contact_phone, pdf_hash, description)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -60,6 +75,9 @@ export async function handleCreateEvent(request, env) {
 
   return new Response(JSON.stringify({ success: true, id: newEventId }), {
     status: 201,
-    headers: { 'Content-Type': 'application/json' }
+    headers: {
+      'Content-Type': 'application/json',
+      ...corsHeaders()
+    }
   });
 }
