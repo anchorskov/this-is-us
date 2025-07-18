@@ -67,37 +67,51 @@ import {
       privacyPolicyUrl: "/about/"
     };
 
-    // Extract ?redirect=/account/ (or fallback)
-    const params = new URLSearchParams(window.location.search);
-    const stored = sessionStorage.getItem("redirectAfterLogin");
-    const redirect = params.get("redirect") || stored || document.referrer || "/";
+// 🔍 Extract ?redirect=/some/path  (ignore document.referrer)
+const params   = new URLSearchParams(window.location.search);
+const stored   = sessionStorage.getItem("redirectAfterLogin");
+const redirect = params.get("redirect") || stored || null;   // null ⇒ stay put
 
-    // 5️⃣ If we came back from a redirect, act on it
-    try {
-      const result = await getRedirectResult(auth);
-      if (result?.user) {
-        console.log("✅ Redirect login success:", result.user.email);
-        container.style.display = "none";
-        console.log("➡️ Redirecting to:", redirect);
-        window.location.href = redirect;
-        sessionStorage.removeItem("redirectAfterLogin");
-        return;
-      }
-    } catch (err) {
-      console.warn("⚠️ Redirect result error:", err);
+// 5️⃣ If we came back from a redirect, act on it
+try {
+  const result = await getRedirectResult(auth);
+  if (result?.user) {
+    console.log("✅ Redirect login success:", result.user.email);
+    container.style.display = "none";
+
+    if (redirect) {
+      console.log("➡️ Redirecting to:", redirect);
+      window.location.href = redirect;
+    } else {
+      console.log("✅ No redirect param – staying on", location.pathname);
     }
 
-    // 6️⃣ Check if already signed in and redirect
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("🔐 Already signed in – hiding login UI");
-        container.style.display = "none";
-        console.log("➡️ Redirecting to:", redirect);
-        window.location.href = redirect;
-      } else {
-        console.log("🚀 Launching Firebase-UI widget");
-        ui.start("#firebaseui-auth-container", uiConfig);
-      }
-    });
-  });
-})();
+    sessionStorage.removeItem("redirectAfterLogin"); // 🧹 clear once used
+    return;
+  }
+} catch (err) {
+  console.warn("⚠️ Redirect result error:", err);
+}
+
+// 6️⃣ Check if already signed in and redirect (only when explicit)
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("🔐 Already signed in – hiding login UI");
+    container.style.display = "none";
+    sessionStorage.removeItem("redirectAfterLogin");
+
+    if (redirect) {
+      console.log("➡️ Redirecting to:", redirect);
+      window.location.href = redirect;
+    } else {
+      console.log("✅ Signed in, no redirect param – staying on", location.pathname);
+    }
+  } else {
+    console.log("🚀 Launching Firebase-UI widget");
+    ui.start("#firebaseui-auth-container", uiConfig);
+  }
+});   // <- closes onAuthStateChanged callback
+
+});   // <- closes DOMContentLoaded handler
+})();  // <- closes the IIFE
+

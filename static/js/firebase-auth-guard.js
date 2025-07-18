@@ -36,7 +36,9 @@ onAuthStateChanged(getAuth(), (user) => {
     redirected = true;
     console.log("🔐 redirecting anonymous user → /login/");
     const q = encodeURIComponent(location.pathname + location.search);
-    sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+    if (!location.pathname.startsWith("/account")) {
+      sessionStorage.setItem("redirectAfterLogin", location.pathname);
+    }
     if (!window.location.pathname.startsWith("/login")) {
       location.href = `/login/?redirect=${q}`;
     }
