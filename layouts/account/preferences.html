@@ -1,36 +1,67 @@
+{{/* layouts/account/preferences.html */}}
 {{ define "main" }}
 <section class="container p-6">
-  <h1 class="text-2xl font-bold mb-4">Topics You Care About</h1>
-  <!-- DEBUG banner -->
-  <div style="background:#ffdddd;border:2px solid red;padding:.5rem;margin-bottom:1rem;">
-    <strong>DEBUG:</strong> layouts/account/topic-requests.html template loaded
-  </div>
-
-  <p class="mb-4 text-sm">
-    Only verified users can edit preferences. Want something added? Submit a new topic below.
+  <h1 class="text-2xl font-bold mb-4">🎯 Your Hot-Button Topics</h1>
+  <p class="mb-6 text-gray-600">
+    Select the topics you care most about to personalize your feed and receive relevant updates.
   </p>
 
-  <!-- preferences check-box list will be injected here -->
+  <!-- Intro banner (first-time users only) -->
+  <div id="intro-banner"
+       class="hidden bg-blue-100 border-l-4 border-blue-400 p-4 rounded mb-4">
+    <p class="font-semibold">First time here?</p>
+    <p>Select any topics that interest you, then click <em>Save Preferences</em>.</p>
+  </div>
+
+  <!-- Preferences Form -->
   <form id="preferences-form" class="mb-8 space-y-2">
-    <!-- JS injects <label><input …></label> rows -->
-    <button type="submit" class="btn btn-primary mt-4">
-      Save Preferences
-    </button>
+    <!-- Spinner and Loading Message (Hidden by default) -->
+    <div id="prefs-loading" class="hidden flex items-center justify-center mt-4 text-gray-600">
+      <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span id="prefs-loading-message">Loading topics...</span>
+    </div>
+
+    <!-- Topics will be rendered here by JavaScript -->
+    <!-- Initial content will be overwritten by JS -->
+
+    <!-- Feedback Message Area -->
+    <div id="prefs-feedback" class="mt-4 text-sm text-center hidden"></div>
+
+    <!-- Save Button -->
+    <div class="mt-6">
+      <button type="submit" id="save-prefs-btn"
+              class="bg-green-600 text-white px-4 py-2 rounded
+                     hover:bg-green-700 transition">
+        Save My Preferences
+      </button>
+    </div>
   </form>
 
-  <h2 class="text-xl font-semibold mb-2">Request a New Topic</h2>
-  <form id="request-topic-form" class="space-y-2">
-    <input
-      type="text"
-      id="new-topic-name"
-      class="w-full p-2 border"
-      placeholder="Enter topic name…"
-      required
-    />
-    <button type="submit" class="btn btn-secondary">Submit Request</button>
-  </form>
+  <!-- Request New Topic Form -->
+  <div class="mt-12 pt-6 border-t border-gray-200">
+    <h2 class="text-xl font-bold mb-3">💡 Request a New Topic</h2>
+    <p class="mb-4 text-gray-600">
+      Can't find a topic you care about? Suggest a new one for review.
+    </p>
+    <form id="request-topic-form" class="flex flex-col sm:flex-row gap-3">
+      <input type="text" id="new-topic-name"
+             class="flex-1 border p-2 rounded"
+             placeholder="e.g., Local School Board Reform" required />
+      <button type="submit"
+              class="bg-blue-600 text-white px-4 py-2 rounded
+                     hover:bg-blue-700 transition">
+        Submit Request
+      </button>
+    </form>
+  </div>
 </section>
+{{ end }}
 
-<!-- JS after DOM -->
-<script type="module" src="/js/account/preferences.js"></script>
+{{/* --- scripts block: injected after </main> but before </body> ---- */}}
+{{ define "scripts" }}
+  <!-- Preferences bundle -->
+  <script type="module" src="{{ "js/account/preferences.js" | relURL }}" defer></script>
 {{ end }}

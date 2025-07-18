@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><body>
+<h1>Preferences API Tester</h1>
+<label>UID <input id="uid" placeholder="paste UID"></label>
+<button id="load">Load Topics</button>
+<pre id="out"></pre>
+<script type="module">
+import { apiRoot } from "/js/lib/api-root.js";
+document.getElementById("load").onclick = async () => {
+  const uid = document.getElementById("uid").value.trim();
+  if (!uid) return alert("UID required");
+  const res = await fetch(`${apiRoot()}/preferences`, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ uid })
+  });
+  document.getElementById("out").textContent =
+    res.ok ? await res.text() : `Error ${res.status}`;
+};
+</script>
+</body></html>
