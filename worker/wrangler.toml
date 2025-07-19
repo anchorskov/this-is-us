@@ -11,6 +11,9 @@ FIREBASE_PROJECT_ID = "this-is-us-events"
 FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
 
+[env.production.triggers]
+crons = ["0 1 * * *"]
+
 # ✅ Enable bindings for local development
 [[d1_databases]]
 binding       = "EVENTS_DB"
@@ -27,15 +30,13 @@ preview_bucket_name = "event-pdfs-bucket-preview"
 [env.production]
 main    = "src/index.mjs"
 zone_id = "b298c4645feb8f945eb1a0950eb24323"
-routes  = [
-  "https://this-is-us.org/api/events*",
-  "https://this-is-us.org/api/events/pdf*",
-  "https://this-is-us.org/api/_debug/schema",
-  "https://this-is-us.org/api/sandbox/analyze",
-  "https://this-is-us.org/api/townhall*"
-]
+
+routes  = [ "https://this-is-us.org/api/*" ]
+
 [env.production.vars]
-FIREBASE_PROJECT_ID = "this-is-us-events"
+FIREBASE_PROJECT_ID   = "this-is-us-events"
+FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
 
 [[env.production.d1_databases]]
 binding              = "EVENTS_DB"
@@ -47,6 +48,3 @@ preview_database_id  = "1624450c-f228-4802-8a76-9c65f29295fa"
 binding             = "EVENT_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
-
-[env.production.triggers]
-crons = ["0 1 * * *"]
