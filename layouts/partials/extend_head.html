@@ -72,10 +72,22 @@
     "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
     "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
   );
+
 </script>
 <!-- ░░ API ROOT ░░ -->
 <script>
   window.apiRoot = "{{ if hugo.IsProduction }}/api{{ else }}http://127.0.0.1:8787/api{{ end }}";
+</script>
+
+<!-- ░░ DISABLE LOGS (production only) ░░ -->
+<script src="{{ "js/utils/disable-logs.js" | relURL }}"></script>
+
+<!-- ░░ DEBUG LOG ░░ -->
+<script>
+  console.log(
+    "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
+    "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
+  );
 </script>
 
 <!-- ░░ AUTH GUARD – disabled until Firebase finishes loading ░░ -->
