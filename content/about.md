@@ -10,9 +10,8 @@ Not a brand. Not a campaign. A promise.
 
 A promise that democracy belongs to all of us again—not just the wealthy, the loudest, or the most extreme. Our voices matter. And when we speak, together, we shape the future.
 
-This isn’t about me.  
-It’s about the constituency.  
-Everyone we hope to represent.
+This is about the constituency.  
+Everyone.
 
 ## Why We Dream
 
@@ -30,13 +29,15 @@ Imagine a public platform that is:
 This isn’t just about technology.  
 This is about **restoring the conversation**.
 
+Because the best ideas don’t come from shouting matches or silos—they come from honest conversations, open questions, and the search for common ground. That’s how we restore trust. That’s how we move forward.
+
 ## Who This Is For
 
 - For anyone who’s felt invisible after an election  
 - For teachers trying to explain civic life to their students  
 - For those who’ve written to their representatives—and never heard back  
 - For the public servants who still care about public trust  
-- For the next generation watching how we show up now
+- For the next generation watching how we show up
 
 This isn’t my movement.  
 **This is us.**
@@ -67,6 +68,8 @@ At [this-is-us.org](https://this-is-us.org), we’re building:
 - A public record of public input—tamper-proof, open-source, and accountable  
 - A space where students and citizens alike can shape the future  
 
+We’re creating a space where disagreement doesn’t mean division—and where truth can emerge through respectful exchange.
+
 And we’re building it together: in the open, one contribution at a time.
 
 ## Call to Action: Help Us Build It
@@ -91,3 +94,4 @@ Let’s make this our legacy—honest, accountable, and shared.
 - What would a trustworthy civic tool look like to you?
 - How should we ensure term limits and transparency for all elected offices?
 - What legacy are we creating—for our children and for each other?
+- What conversations are we not having that we need to?
