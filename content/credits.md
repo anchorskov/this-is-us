@@ -13,9 +13,12 @@ We believe in transparency—not just in politics, but in how we build the tools
 
 ## 🤖 AI Assistance
 
-Some portions of this site were written, structured, or refined with the assistance of **ChatGPT**, an artificial intelligence tool developed by OpenAI.
+Some portions of this site were written, structured, or refined with the assistance of modern AI tools:
 
-ChatGPT was used to:
+- **[ChatGPT](https://openai.com/chatgpt)** – Developed by OpenAI  
+- **[Gemini](https://deepmind.google/technologies/gemini/)** – Developed by Google DeepMind  
+
+AI tools were used to:
 - Draft and edit content  
 - Brainstorm civic engagement features  
 - Structure the site’s layout and mission language  
@@ -29,28 +32,36 @@ ChatGPT was used to:
 
 This site is built using a mix of modern frameworks, libraries, and services:
 
-#### Static & Styling
+#### ⚙️ Static Site & Styling
 - [Hugo](https://gohugo.io/) – Static site generator  
-- [Tailwind CSS](https://tailwindcss.com/) – Utility-first CSS framework  
+- [UnoCSS](https://unocss.dev/) – Instant on-demand atomic CSS engine  
 - [Tachyons](https://tachyons.io/) – Functional CSS toolkit  
 - Custom CSS (`css/custom.css`, `css/cr-event.css`)  
+- Theme variables & typography (`assets/css/core/`)  
 
-#### Front-End Interactivity
+#### ✨ Front-End Interactivity
 - [Alpine.js](https://alpinejs.dev/) – Lightweight JavaScript framework  
 - [Leaflet.js](https://leafletjs.com/) – Interactive maps  
 - [Knight Lab Timeline](https://knightlab.com/) – Timeline storytelling widget  
-- [Firebase Authentication & UI](https://firebase.google.com/) – User login flows  
+- Native ES Modules – Modular browser-based JavaScript  
+- [Firebase Authentication & Firestore](https://firebase.google.com/) – User login flows, session tracking, and real-time data storage  
 
-#### Back-End & Hosting
+#### ⚡ Back-End & Hosting
 - [Cloudflare Pages](https://pages.cloudflare.com/) – Hosting platform  
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/) – Serverless functions for API endpoints  
 - Wrangler CLI & Miniflare – Local Worker development & testing  
 - [D1 (SQLite)](https://developers.cloudflare.com/d1/) – Serverless SQL database  
 - [R2 Object Storage](https://developers.cloudflare.com/r2/) – Serverless file (PDF) storage  
 
-#### Source Control & Collaboration
-- [GitHub](https://github.com/) – Source control and issue tracking  
+#### 🔬 Internal Tooling
+- Custom Python scripts – Logic mapping, CSS audits, and testing tools  
 - GitHub Actions – CI/CD pipelines  
+
+#### 🧪 Testing
+- [pytest](https://docs.pytest.org/) – Python testing framework  
+
+#### 🔗 Source Control
+- [GitHub](https://github.com/) – Source control and issue tracking  
 
 ---
 
