@@ -73,6 +73,10 @@
     "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
   );
 </script>
+<!-- ░░ API ROOT ░░ -->
+<script>
+  window.apiRoot = "{{ if hugo.IsProduction }}/api{{ else }}http://127.0.0.1:8787/api{{ end }}";
+</script>
 
 <!-- ░░ AUTH GUARD – disabled until Firebase finishes loading ░░ -->
 <!-- <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> -->

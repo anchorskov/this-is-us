@@ -9,6 +9,6 @@ export async function apiFetch(path, opts = {}) {
     ...(opts.headers || {}),
     ...(id ? { Authorization: `Bearer ${id}` } : {}),
   };
-
-  return fetch(`${apiRoot()}${path}`, opts);      // apiRoot() already global
+const root = typeof apiRoot === "string" ? apiRoot : "/api";
+return fetch(`${apiRoot}${path}`, opts);
 }
