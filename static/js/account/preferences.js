@@ -29,6 +29,7 @@ if (!getApps().length) {
    2) DOM refs & helpers
    ────────────────────────────────────────────────────────── */
 import { apiRoot } from "/js/lib/api-root.js";
+import { apiFetch } from "/js/lib/api.js";
 
 const formEl              = document.getElementById("preferences-form");
 const prefsLoadingSpinner = document.getElementById("prefs-loading");
@@ -104,11 +105,7 @@ onAuthStateChanged(auth, async (user) => {
     showPrefsSpinner("Fetching topics..."); // Show spinner before fetch
 
     /* 🔹 GET topics + user picks */
-    const idToken = await user.getIdToken();
-    const resp = await fetch(`${apiRoot()}/user-topics`, {
-      method: "GET",
-      headers: { "Authorization": `Bearer ${idToken}` },
-    });
+    const resp = await apiFetch("/user-topics", { method: "GET" });
 
     if (!resp.ok) throw new Error(`Back-end returned ${resp.status}`);
 
@@ -159,15 +156,10 @@ topicsContainer.addEventListener("change", async (evt) => {
     const idToken  = await auth.currentUser.getIdToken();
 
     try {
-      await fetch(`${apiRoot()}/user-topics`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`
-        },
-
-        body: JSON.stringify({ topicId, checked: box.checked })
-      });
+       await apiFetch("/user-topics", {
+          method: "POST",
+          body: JSON.stringify({ topicId, checked: box.checked }),
+        });
       showPrefsFeedback("Preference saved!");
     } catch (err) {
       console.error("Toggle failed:", err);
@@ -202,16 +194,10 @@ if (requestTopicForm) {
     }
 
     try {
-      const idToken = await user.getIdToken();
-      const requestResp = await fetch(`${apiRoot()}/topic-requests`, {
+      const requestResp = await apiFetch("/topic-requests", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ newTopic })
+        body: JSON.stringify({ newTopic }),
       });
-
 
       if (!requestResp.ok) throw new Error(`Request failed: ${requestResp.status}`);
       showPrefsFeedback("👍 Topic request submitted for review!");
