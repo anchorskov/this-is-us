@@ -5,6 +5,12 @@ main               = "src/index.mjs"
 compatibility_date = "2025-05-05"
 account_id         = "8bfd3f60fbdcc89183e9e312fb03e86e"
 
+# ─── Firebase project ID (shared dev + prod) ─────────────────────────
+[vars]
+FIREBASE_PROJECT_ID = "this-is-us-events"
+FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
+
 # ✅ Enable bindings for local development
 [[d1_databases]]
 binding       = "EVENTS_DB"
@@ -28,7 +34,8 @@ routes  = [
   "https://this-is-us.org/api/sandbox/analyze",
   "https://this-is-us.org/api/townhall*"
 ]
-
+[env.production.vars]
+FIREBASE_PROJECT_ID = "this-is-us-events"
 
 [[env.production.d1_databases]]
 binding              = "EVENTS_DB"

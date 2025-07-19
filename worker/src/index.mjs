@@ -1,4 +1,5 @@
-// worker/src/index.mjs – central route map (updated 2025‑07‑17)
+// worker/src/index.mjs – central route map (updated 2025‑07‑18)
+
 import { Router } from "itty-router";
 
 /* ─────────── Feature handlers ─────────── */
@@ -22,10 +23,11 @@ import { register as registerSetup } from "./routes/setup.js";
 import { handleSandboxAnalyze } from "./routes/sandbox.js";
 
 // Preferences & Topics
-import { register as registerPreferences } from "./routes/preferences.js"; // This imports the register function
-import { handlePreferencesRequest } from "./account/preferences.js"; // Import the handler directly for GET
+import { register as registerPreferences } from "./routes/preferences.js";
+import { handlePreferencesRequest } from "./account/preferences.js";
 import { handlePublicTopicIndex } from "./routes/topic-index.js";
 import { handleTopicRequests } from "./account/topic-requests.js";
+import userTopics from "./routes/api/user-topics/index.js";   // ⬅ NEW ROUTES
 
 // User sync
 import { handleSyncUser } from "./routes/sync-user.js";
@@ -36,8 +38,9 @@ import { handleCORSPreflight } from "./utils/cors.js";
 /* ─────────── Router setup ─────────── */
 const router = Router();
 
-/* Global CORS pre‑flight */
-router.options("*", handleCORSPreflight);
+/* Global CORS pre-flight */
+router.options("/api/*", handleCORSPreflight);  // pre-flight for every API path
+router.options("*",  (_, __, ___) => new Response(null, { status: 204 }));
 
 /* Events */
 router
@@ -53,39 +56,59 @@ router
 
 /* Sandbox & debug */
 router
-  .get("/api/_debug/schema", () => new Response(JSON.stringify({ ok: true, message: "Debug schema route" }), { headers: { 'Content-Type': 'application/json' } })) // Added JSON response
+  .get(
+    "/api/_debug/schema",
+    () =>
+      new Response(
+        JSON.stringify({ ok: true, message: "Debug schema route" }),
+        { headers: { "Content-Type": "application/json" } }
+      )
+  )
   .post("/api/sandbox/analyze", handleSandboxAnalyze);
 
 /* Preferences & topics */
-// Register preferences routes (OPTIONS and POST)
-registerPreferences(router); 
-// Explicitly add the GET route for preferences, mapping to the same handler
-router.get("/api/preferences", handlePreferencesRequest); // <--- ADDED THIS LINE FOR GET REQUESTS
+registerPreferences(router);                       // OPTIONS + POST
+router.get("/api/preferences", handlePreferencesRequest); // GET
 
-registerSetup(router); // mounts /api/setup/topics
+/* User-topic checkbox routes */
+router
+  .get ("/api/user-topics",  userTopics.GET)  // list user selections
+  .post("/api/user-topics",  userTopics.POST); // toggle selection
+
+registerSetup(router);                             // mounts /api/setup/topics
 router.get("/api/topic-index", handlePublicTopicIndex);
 router
   .get("/api/topic-requests", handleTopicRequests)
   .post("/api/topic-requests", handleTopicRequests)
-  .post("/api/sync-user", handleSyncUser);
+  .post("/api/sync-user",      handleSyncUser);
 
 /* Health & fallback */
-router.get("/api/_health", () => new Response(JSON.stringify({ ok: true })));
+router.all("/api/_health", () =>           // responds to GET, HEAD, OPTIONS, etc.
+  new Response(JSON.stringify({ ok: true }), {
+    headers: { "Content-Type": "application/json" }
+  })
+);
+
 router.all("*", () => new Response("Not found", { status: 404 }));
 
 /* ─────────── Worker export ─────────── */
 export default {
   async fetch(request, env, ctx) {
-    const res = await router.fetch(request, env, ctx);
-    // Ensure all responses from the router have CORS headers
-    // The `json` helper already does this, but this is a fallback for non-json responses or errors.
+    const res     = await router.fetch(request, env, ctx);
     const headers = new Headers(res.headers);
-    headers.set("Access-Control-Allow-Origin", "*");
+
+    /* ensure CORS headers are present on *every* response */
+    if (!headers.has("Access-Control-Allow-Origin"))
+      headers.set("Access-Control-Allow-Origin", "*");
+
     headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    return new Response(res.body, { status: res.status, headers: headers });
+
+    return new Response(res.body, { status: res.status, headers });
   },
+
   async scheduled(controller, env, ctx) {
     /* cron jobs */
   },
 };
+

@@ -24,8 +24,8 @@
       <span id="prefs-loading-message">Loading topics...</span>
     </div>
 
-    <!-- Topics will be rendered here by JavaScript -->
-    <!-- Initial content will be overwritten by JS -->
+    <!-- Hot-button check-boxes injected here -->
+    <div id="topics-container" class="space-y-1"></div>
 
     <!-- Feedback Message Area -->
     <div id="prefs-feedback" class="mt-4 text-sm text-center hidden"></div>
@@ -64,4 +64,6 @@
 {{ define "scripts" }}
   <!-- Preferences bundle -->
   <script type="module" src="{{ "js/account/preferences.js" | relURL }}" defer></script>
+  <!-- Hot-button topic loader -->
+  <script type="module" src="{{ "js/account/user-topics.js" | relURL }}" defer></script>
 {{ end }}

@@ -3,7 +3,7 @@ const json = d => withCORS(JSON.stringify(d), 200, { "Content-Type": "applicatio
 
 export function register(router) {
   router.post("/api/setup/topics", async ({ env }) => {
-    const db = env.EVENTS_DB || env.DB;
+    const db = env.EVENTS_DB || env.EVENTS_DB;
     const { n } = await db.prepare("SELECT COUNT(*) AS n FROM topic_index").first();
     if (n) return json({ ok: true, alreadySeeded: n });
 

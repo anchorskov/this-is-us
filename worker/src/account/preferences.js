@@ -26,7 +26,7 @@ export async function handlePreferencesRequest(request, env, ctx) { // <--- CHAN
 // This function can continue to expect a single object with { request, env, ctx }
 async function _handlePreferences({ request, env, ctx }) { // <--- RETAINED OBJECT DESTRUCTURING
   // D1 binding fallback (dev = events_db_local, prod = EVENTS_DB)
-  const db = env.EVENTS_DB || env.DB || env.events_db_local;
+  const db = env.EVENTS_DB || env.EVENTS_DB || env.events_db_local;
   if (!db) throw new Error("D1 binding not found (EVENTS_DB / DB / events_db_local)");
 
   // quick connectivity check

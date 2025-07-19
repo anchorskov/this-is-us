@@ -1,118 +1,93 @@
 ---
-
-title: "Our Why"
+title: "Our Dream"
 ---
 
-## Why We Exist
+## This Is Us: The Dream We Hold
 
-I am afraid. Not for myself. I am afraid for our children—and for our grandchildren. This is what motivates me
-this is why I am fighting.
+We’re building something together.
 
-What rights are we abdicating? What legacy are we giving up?
+Not a brand. Not a campaign. A promise.
 
-I speak a little Spanish. If forced, I may even survive in El Salvador. But our children, our grandchildren? Why should we even have to be concerned about their future? What legacy are we handing down? We wouldn’t stand for any threats to children, yet we watch as our democracy is eroded and our legacy crumbles. It’s not just borders or passports that worry me—it’s the decay of something deeper: our shared understanding of freedom, truth, and decency.
+A promise that democracy belongs to all of us again—not just the wealthy, the loudest, or the most extreme. Our voices matter. And when we speak, together, we shape the future.
 
-I’ve accepted that some of you may have already made up your minds. That you may never even attempt to read this. And that’s exactly how insidious this battle has become.
+This isn’t about me.  
+It’s about the constituency.  
+Everyone we hope to represent.
 
-This isn’t just a political fight. This is a war for our minds.  
-And frankly—we are losing.
+## Why We Dream
 
-> “The mind is not a vessel to be filled, but a fire to be kindled.” —Plutarch  
-> “You will know the truth, and the truth will set you free.” —John 8:32  
-> “All tyranny needs to gain a foothold is for people of good conscience to remain silent.” —Edmund Burke
+We dream of a civic tool that does what Congress no longer does:  
+Listen. Respond. Respect our will.
 
-Yes, it may already be too late.  
-But if you’ve read this far… maybe—just maybe—there is hope.
+Imagine a public platform that is:
 
-**This Is US**, this movement, was conceived in an effort to understand what is happening in America—why so many good, honest citizens, who have looked out for their neighbors and defended freedom around the world, would suddenly stop, bend, and accept lies, mistruths, and nonsense—tolerated, bought into, and even supported by those who once stood guard.
+- **Secure** from tampering  
+- **Open** to anyone to inspect or improve  
+- **Simple** enough for students, veterans, and seniors to use  
+- **Courageous** enough to confront abuse, not enable it  
+- **Trustworthy** because *we* can verify it—not just believe it
 
-I began this journey *first to understand,* and now, to be understood. My understanding may not be perfect—but here it is.
+This isn’t just about technology.  
+This is about **restoring the conversation**.
 
-Let’s work through this together.
+## Who This Is For
 
-## The Approach
+- For anyone who’s felt invisible after an election  
+- For teachers trying to explain civic life to their students  
+- For those who’ve written to their representatives—and never heard back  
+- For the public servants who still care about public trust  
+- For the next generation watching how we show up now
 
-The mind is like a strong tree—it needs light, truth, and space to grow. Like a tree caught in strong winds, the mind bends under the repeated noise of lies. But in the light of truth, it grows—slowly, steadily. And truth outlasts the storm.
+This isn’t my movement.  
+**This is us.**
 
+## What We Stand For
 
-As human beings:
+We believe:
 
-- We are wired for survival.
-- We react when threatened.
-- We conform to our group.
-- We are stronger together.
-- And we always return to truth.
+- **Disinformation is not free speech**—truth matters  
+- **Public office is not a career**—term limits matter  
+- **Civil discourse is not optional**—it’s the foundation  
+- **Local voices should guide national choices**—not billionaires  
 
-**Fear is the weapon of choice for those who seek to dominate.**
+We reject:
 
-It’s not an accident. It’s a tactic. From domestic abusers to authoritarian regimes, fear is used to manipulate behavior, silence dissent, and condition obedience. History is full of examples: abusive partners isolate and intimidate; tyrants broadcast threats to crush resistance before it starts.
+- Authoritarianism posing as patriotism  
+- Surveillance disguised as safety  
+- Political theater in place of real representation  
 
-Whether in a home or a nation, the strategy is the same—keep people too scared to speak, too uncertain to act, and too divided to resist.
+We believe in building trust through transparency—and building tools that make it real.
 
-We believe the path forward lies in thinking clearly, critically, and courageously.
+## What We’re Building
 
-## Our Foundation: Critical Thinking in Perilous Times
+At [this-is-us.org](https://this-is-us.org), we’re building:
 
-**Shield your mind with these five tools:**
+- A secure civic feedback system tied to real districts and legislation  
+- A place where verified users can speak honestly—with or without their name  
+- A public record of public input—tamper-proof, open-source, and accountable  
+- A space where students and citizens alike can shape the future  
 
-1. **Ask: What are the facts?**  
-   Don’t accept headlines or hearsay. Look for original sources, full quotes, and context. If a claim seems designed to make you angry or afraid, slow down and dig deeper.
+And we’re building it together: in the open, one contribution at a time.
 
-2. **Separate emotion from evidence.**  
-   Feeling strongly doesn’t make something true. Ask: Am I reacting emotionally, or reasoning clearly? Emotions are valid—but facts don’t care how we feel.
+## Call to Action: Help Us Build It
 
-3. **Consider the source.**  
-   Who benefits if you believe this? Is the source reliable, transparent, or biased? Always check: Who’s saying this—and why?
+If this dream speaks to you, don’t wait. Join the effort. Be part of the foundation.
 
-4. **Be willing to change your mind.**  
-   Strong thinkers revise their opinions when presented with new evidence. That’s not weakness—it’s growth. Certainty without curiosity leads to regret.
+🔧 Volunteer your time or skillset: [this-is-us.org/volunteer/](https://this-is-us.org/volunteer/)  
+🧠 Share your thoughts or ask a hard question  
+📣 Spread the word to someone who still believes in *us*
 
-5. **Look for patterns—not just points.**  
-   A single incident can mislead. Patterns reveal truth. Ask: Is this an isolated case or part of a bigger trend?
+Let’s build something that outlasts headlines.  
+Let’s prove the truth still matters.  
+Let’s make this our legacy—honest, accountable, and shared.
 
-🎧 **Related Podcast Episodes**
+> Because this is us. And this is our dream.
 
-- [Person or Citizen](https://open.substack.com/pub/jimskovgard/p/this-is-us-in-perilous-times-b7a?r=3xgb14&utm_campaign=post&utm_medium=web&showWelcomeOnShare=false)
-- [Who Makes the Rules?](https://open.substack.com/pub/jimskovgard/p/episode-6-the-art-of-the-dumb-deal?r=3xgb14&utm_campaign=post&utm_medium=web&showWelcomeOnShare=false)
-- [When the Gavel Meets the Wall](https://open.substack.com/pub/jimskovgard/p/when-the-gavel-meets-the-wall?r=3xgb14&utm_campaign=post&utm_medium=web&showWelcomeOnShare=false)
+---
 
-## What We Oppose
+### Reflective Questions
 
-- Authoritarianism disguised as freedom
-- Billionaire control of public discourse
-- Disinformation, division, and distraction
-
-## What We Support
-
-- Local voices and lived experiences
-- Civil discourse and civic literacy
-- Courageous truth-telling—rooted in fact, compassion, and law
-
-We have not forgotten our reasons for existing—our passions, our legacy. And we won’t stand by while they’re rewritten by fear, apathy, or deceit.
-
-**This Is US**, this movement, is a space for anyone ready to think critically, tell their story, and defend what’s worth saving.
-
-## Our Call to Action
-
-Together—with truth, integrity, and compassion—we can reestablish transparency and accountability in our democracy.
-
-Democracy is messy. It takes time. But we are failing ourselves when we allow half-truths, tribalism, and manipulated narratives to bend our thinking.
-
-We are under attack—and many don’t even realize it. Your mind is under attack. Who is manipulating your instincts? Ask why.
-
-But we can do something about it. We can unite—and when we do, we are stronger. We can choose dialogue over division, clarity over confusion, and courage over comfort.
-
-We will survive. We are wired for it. And if we must fight, let it be for opportunity and freedom—not fear. Not just for me but also for my neighbor—we are stronger together.
-
-> We are threatened. Our democracy is threatened. The rule of law is threatened.
-
-So conform—yes—but not to propaganda. Conform to truth. Join the group that supports reason, compassion, and the Constitution. Align with the side that defends liberty for all, not power for the few.
-
-Because in the end, we always return to truth.  
-Change is the only constant—and history records the truth.  
-The lies? They’re just footnotes.
-
-**Join us. Think. Speak. Act. Defend.**
-
-**This is US.**
-
+- What role do *you* want to play in this movement?
+- What would a trustworthy civic tool look like to you?
+- How should we ensure term limits and transparency for all elected offices?
+- What legacy are we creating—for our children and for each other?

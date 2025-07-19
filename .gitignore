@@ -94,3 +94,5 @@ themes/
 
 # internal documentation
 documentation/*.pdf
+
+worker/secret/*

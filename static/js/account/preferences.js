@@ -30,28 +30,23 @@ if (!getApps().length) {
    ────────────────────────────────────────────────────────── */
 import { apiRoot } from "/js/lib/api-root.js";
 
-const formEl = document.getElementById("preferences-form");
+const formEl              = document.getElementById("preferences-form");
 const prefsLoadingSpinner = document.getElementById("prefs-loading");
 const prefsLoadingMessage = document.getElementById("prefs-loading-message");
-const prefsFeedbackEl = document.getElementById("prefs-feedback");
-const saveButton = document.getElementById('save-prefs-btn');
-const topicsContainer = document.createElement('div');
-topicsContainer.id = 'topics-container';
+const prefsFeedbackEl     = document.getElementById("prefs-feedback");
 
-// Initial state management:
-// Ensure spinner is hidden on script load, overriding any HTML default.
-// It will be explicitly shown by showPrefsSpinner() when needed.
-if (prefsLoadingSpinner) prefsLoadingSpinner.style.display = 'none'; // Use direct style manipulation
-if (saveButton) saveButton.classList.add('hidden'); // Ensure save button is hidden initially
+const topicsContainer = document.createElement("div");
+topicsContainer.id = "topics-container";
 
-// Append topicsContainer to formEl once formEl is available,
-// ensuring it's in the correct place relative to other elements.
+/* Initial state */
+if (prefsLoadingSpinner) prefsLoadingSpinner.style.display = "none"; // hide spinner
+
+/* Insert topics container just before the feedback element, or at top of form */
 if (formEl) {
-  const referenceElement = prefsFeedbackEl || saveButton;
-  if (referenceElement && formEl.contains(referenceElement)) {
-    formEl.insertBefore(topicsContainer, referenceElement);
+  if (prefsFeedbackEl && formEl.contains(prefsFeedbackEl)) {
+    formEl.insertBefore(topicsContainer, prefsFeedbackEl);
   } else {
-    formEl.prepend(topicsContainer); // Prepend to ensure it's early in the form
+    formEl.prepend(topicsContainer);
   }
 }
 
@@ -109,39 +104,36 @@ onAuthStateChanged(auth, async (user) => {
     showPrefsSpinner("Fetching topics..."); // Show spinner before fetch
 
     /* 🔹 GET topics + user picks */
-    const resp = await fetch(`${apiRoot()}/preferences?uid=${user.uid}`, {
+    const idToken = await user.getIdToken();
+    const resp = await fetch(`${apiRoot()}/user-topics`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Authorization": `Bearer ${idToken}` },
     });
 
     if (!resp.ok) throw new Error(`Back-end returned ${resp.status}`);
 
-    const { topics, firstTime } = await resp.json();
-    if (firstTime) {
-      const introBanner = document.getElementById('intro-banner');
-      if (introBanner) introBanner.style.display = 'block';
+    const list = await resp.json();
+    const introBanner = document.getElementById("intro-banner");
+    if (introBanner) {
+      const allOff = list.every(t => !t.checked);   // no topics selected yet
+      introBanner.style.display = allOff ? "block" : "none";
     }
     
-    // Render topics first
-    if (!Array.isArray(topics) || !topics.length) {
-      if (topicsContainer) topicsContainer.innerHTML = "<p>No topics available yet.</p>";
+    /* Render topic check-boxes */
+    if (!Array.isArray(list) || !list.length) {
+      topicsContainer.innerHTML = "<p>No topics available yet.</p>";
     } else {
-      if (topicsContainer) topicsContainer.innerHTML = ""; // Clear topics container
-      topics.forEach((t) => {
+      topicsContainer.innerHTML = "";               // clear any previous markup
+      list.forEach(t => {
         const label = document.createElement("label");
         label.className = "block my-1";
         label.innerHTML = `
-          <input type="checkbox" value="${t.id}" ${t.interested ? "checked" : ""}>
+          <input type="checkbox" value="${t.id}" ${t.checked ? "checked" : ""}>
           ${t.name}
         `;
-        if (topicsContainer) topicsContainer.appendChild(label);
+        topicsContainer.appendChild(label);
       });
     }
-
-    // Show save button after topics are rendered
-    if (saveButton) saveButton.classList.remove('hidden');
 
     // Diagnostic delay for spinner dismissal - Temporarily commented out for testing
     // await new Promise(resolve => setTimeout(resolve, 500)); 
@@ -159,40 +151,31 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* 💾 Save handler */
-// Only add event listener once to prevent multiple bindings
-const preferencesForm = document.getElementById("preferences-form");
-if (preferencesForm && !preferencesForm.__submitListenerAdded) { 
-  preferencesForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showPrefsSpinner("Saving preferences...");
-    const selected = Array.from(
-      topicsContainer.querySelectorAll("input[type=checkbox]:checked")
-    ).map((i) => i.value);
+/* 💾 Save handler Post immediately on toggle */
+topicsContainer.addEventListener("change", async (evt) => {
+  if (evt.target && evt.target.type === "checkbox") {
+    const box      = /** @type {HTMLInputElement} */ (evt.target);
+    const topicId  = Number(box.value);
+    const idToken  = await auth.currentUser.getIdToken();
 
     try {
-      const saveResp = await fetch(`${apiRoot()}/preferences`, {
+      await fetch(`${apiRoot()}/user-topics`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
         },
-        body: JSON.stringify({
-          uid: auth.currentUser.uid, // Use auth.currentUser.uid directly
-          selected
-        })
-      });
 
-      if (!saveResp.ok) throw new Error(`Save failed: ${saveResp.status}`);
-      showPrefsFeedback("✅ Preferences saved!");
-    } catch (saveErr) {
-      console.error("❌ Save preferences failed:", saveErr);
-      showPrefsFeedback("Error saving preferences", "error");
-    } finally {
-      hidePrefsSpinner();
+        body: JSON.stringify({ topicId, checked: box.checked })
+      });
+      showPrefsFeedback("Preference saved!");
+    } catch (err) {
+      console.error("Toggle failed:", err);
+      showPrefsFeedback("Error saving", "error");
+      box.checked = !box.checked;        // roll back UI
     }
-  });
-  preferencesForm.__submitListenerAdded = true;
-}
+  }
+});
 
 /* ──────────────────────────────────────────────────────────
    4) “Request new topic” form
@@ -219,16 +202,16 @@ if (requestTopicForm) {
     }
 
     try {
-      const requestResp = await fetch(`${apiRoot()}/preferences`, {
+      const idToken = await user.getIdToken();
+      const requestResp = await fetch(`${apiRoot()}/topic-requests`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
         },
-        body: JSON.stringify({
-          uid: user.uid,
-          newTopic
-        })
+        body: JSON.stringify({ newTopic })
       });
+
 
       if (!requestResp.ok) throw new Error(`Request failed: ${requestResp.status}`);
       showPrefsFeedback("👍 Topic request submitted for review!");
