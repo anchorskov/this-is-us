@@ -1,15 +1,26 @@
-{{- /* layouts/partials/extend_head.html – updated for UnoCSS (2025-06-27) */ -}}
+{{/* layouts/partials/extend_head.html – updated for UnoCSS (2025-06-27) */}}
 
 <!-- ░░ META & FAVICON ░░ -->
 <link rel="icon" href="{{ "favicon.ico" | relURL }}">
-<meta name="theme-color" content="#2e2e33" />
+<meta name="theme-color" content="#2e2e33">
 
-<!-- ░░ DEV HELPERS: Alpine.js for sandbox/candidates ░░ -->
-{{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <style>[x-cloak]{display:none!important}</style>
-  <script>console.log("✅ Alpine loaded for dev.")</script>
-{{ end }}
+<!-- ░░ Early Dark-Mode Toggle  ░░ -->
+<script>
+  // Add .dark ASAP to avoid light-flash on first paint
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.classList.add('dark');
+    // sync <meta name="theme-color">
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', '#111');
+  }
+</script>
+
+<!-- ░░ Minimal fallback so text is readable before CSS loads ░░ -->
+<style>
+  html.dark body{background:#111;color:#eee}
+  @media (prefers-color-scheme: dark){body{background:#111;color:#eee}}
+</style>
 
 <!-- ░░ GOOGLE FONTS ░░ -->
 <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -17,6 +28,13 @@
 
 <!-- ░░ UnoCSS Stylesheet ░░ -->
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
+
+<!-- ░░ DEV HELPERS: Alpine.js for sandbox/candidates ░░ -->
+{{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <style>[x-cloak]{display:none!important}</style>
+  <script>console.log("✅ Alpine loaded for dev.")</script>
+{{ end }}
 
 <!-- ░░ CONDITIONAL MAP / TIMELINE STYLES ░░ -->
 {{/* decide whether Leaflet & Timeline CSS are needed */}}
@@ -26,24 +44,19 @@
 {{ $needsTimeline := or (strings.HasSuffix $filePath "/timeline.md") (eq .RelPermalink "/events/") }}
 
 {{ if $needsMap }}
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin>
-  <script>console.log("🗺️ Leaflet CSS included for map support.");</script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+  <script>console.log("🗺️ Leaflet CSS included.");</script>
 
   {{ if eq .Section "townhall" }}
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
     <script>console.log("🔵 MarkerCluster styles added.");</script>
   {{ end }}
 {{ end }}
 
 {{ if and $needsTimeline (not hugo.IsServer) }}
-  <link rel="stylesheet"
-        href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
   <script>console.log("⏱️ Timeline styles included.");</script>
 {{ end }}
 
@@ -53,9 +66,7 @@
 <!-- ░░ MAP/TIMELINE JS ░░ -->
 {{ if $needsMap }}
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossorigin
-          defer></script>
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin defer></script>
   {{ if eq .Section "townhall" }}
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4/lodash.min.js" defer></script>
@@ -66,29 +77,23 @@
   <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js" defer></script>
 {{ end }}
 
-<!-- ░░ DEBUG LOG ░░ -->
-<script>
-  console.log(
-    "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
-    "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
-  );
+<!-- ░░ PAGE DEBUG (dev only) ░░ -->
+{{ if hugo.IsServer }}
+  <script>
+    console.log("%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
+      "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}");
+  </script>
+{{ end }}
 
-</script>
 <!-- ░░ API ROOT ░░ -->
 <script>
   window.apiRoot = "{{ if hugo.IsProduction }}/api{{ else }}http://127.0.0.1:8787/api{{ end }}";
 </script>
 
 <!-- ░░ DISABLE LOGS (production only) ░░ -->
-<script src="{{ "js/utils/disable-logs.js" | relURL }}"></script>
+{{ if hugo.IsProduction }}
+  <script src="{{ "js/utils/disable-logs.js" | relURL }}"></script>
+{{ end }}
 
-<!-- ░░ DEBUG LOG ░░ -->
-<script>
-  console.log(
-    "%cPAGE CTX","background:#2e2e33;color:#fff;padding:2px 5px;border-radius:3px",
-    "Template={{ .Layout }}","Kind={{ .Kind }}","Section={{ .Section }}","URL={{ .RelPermalink }}"
-  );
-</script>
-
-<!-- ░░ AUTH GUARD – disabled until Firebase finishes loading ░░ -->
-<!-- <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> -->
+<!-- ░░ AUTH GUARD (lazy-load after Firebase) ░░ -->
+{{/* <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> */}}
