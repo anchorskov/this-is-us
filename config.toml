@@ -94,12 +94,6 @@ buildFuture   = false
   weight     = 6
 
 [[menu.main]]
-  identifier = "candidates"
-  name       = "Candidates"
-  url        = "/candidates/"
-  weight     = 7
-
-[[menu.main]]
   identifier = "townhall"
   name       = "Town Hall"
   url        = "/townhall/"
