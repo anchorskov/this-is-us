@@ -1,0 +1,21 @@
+<!-- /layouts/partials/components/feedback-form.html -->
+<form action="https://formsubmit.co/feedback@this-is-us.org" method="POST" class="feedback-form max-w-2xl mx-auto p-4">
+  <h2 class="text-xl font-semibold mb-4">Send Feedback</h2>
+
+  <input type="text" name="name" placeholder="Your Name" required class="w-full p-2 mb-3 border rounded">
+  <input type="email" name="email" placeholder="Your Email" required class="w-full p-2 mb-3 border rounded">
+  <textarea name="message" placeholder="Your Message" rows="5" required class="w-full p-2 mb-3 border rounded"></textarea>
+
+  <!-- Cloudflare Turnstile Widget -->
+  <div class="cf-turnstile mb-3" data-sitekey="{{ .Site.Params.turnstile_site_key }}"></div>
+
+  <!-- Email Routing Headers -->
+  <input type="hidden" name="_captcha" value="false">
+  <input type="hidden" name="_subject" value="New Feedback from This Is Us">
+  <input type="hidden" name="_next" value="https://this-is-us.org/thanks/">
+
+  <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">Send</button>
+</form>
+
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<div class="cf-turnstile" data-sitekey="{{ .Site.Params.turnstile_site_key }}"></div>

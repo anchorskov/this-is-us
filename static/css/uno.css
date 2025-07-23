@@ -47,6 +47,7 @@
 .grid-cols-6{grid-template-columns:repeat(6,minmax(0,1fr));}
 [rows~="\33 "]{grid-template-rows:repeat(3,minmax(0,1fr));}
 [rows~="\34 "]{grid-template-rows:repeat(4,minmax(0,1fr));}
+[rows~="\35 "]{grid-template-rows:repeat(5,minmax(0,1fr));}
 [rows~="\36 "]{grid-template-rows:repeat(6,minmax(0,1fr));}
 .mx-auto{margin-left:auto;margin-right:auto;}
 .my,
@@ -219,6 +220,7 @@
 .bg-gray-300{--un-bg-opacity:1;background-color:rgb(209 213 219 / var(--un-bg-opacity)) /* #d1d5db */;}
 .bg-gray-400{--un-bg-opacity:1;background-color:rgb(156 163 175 / var(--un-bg-opacity)) /* #9ca3af */;}
 .bg-gray-50{--un-bg-opacity:1;background-color:rgb(249 250 251 / var(--un-bg-opacity)) /* #f9fafb */;}
+.bg-gray-800{--un-bg-opacity:1;background-color:rgb(31 41 55 / var(--un-bg-opacity)) /* #1f2937 */;}
 .bg-green{--un-bg-opacity:1;background-color:rgb(74 222 128 / var(--un-bg-opacity)) /* #4ade80 */;}
 .bg-green-100{--un-bg-opacity:1;background-color:rgb(220 252 231 / var(--un-bg-opacity)) /* #dcfce7 */;}
 .bg-green-50{--un-bg-opacity:1;background-color:rgb(240 253 244 / var(--un-bg-opacity)) /* #f0fdf4 */;}
@@ -236,6 +238,7 @@
 .hover\:bg-gray-100:hover{--un-bg-opacity:1;background-color:rgb(243 244 246 / var(--un-bg-opacity)) /* #f3f4f6 */;}
 .hover\:bg-gray-400:hover{--un-bg-opacity:1;background-color:rgb(156 163 175 / var(--un-bg-opacity)) /* #9ca3af */;}
 .hover\:bg-gray-500:hover{--un-bg-opacity:1;background-color:rgb(107 114 128 / var(--un-bg-opacity)) /* #6b7280 */;}
+.hover\:bg-gray-700:hover{--un-bg-opacity:1;background-color:rgb(55 65 81 / var(--un-bg-opacity)) /* #374151 */;}
 .hover\:bg-green-700:hover{--un-bg-opacity:1;background-color:rgb(21 128 61 / var(--un-bg-opacity)) /* #15803d */;}
 .hover\:bg-indigo-700:hover{--un-bg-opacity:1;background-color:rgb(67 56 202 / var(--un-bg-opacity)) /* #4338ca */;}
 .hover\:bg-red-200:hover{--un-bg-opacity:1;background-color:rgb(254 202 202 / var(--un-bg-opacity)) /* #fecaca */;}
@@ -323,6 +326,7 @@
 .hover\:text-blue-600:hover{--un-text-opacity:1;color:rgb(37 99 235 / var(--un-text-opacity)) /* #2563eb */;}
 .hover\:text-blue-700:hover{--un-text-opacity:1;color:rgb(29 78 216 / var(--un-text-opacity)) /* #1d4ed8 */;}
 .hover\:text-blue-800:hover{--un-text-opacity:1;color:rgb(30 64 175 / var(--un-text-opacity)) /* #1e40af */;}
+.hover\:text-gray-800:hover{--un-text-opacity:1;color:rgb(31 41 55 / var(--un-text-opacity)) /* #1f2937 */;}
 .hover\:text-red-700:hover{--un-text-opacity:1;color:rgb(185 28 28 / var(--un-text-opacity)) /* #b91c1c */;}
 .font-bold,
 .fw-bold{font-weight:700;}

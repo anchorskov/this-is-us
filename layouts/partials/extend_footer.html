@@ -1,7 +1,9 @@
-<footer style="margin-top: 2rem; padding: 1rem 0; font-size: 0.875rem; text-align: center; color: #666; border-top: 1px solid #ddd;">
+{{ partial "components/feedback-form.html" . }}
+
+<footer class="mt-8 py-4 text-sm text-center text-gray-600 border-t border-gray-300">
   <p>
     &copy; {{ now.Format "2006" }} This Is Us. Built on transparency. Powered by character.
     |
-    <a href="/credits/" style="color: #666; text-decoration: underline;">Credits & Transparency</a>
+    <a href="/credits/" class="underline hover:text-gray-800">Credits & Transparency</a>
   </p>
 </footer>
