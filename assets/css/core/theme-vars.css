@@ -1,33 +1,44 @@
 :root {
-    --gap: 24px;
-    --content-gap: 20px;
-    --nav-width: 1024px;
-    --main-width: 720px;
-    --header-height: 60px;
-    --footer-height: 60px;
-    --radius: 8px;
-    --theme: rgb(255, 255, 255);
-    --entry: rgb(255, 255, 255);
-    --primary: rgb(30, 30, 30);
-    --secondary: rgb(108, 108, 108);
-    --tertiary: rgb(214, 214, 214);
-    --content: rgb(31, 31, 31);
-    --code-block-bg: rgb(28, 29, 33);
-    --code-bg: rgb(245, 245, 245);
-    --border: rgb(238, 238, 238);
+  --bg:       var(--theme);
+  --fg:       var(--primary);
+  --link:     rgb(0, 102, 204);   /* NEW */
+  /* spacing / layout */
+  --gap: 24px; --content-gap: 20px;
+  --nav-width: 1024px; --main-width: 720px;
+  --header-height: 60px; --footer-height: 60px; --radius: 8px;
+  /* light palette */
+  --theme: rgb(255,255,255);
+  --entry: rgb(255,255,255);
+  --primary: rgb(30,30,30);
+  --secondary: rgb(108,108,108);
+  --tertiary: rgb(214,214,214);
+  --content: rgb(31,31,31);
+  --code-block-bg: rgb(28,29,33);
+  --code-bg: rgb(245,245,245);
+  --border: rgb(238,238,238);
 }
 
 .dark {
-    --theme: rgb(29, 30, 32);
-    --entry: rgb(46, 46, 51);
-    --primary: rgb(218, 218, 219);
-    --secondary: rgb(155, 156, 157);
-    --tertiary: rgb(65, 66, 68);
-    --content: rgb(196, 196, 197);
-    --code-block-bg: rgb(46, 46, 51);
-    --code-bg: rgb(55, 56, 62);
-    --border: rgb(51, 51, 51);
+  --bg:       var(--theme);
+  --fg:       var(--primary);
+  --link:     rgb(141,176,255);   /* NEW */
+  /* dark palette */
+  --theme: rgb(29,30,32);
+  --entry: rgb(46,46,51);
+  --primary: rgb(218,218,219);
+  --secondary: rgb(155,156,157);
+  --tertiary: rgb(65,66,68);
+  --content: rgb(196,196,197);
+  --code-block-bg: rgb(46,46,51);
+  --code-bg: rgb(55,56,62);
+  --border: rgb(51,51,51);
 }
+
+/* global application */
+body        { background: var(--bg); color: var(--fg); }
+a           { color: var(--link); }
+h1,h2,h3,
+h4,h5       { color: var(--fg); }   /* or color:inherit */
 
 .list {
     background: var(--code-bg);
@@ -36,3 +47,6 @@
 .dark.list {
     background: var(--theme);
 }
+body       { background:var(--bg); color:var(--fg); }
+a, h1, h2,
+h3, h4, h5 { color:var(--fg); }

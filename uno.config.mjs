@@ -41,6 +41,9 @@ export default defineConfig({
    * Shortcuts
    * ----------------------------------------------------------------- */
   shortcuts: {
+    /* ── Theme-aware colour helpers ───────────────────────────── */
+    'text-primary' : 'text-[var(--fg)]',   // flips with .dark
+    'bg-primary'   : 'bg-[var(--bg)]',
     /* ── Hero buttons ─────────────────────────────────────────────── */
     'hero-btn':
       'inline-flex flex-col items-center justify-center p-6 rounded-2xl ' +
@@ -53,6 +56,7 @@ export default defineConfig({
     'th-input':
       'w-full border-2 border-gray-600 rounded-md p-2 ' +
       'focus:(outline-none ring-2 ring-blue-500 border-blue-500)',
+    
   },
 
   /* ------------------------------------------------------------------
