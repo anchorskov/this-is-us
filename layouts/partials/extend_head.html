@@ -32,6 +32,9 @@
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 <link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
 
+<!-- ░░ Cloudflare Turnstile (one-time) ░░ -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <!-- ░░ DEV HELPERS: Alpine.js for sandbox/candidates ░░ -->
 {{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -100,3 +103,8 @@
 
 <!-- ░░ AUTH GUARD (lazy-load after Firebase) ░░ -->
 {{/* <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> */}}
+
+<!-- ░░ Turnstile success stub (prevents “callback not a function”) ░░ -->
+<script>
+  window.onTurnstileSuccess ||= function () { /* noop */ };
+</script>

@@ -1,4 +1,5 @@
-{{/* layouts/townhall/create-thread.html */}}
+{{/* layouts/townhall/create-thread.html – with Turnstile widget */}}
+
 {{ define "main" }}
 <main class="max-w-3xl mx-auto p-6 space-y-8">
 
@@ -18,34 +19,41 @@
     <!-- Thread Title -->
     <label class="block">
       <span class="font-medium text-gray-700">Thread&nbsp;Title</span>
-      <input name="title"
-             class="th-input mt-1"
-             placeholder="e.g. Safer Crosswalks Downtown"
-             required>
+      <input
+        name="title"
+        class="th-input mt-1"
+        placeholder="e.g. Safer Crosswalks Downtown"
+        required >
     </label>
 
     <!-- Location -->
     <label class="block">
       <span class="font-medium text-gray-700">Location&nbsp;(ZIP or city)</span>
-      <input name="location"
-             class="th-input mt-1"
-             placeholder="80302"
-             required>
+      <input
+        name="location"
+        class="th-input mt-1"
+        placeholder="80302"
+        required >
     </label>
 
     <!-- Message -->
     <label class="block">
       <span class="font-medium text-gray-700">Message</span>
-      <textarea name="body"
-                rows="6"
-                class="th-input mt-1 resize-y"
-                placeholder="Share your idea or concern…"
-                required></textarea>
+      <textarea
+        name="body"
+        rows="6"
+        class="th-input mt-1 resize-y"
+        placeholder="Share your idea or concern…"
+        required ></textarea>
     </label>
 
+    <!-- ⬇️ Cloudflare Turnstile (anti-spam) -->
+    {{ partial "turnstile.html" . }}
+
     <!-- Submit button + feedback -->
-    <button type="submit"
-            class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+    <button
+      type="submit"
+      class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
       Publish Thread
     </button>
 
@@ -59,7 +67,8 @@
 </main>
 
 <!-- Single controller that handles form → Firestore -->
-<script type="module"
-        src="{{ "js/townhall/create-thread.js" | relURL }}"
-        defer></script>
+<script
+  type="module"
+  src="{{ "js/townhall/create-thread.js" | relURL }}"
+  defer></script>
 {{ end }}

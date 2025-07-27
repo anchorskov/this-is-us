@@ -30,6 +30,8 @@
     <!-- Feedback Message Area -->
     <div id="prefs-feedback" class="mt-4 text-sm text-center hidden"></div>
 
+    {{ partial "turnstile.html" . }}
+
     <!-- Save Button -->
     <div class="mt-6">
       <button type="submit" id="save-prefs-btn"

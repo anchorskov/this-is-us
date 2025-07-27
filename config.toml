@@ -1,17 +1,22 @@
+# ------------------------------------------------------------
+# Hugo config – This Is Us
+# ------------------------------------------------------------
+
+baseURL      = "https://this-is-us.org/"
+languageCode = "en-us"
+title        = "This is US"
+theme        = "PaperMod"
+
+# Prevent RSS, sitemap, taxonomy & term pages
 disableKinds = ["RSS", "sitemap", "taxonomy", "term"]
 
-baseURL       = "https://this-is-us.org/"
-languageCode  = "en-us"
-title         = "This is US"
-theme         = "PaperMod"
-
-buildDrafts   = false
-buildFuture   = false
+buildDrafts  = false
+buildFuture  = false
 
 [outputs]
-  home    = ["HTML"]
-  page    = ["HTML"]
-  section = ["HTML"]
+  home     = ["HTML"]
+  page     = ["HTML"]
+  section  = ["HTML"]
   taxonomy = []
   term     = []
 
@@ -21,21 +26,28 @@ buildFuture   = false
 [pagination]
   pagerSize = 10
 
+# ------------------------------------------------------------
+# Site-wide params
+# ------------------------------------------------------------
 [params]
-  author               = "The Integrity Project"
-  description          = "Reclaiming our voice. Standing together."
-  defaultTheme         = "auto"
-  disableScrollToTop   = false
-  ShowReadingTime      = true
-  ShowShareButtons     = true
-  ShowPostNavLinks     = true
-  ShowCodeCopyButtons  = true
-  ShowBreadCrumbs      = true
-  ShowWordCount        = true
-  UseHugoToc           = true
-  subtitle             = "Reclaiming our voice. Standing together."
-  keywords             = ["community", "justice", "voices", "podcast"]
-  hideFooter           = true
+  author              = "The Integrity Project"
+  description         = "Reclaiming our voice. Standing together."
+  subtitle            = "Reclaiming our voice. Standing together."
+  keywords            = ["community", "justice", "voices", "podcast"]
+
+  defaultTheme        = "auto"
+  disableScrollToTop  = false
+  ShowReadingTime     = true
+  ShowShareButtons    = true
+  ShowPostNavLinks    = true
+  ShowCodeCopyButtons = true
+  ShowBreadCrumbs     = true
+  ShowWordCount       = true
+  UseHugoToc          = true
+  hideFooter          = true
+
+  # Cloudflare Turnstile – test key for dev; Pages overrides via env var
+  turnstile_sitekey   = "1x0000000000000000000000000000000AA"
 
   [params.assets]
     disableScrollBarStyle = false
@@ -52,11 +64,17 @@ buildFuture   = false
     enableZipZoom   = true
     fallbackOffline = false
 
-  [markup]
+# ------------------------------------------------------------
+# Markup (Goldmark) – moved to top level
+# ------------------------------------------------------------
+[markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
 
+# ------------------------------------------------------------
+# Main menu
+# ------------------------------------------------------------
 [[menu.main]]
   identifier = "home"
   name       = "Home"

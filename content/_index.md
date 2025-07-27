@@ -32,7 +32,7 @@ A public accountability initiative evaluating leadership based on:
 - Compassion  
 - Accountability
 
-*Note: The Integrity Project is currently under development at [U-PAC.org](https://u-pac.org).*
+*Note: The Integrity Project is currently under development.*
 
 > *Change starts with awareness, and awareness begins with people like you. You’re the seed of something better.*
 
