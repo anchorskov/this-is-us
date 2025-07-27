@@ -1,4 +1,4 @@
-/* static/js/firebase-login.js – Firebase v9 + Firebase-UI (UMD) */
+// static/js/firebase-login.js – Firebase v9 + Firebase-UI (UMD)
 console.log("📦 firebase-login.js loaded (v9)");
 
 import {
@@ -9,13 +9,16 @@ import {
   getAuth,
   onAuthStateChanged,
   getRedirectResult,
-  EmailAuthProvider,
-  GoogleAuthProvider,
-  PhoneAuthProvider
+  EmailAuthProvider, // Keep for reference, but not used directly in uiConfig here
+  GoogleAuthProvider, // Keep for reference
+  PhoneAuthProvider // Keep for reference
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
+// Import uiConfig from the dedicated config file
+import { uiConfig as importedUiConfig } from "/js/firebase-ui-config.js";
+
 /* ------------------------------------------------------------------ */
-/*  Everything lives inside an IIFE so we can `return` early safely   */
+/* Everything lives inside an IIFE so we can `return` early safely  */
 /* ------------------------------------------------------------------ */
 (function initLoginUI() {
   // 1️⃣ Ensure a Firebase app is initialized
@@ -47,7 +50,7 @@ import {
     window.firebaseui.auth.AuthUI.getInstance() ||
     new window.firebaseui.auth.AuthUI(auth);
 
-  window.firebaseUI = { ui }; // Expose for debug/testing
+  window.firebaseUI = { ui, uiConfig: importedUiConfig }; // Expose for debug/testing, using the imported config
 
   // 4️⃣ Launch widget when DOM is ready
   document.addEventListener("DOMContentLoaded", async () => {
@@ -56,62 +59,53 @@ import {
 
     container.dataset.uiReady = "true";
 
-    const uiConfig = {
-      signInFlow: "popup",
-      signInOptions: [
-        { provider: EmailAuthProvider.PROVIDER_ID, requireDisplayName: true },
-        GoogleAuthProvider.PROVIDER_ID,
-        PhoneAuthProvider.PROVIDER_ID
-      ],
-      tosUrl: "/manifesto/",
-      privacyPolicyUrl: "/about/"
-    };
+    // Use the imported uiConfig directly
+    const uiConfig = importedUiConfig; 
 
-// 🔍 Extract ?redirect=/some/path  (ignore document.referrer)
-const params   = new URLSearchParams(window.location.search);
-const stored   = sessionStorage.getItem("redirectAfterLogin");
-const redirect = params.get("redirect") || stored || null;   // null ⇒ stay put
+    // 🔍 Extract ?redirect=/some/path  (ignore document.referrer)
+    const params = new URLSearchParams(window.location.search);
+    const stored = sessionStorage.getItem("redirectAfterLogin");
+    const redirect = params.get("redirect") || stored || null; // null ⇒ stay put
 
-// 5️⃣ If we came back from a redirect, act on it
-try {
-  const result = await getRedirectResult(auth);
-  if (result?.user) {
-    console.log("✅ Redirect login success:", result.user.email);
-    container.style.display = "none";
+    // 5️⃣ If we came back from a redirect, act on it
+    try {
+      const result = await getRedirectResult(auth);
+      if (result?.user) {
+        console.log("✅ Redirect login success:", result.user.email);
+        container.style.display = "none";
 
-    if (redirect) {
-      console.log("➡️ Redirecting to:", redirect);
-      window.location.href = redirect;
-    } else {
-      console.log("✅ No redirect param – staying on", location.pathname);
+        if (redirect) {
+          console.log("➡️ Redirecting to:", redirect);
+          window.location.href = redirect;
+        } else {
+          console.log("✅ No redirect param – staying on", location.pathname);
+        }
+
+        sessionStorage.removeItem("redirectAfterLogin"); // 🧹 clear once used
+        return;
+      }
+    } catch (err) {
+      console.warn("⚠️ Redirect result error:", err);
     }
 
-    sessionStorage.removeItem("redirectAfterLogin"); // 🧹 clear once used
-    return;
-  }
-} catch (err) {
-  console.warn("⚠️ Redirect result error:", err);
-}
+    // 6️⃣ Check if already signed in and redirect (only when explicit)
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("🔐 Already signed in – hiding login UI");
+        container.style.display = "none";
+        sessionStorage.removeItem("redirectAfterLogin");
 
-// 6️⃣ Check if already signed in and redirect (only when explicit)
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    console.log("🔐 Already signed in – hiding login UI");
-    container.style.display = "none";
-    sessionStorage.removeItem("redirectAfterLogin");
+        if (redirect) {
+          console.log("➡️ Redirecting to:", redirect);
+          window.location.href = redirect;
+        } else {
+          console.log("✅ Signed in, no redirect param – staying on", location.pathname);
+        }
+      } else {
+        console.log("🚀 Launching Firebase-UI widget");
+        ui.start("#firebaseui-auth-container", uiConfig);
+      }
+    }); // <- closes onAuthStateChanged callback
 
-    if (redirect) {
-      console.log("➡️ Redirecting to:", redirect);
-      window.location.href = redirect;
-    } else {
-      console.log("✅ Signed in, no redirect param – staying on", location.pathname);
-    }
-  } else {
-    console.log("🚀 Launching Firebase-UI widget");
-    ui.start("#firebaseui-auth-container", uiConfig);
-  }
-});   // <- closes onAuthStateChanged callback
-
-});   // <- closes DOMContentLoaded handler
-})();  // <- closes the IIFE
-
+  }); // <- closes DOMContentLoaded handler
+})(); // <- closes the IIFE

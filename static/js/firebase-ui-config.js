@@ -17,7 +17,7 @@ let uiConfig = null;
 if (!window.firebaseui) {
   console.error(
     "❌ firebaseui global missing – ensure " +
-      "https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js " +
+      "https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js " + // Note: FirebaseUI v6.0.2 is quite old, consider updating if possible.
       "is loaded before this module."
   );
 } else {
@@ -36,6 +36,8 @@ if (!window.firebaseui) {
     ],
     tosUrl: "/manifesto/",
     privacyPolicyUrl: "/about/",
+    // --- NEW: Password Reset Configuration ---
+    credentialHelper: window.firebaseui.auth.CredentialHelper.NONE, // Prevents FirebaseUI from using browser credential management
     callbacks: {
       signInSuccessWithAuthResult({ user }) {
         console.log("✅ FirebaseUI login complete:", {
@@ -51,6 +53,24 @@ if (!window.firebaseui) {
       },
       uiShown() {
         console.log("🧩 FirebaseUI shown");
+      },
+      // --- NEW: Callback for password reset ---
+      // This callback is triggered when FirebaseUI needs to show a password reset link.
+      // You can customize the behavior here, or let FirebaseUI handle it.
+      // If you want FirebaseUI to show the "Forgot password?" link, ensure this callback
+      // allows it to proceed (e.g., by not returning false or redirecting).
+      signInFailure(error) {
+        // Some common errors:
+        // firebase.auth.AuthError.EMAIL_EXISTS_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL
+        // firebase.auth.AuthError.WRONG_PASSWORD
+        console.error("❌ FirebaseUI sign-in error:", error);
+        // You can add custom handling here, e.g., showing a custom message
+        // if (error.code === 'auth/wrong-password') {
+        //   alert('Incorrect password. Please try again or reset your password.');
+        // }
+        // Return true to let FirebaseUI display the default error message/link.
+        // Or return false to suppress default behavior.
+        return true; 
       }
     }
   };
