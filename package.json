@@ -10,6 +10,7 @@
     "dev": "npm-run-all --parallel watch:css hugo:dev",
     "build:hugo": "hugo --gc --minify",
     "build": "npm run build:css && npm run build:hugo",
+    "prod": "npm ci && npm run build:css && npm run build:hugo",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "dependencies": {
