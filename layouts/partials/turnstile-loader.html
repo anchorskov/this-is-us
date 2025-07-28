@@ -1,0 +1,10 @@
+{{- /* ─────────────────────────────────────────────────────────────
+     File: layouts/partials/turnstile-loader.html
+     Injected in baseof.html, before the closing </body> tag.
+     This file is only included in production builds.
+   ───────────────────────────────────────────────────────────── */ -}}
+   
+{{- /* Injects the CF Turnstile loader only in production */ -}}
+{{- if hugo.IsProduction }}
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{{- end }}

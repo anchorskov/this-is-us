@@ -39,7 +39,7 @@ Because the best ideas don’t come from shouting matches or silos—they come f
 - For the public servants who still care about public trust  
 - For the next generation watching how we show up
 
-This isn’t my movement.  
+This is our movement.  
 **This is us.**
 
 ## What We Stand For

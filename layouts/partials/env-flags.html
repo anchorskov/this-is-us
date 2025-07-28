@@ -1,0 +1,13 @@
+{{/*  layouts/partials/env-flags.html
+      Exposes two globals for every page
+      • window.IS_PRODUCTION      (boolean)
+      • window.TURNSTILE_SITEKEY  (string)     
+      • This file shows errors in VS When Hugo actually renders the page, 
+      the tags are replaced with real values, so the browser receives perfectly valid JS.                     */}}
+
+<script>
+  /* ——— build-time flags injected by Hugo ——— */
+  window.IS_PRODUCTION     = "{{ hugo.IsProduction | default false | jsonify | safeJS }}";
+  window.TURNSTILE_SITEKEY = "{{ site.Params.turnstile_sitekey | jsonify | safeJS }}"
+</script>
+

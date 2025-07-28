@@ -6,6 +6,14 @@
 <!-- Ensure responsive scaling on phones -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
+<!-- ── Build-time flags (injected by Hugo) ─────────────── -->
+<script>
+  /*  true on `hugo --environment production`, else false  */
+  window.IS_PRODUCTION      = {{ hugo.IsProduction | default false | jsonify | safeJS }};
+  /*  your Pages-/config-provided site-key  */
+  window.TURNSTILE_SITEKEY  = {{ site.Params.turnstile_sitekey | default "" | jsonify | safeJS }};
+</script>
+
 <!-- ░░ Early Dark-Mode Toggle  ░░ -->
 <script>
   // Add .dark ASAP to avoid light-flash on first paint
@@ -32,8 +40,8 @@
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 <link rel="stylesheet" href="{{ "css/custom.css" | relURL }}">
 
-<!-- ░░ Cloudflare Turnstile (one-time) ░░ -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- ░░ Cloudflare Turnstile (loader – prod only) ░░ -->
+{{ partial "turnstile-loader.html" . }}
 
 <!-- ░░ DEV HELPERS: Alpine.js for sandbox/candidates ░░ -->
 {{ if and hugo.IsServer (in (slice "sandbox" "candidates") .Section) }}
