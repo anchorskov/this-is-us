@@ -1,11 +1,8 @@
-/* ──────────────────────────────────────────────────────────────────────────────
-   mobile.css — Mobile nav override
-   ────────────────────────────────────────────────────────────────────────────── */
+/* Mobile nav — theme-aware */
 
-/* Hide the nav by default */
 nav.menu {
   display: none;
-  background-color: #222;
+  background-color: var(--body-bg); /* Uses theme var */
   flex-direction: column;
   align-items: center;
   padding: 1em;
@@ -13,14 +10,12 @@ nav.menu {
   z-index: 999;
 }
 
-/* Show when toggled on */
 nav.menu.visible {
   display: flex !important;
 }
 
-/* Link styling */
 nav.menu a {
-  color: #fff;
+  color: var(--primary); /* PaperMod default text */
   text-decoration: none;
   padding: 10px;
   width: 100%;
@@ -28,5 +23,5 @@ nav.menu a {
 }
 
 nav.menu a:hover {
-  background-color: #444;
+  background-color: var(--entry-bg); /* theme-aware hover */
 }
