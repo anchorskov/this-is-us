@@ -1,44 +1,61 @@
-{{- /* -------------------------------------------------------------------
-     File: layouts/partials/head.html (updated 2025‑07‑14)
-     Purpose: central place for <head> tags + early API‑root probe.
-     ------------------------------------------------------------------- */ -}}
+{{- /* ─────────────────────────────────────────────────────────────
+     File: layouts/partials/site-scripts.html
+     Injected right before </body>.
+     Only assets that truly belong at the end of the page go here.
+   ───────────────────────────────────────────────────────────── */ -}}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  {{/* Existing head metadata, styles, etc. remain above */}}
+{{/* 1️⃣ Dynamic API root (dev ⇆ prod ⇆ local-worker) */}}
+<script>
+(function () {
+  const onHugoServer = location.hostname === 'localhost' && location.port === '1313';
 
-  {{/* ── Dynamic API‑root probe (runs before any ES‑module) ── */}}
-  <script>
-  (function () {
-    const isLocalHugo = location.hostname === "localhost" && location.port === "1313";
+  /* default:
+       – prod build  →  /api
+       – hugo server →  remote Worker on production */
+  window.EVENTS_API_URL = onHugoServer
+    ? 'https://this-is-us.org/api'
+    : '/api';
 
-    /* Default mapping
-         • prod build  →  /api
-         • hugo server →  remote Worker on production */
-    window.EVENTS_API_URL = isLocalHugo ? "https://this-is-us.org/api" : "/api";
+  /* optional local Worker probe (wrangler dev --port 8787) */
+  if (onHugoServer) {
+    const local = 'http://127.0.0.1:8787';
+    fetch(local + '/api/_health', { mode: 'no-cors' })
+      .then(() => {
+        window.EVENTS_API_URL = local + '/api';
+        console.log('🔄 Local Worker detected – API →', window.EVENTS_API_URL);
+      })
+      .catch(() => {
+        console.log('🐛 Using remote Worker →', window.EVENTS_API_URL);
+      });
+  } else {
+    console.log('🌐 Using API →', window.EVENTS_API_URL);
+  }
+})();
+</script>
 
-    /* Optional: detect wrangler‑dev Worker on http://127.0.0.1:8787 */
-    if (isLocalHugo) {
-      const local = "http://127.0.0.1:8787";
-      fetch(local + "/api/_health", { mode: "no-cors" })
-        .then(() => {
-          window.EVENTS_API_URL = local + "/api";
-          console.log("🔄 Local Worker detected – API →", window.EVENTS_API_URL);
-        })
-        .catch(() => {
-          console.log("🐛 Using remote Worker →", window.EVENTS_API_URL);
-        });
-    } else {
-      console.log("🌐 Using API →", window.EVENTS_API_URL);
-    }
-  })();
-  </script>
+{{/* Quick helpers */}}
+{{- $rp         := .RelPermalink -}}
+{{- $isTownHall := strings.HasPrefix $rp "/townhall" -}}
 
-  <!-- Pre‑load helper so every ES‑module can import apiRoot() -->
-  <script type="module" src="/js/lib/api-root.js"></script>
+{{/* 2️⃣ Town-Hall page bundles (ES-modules) */}}
+{{- if eq $rp "/townhall/map/"     }}<script type="module" src="/js/townhall/map.js"     defer></script>{{ end }}
+{{- if eq $rp "/townhall/threads/" }}<script type="module" src="/js/townhall/threads.js" defer></script>{{ end }}
+{{- if eq $rp "/townhall/create/"  }}<script type="module" src="/js/townhall/create.js"  defer></script>{{ end }}
 
-  {{/* keep existing head elements (title, meta, styles) below */}}
-  {{ partial "extend_head.html" . }}
-</head>
-<body>
+{{/* NOTE ──────────────────────────────────────────────────────────
+   home.js is NOT included here because layouts/section/townhall.html
+   injects it via its own {{ define "scripts" }} block, with the
+   correct `type="module"`. Including it twice caused the earlier
+   “Cannot use import statement outside a module” error.
+   ───────────────────────────────────────────────────────────────*/}}
+
+{{/* 3️⃣  No Firebase helpers here.
+        firebase-init.html (included once in baseof.html) already
+        loads:
+          ✓ firebase-config.js   ✓ firebase-login.js
+          ✓ firebase-session.js  ✓ firebase-ui-config.js
+        Keeping it single-source avoids the “Firebase is already
+        defined in the global scope” warning. */}}
+{{ if in .RelPermalink "/account" }}
+  <script type="module" src="/js/account.js"></script>
+{{ end }}
