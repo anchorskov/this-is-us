@@ -16,13 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (this.files.length > 0) {
         // Display the name of the first file
         fileChosenDisplay.textContent = this.files[0].name;
-        fileChosenDisplay.classList.remove('italic', 'text-gray-600');
-        fileChosenDisplay.classList.add('text-black');
+        fileChosenDisplay.classList.remove('italic', 'text-gray-600', 'dark:text-gray-400');
+        fileChosenDisplay.classList.add('text-slate-900', 'dark:text-slate-100');   // chosen file
       } else {
         // If the user cancels the file dialog
         fileChosenDisplay.textContent = 'No file chosen';
-        fileChosenDisplay.classList.add('italic', 'text-gray-600');
-        fileChosenDisplay.classList.remove('text-black');
+        fileChosenDisplay.classList.add('italic', 'text-gray-600', 'dark:text-gray-400'); // placeholder
+        fileChosenDisplay.classList.remove('text-slate-900', 'dark:text-slate-100');
       }
     });
   }

@@ -29,11 +29,9 @@
 
 <body
   id="top"
-  class="
-    {{ if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) }}list{{ end }}
-    {{ with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end }}
-  "
+  class="{{- if or (ne .Kind `page`) (eq .Layout `archives`) (eq .Layout `search`) }}list{{ end }}{{ with .Site.Params.defaultTheme }}{{ if eq . "dark" }} dark{{ end }}{{ end }}"
 >
+
   {{/* 5️⃣ Site-wide navigation (cached for perf) */}}
   {{ partialCached "header.html" . .Page }}
 

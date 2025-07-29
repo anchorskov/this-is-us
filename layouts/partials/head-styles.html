@@ -1,9 +1,22 @@
-{{/* layouts/partials/head-styles.html */}}
+{{/* PaperMod native CSS files — loaded directly */}}
+<link rel="stylesheet" href="{{ "css/reset.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/theme-vars.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/zmedia.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/header.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/footer.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/post-entry.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/post-single.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/profile-mode.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/search.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/archive.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/404.css" | relURL }}">
+<link rel="stylesheet" href="{{ "css/terms.css" | relURL }}">
 
-<!-- UnoCSS utility classes -->
+{{/* Your UnoCSS utility classes */}}
 <link rel="stylesheet" href="{{ "css/uno.css" | relURL }}">
 
-<!-- Create-event overrides -->
+{{/* Your event-specific overrides */}}
 <link id="cr-event-css"
       data-persist
       rel="stylesheet"

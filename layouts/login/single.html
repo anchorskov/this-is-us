@@ -1,19 +1,6 @@
 {{ define "main" }}
-<main class="min-h-screen flex items-center justify-center bg-white">
-  <div class="w-full max-w-md p-8 bg-white rounded-xl shadow">
-    <h1 class="text-xl font-bold text-center mb-6">Sign In</h1>
-
-    <!-- ✅ Required container for FirebaseUI -->
-    <div id="firebaseui-auth-container" class="my-8"></div>
-
-    <!-- ✅ Firebase config script (REQUIRED) -->
-    <script id="__fbCfg" type="application/json">
-      {
-        "apiKey": "YOUR_API_KEY",
-        "authDomain": "YOUR_PROJECT.firebaseapp.com",
-        "projectId": "YOUR_PROJECT_ID"
-      }
-    </script>
-  </div>
-</main>
+<section class="max-w-xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
+  <h1 class="text-2xl font-bold mb-4 text-center">Sign In</h1>
+  <div id="firebaseui-auth-container"></div>
+</section>
 {{ end }}
