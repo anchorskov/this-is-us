@@ -117,11 +117,11 @@ buildFuture  = false
   url        = "/townhall/"
   weight     = 8
 
-[[menu.main]]
-  identifier = "podcast"
-  name       = "Podcast"
-  url        = "/podcast/"
-  weight     = 9
+#[[menu.main]]
+# identifier = "podcast"
+# name       = "Podcast"
+# url        = "/podcast/"
+# weight     = 9
 
 [[menu.main]]
   identifier = "contact"
