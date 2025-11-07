@@ -1,4 +1,4 @@
-// worker/src/index.mjs – central route map (updated 2025‑07‑18)
+// worker/src/index.mjs – central route map (updated 2025-11-07)
 
 import { Router } from "itty-router";
 
@@ -27,7 +27,7 @@ import { register as registerPreferences } from "./routes/preferences.js";
 import { handlePreferencesRequest } from "./account/preferences.js";
 import { handlePublicTopicIndex } from "./routes/topic-index.js";
 import { handleTopicRequests } from "./account/topic-requests.js";
-import userTopics from "./routes/api/user-topics/index.js";   // ⬅ NEW ROUTES
+import userTopics from "./routes/api/user-topics/index.js"; // ⬅ NEW ROUTES
 
 // User sync
 import { handleSyncUser } from "./routes/sync-user.js";
@@ -35,12 +35,15 @@ import { handleSyncUser } from "./routes/sync-user.js";
 // Shared CORS helper
 import { handleCORSPreflight } from "./utils/cors.js";
 
+// Stripe webhook handler
+import handleStripeWebhook from "./stripe-webhook.js";
+
 /* ─────────── Router setup ─────────── */
 const router = Router();
 
 /* Global CORS pre-flight */
-router.options("/api/*", handleCORSPreflight);  // pre-flight for every API path
-router.options("*",  (_, __, ___) => new Response(null, { status: 204 }));
+router.options("/api/*", handleCORSPreflight); // pre-flight for every API path
+router.options("*", () => new Response(null, { status: 204 }));
 
 /* Events */
 router
@@ -67,25 +70,28 @@ router
   .post("/api/sandbox/analyze", handleSandboxAnalyze);
 
 /* Preferences & topics */
-registerPreferences(router);                       // OPTIONS + POST
+registerPreferences(router); // OPTIONS + POST
 router.get("/api/preferences", handlePreferencesRequest); // GET
 
 /* User-topic checkbox routes */
 router
-  .get ("/api/user-topics",  userTopics.GET)  // list user selections
-  .post("/api/user-topics",  userTopics.POST); // toggle selection
+  .get("/api/user-topics", userTopics.GET) // list user selections
+  .post("/api/user-topics", userTopics.POST); // toggle selection
 
-registerSetup(router);                             // mounts /api/setup/topics
+registerSetup(router); // mounts /api/setup/topics
 router.get("/api/topic-index", handlePublicTopicIndex);
 router
   .get("/api/topic-requests", handleTopicRequests)
   .post("/api/topic-requests", handleTopicRequests)
-  .post("/api/sync-user",      handleSyncUser);
+  .post("/api/sync-user", handleSyncUser);
+
+/* Stripe webhook */
+router.post("/api/stripe-webhook", handleStripeWebhook);
 
 /* Health & fallback */
-router.all("/api/_health", () =>           // responds to GET, HEAD, OPTIONS, etc.
+router.all("/api/_health", () =>
   new Response(JSON.stringify({ ok: true }), {
-    headers: { "Content-Type": "application/json" }
+    headers: { "Content-Type": "application/json" },
   })
 );
 
@@ -94,15 +100,19 @@ router.all("*", () => new Response("Not found", { status: 404 }));
 /* ─────────── Worker export ─────────── */
 export default {
   async fetch(request, env, ctx) {
-    const res     = await router.fetch(request, env, ctx);
+    const res = await router.fetch(request, env, ctx);
     const headers = new Headers(res.headers);
 
-    /* ensure CORS headers are present on *every* response */
-    if (!headers.has("Access-Control-Allow-Origin"))
+    // ensure CORS headers are present on *every* response
+    if (!headers.has("Access-Control-Allow-Origin")) {
       headers.set("Access-Control-Allow-Origin", "*");
+    }
 
     headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, Stripe-Signature"
+    );
 
     return new Response(res.body, { status: res.status, headers });
   },
@@ -111,4 +121,3 @@ export default {
     /* cron jobs */
   },
 };
-

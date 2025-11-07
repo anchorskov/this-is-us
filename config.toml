@@ -35,6 +35,8 @@ buildFuture  = false
   subtitle            = "Reclaiming our voice. Standing together."
   keywords            = ["community", "justice", "voices", "podcast"]
 
+  donate_link         = "https://buy.stripe.com/9B6fZjb1g8Ue2D08Np5gc00"
+
   defaultTheme        = "auto"
   disableScrollToTop  = false
   ShowReadingTime     = true

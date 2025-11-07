@@ -58,3 +58,14 @@
     );
   });
 </script>
+<!-- layouts/partials/extend_head.html -->
+<!-- stripe assets only on /donate/ -->
+{{- $p := .RelPermalink -}}
+{{- if or (eq $p "/donate/") (hasPrefix $p "/donate/") -}}
+  <!-- Preconnect to speed up Checkout -->
+  <link rel="preconnect" href="https://js.stripe.com" crossorigin>
+  <link rel="preconnect" href="https://api.stripe.com" crossorigin>
+
+  <!-- Stripe.js v3 (safe to include; no inline JS needed) -->
+  <script src="https://js.stripe.com/v3/"></script>
+{{- end -}}

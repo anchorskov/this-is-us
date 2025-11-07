@@ -9,9 +9,9 @@
 <!-- ── Build-time flags (injected by Hugo) ─────────────── -->
 <script>
   /*  true on `hugo --environment production`, else false  */
-  window.IS_PRODUCTION      = {{ hugo.IsProduction | default false | jsonify | safeJS }};
+  window.IS_PRODUCTION = {{ hugo.IsProduction | default false }};
   /*  your Pages-/config-provided site-key  */
-  window.TURNSTILE_SITEKEY  = {{ site.Params.turnstile_sitekey | default "" | jsonify | safeJS }};
+  window.TURNSTILE_SITEKEY = {{ site.Params.turnstile_sitekey | default "" | jsonify }};
 </script>
 
 <!-- ░░ Early Dark-Mode Toggle  ░░ -->
@@ -112,7 +112,7 @@
 <!-- ░░ AUTH GUARD (lazy-load after Firebase) ░░ -->
 {{/* <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> */}}
 
-<!-- ░░ Turnstile success stub (prevents “callback not a function”) ░░ -->
+<!-- ░░ Turnstile success stub (prevents "callback not a function") ░░ -->
 <script>
   window.onTurnstileSuccess ||= function () { /* noop */ };
 </script>

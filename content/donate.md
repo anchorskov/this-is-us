@@ -5,45 +5,41 @@ slug: "donate"
 draft: false
 ---
 
-<!-- updated to reflect current mail-only donation policy -->
+<link rel="stylesheet" href="/css/donate.css">
 
-{{< rawhtml >}}
-<style>
-  html, body, main, .post {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  #mail-donate {
-    padding: 2rem;
-    font-size: 1rem;
-    line-height: 1.5;
-    max-width: 600px;
-    margin: auto;
-  }
-</style>
-
-<div id="mail-donate">
+<div class="donate-wrap">
   <h2>Support This Is Us</h2>
 
   <p>
-    The Integrity Project is currently only accepting donations by mail.
+    Our work lives on small gifts. Choose the option that works best for you: a secure online donation (card or bank) or a check by mail.
   </p>
 
+  <div class="donate-actions">
+    <a class="btn btn-primary" href="{{< param donate_link >}}" rel="noopener">Give online</a>
+    <a class="btn btn-secondary" href="#mail">Mail a check</a>
+  </div>
+
+  <p class="note">
+    Online giving supports cards, Apple Pay or Google Pay, and ACH bank debit. You can also choose a monthly gift.
+  </p>
+
+  <h3 id="mail">Give by mail</h3>
   <p>
-    To support our nonprofit work, please send a check made payable to:
-    <br>
-    <strong>Integrity Project</strong><br>
+    Make checks payable to <span class="addr">Integrity Project</span> and mail to:
+  </p>
+  <p class="addr">
+    Integrity Project<br>
     5685 Hanly Dr<br>
     Mills, WY 82604
   </p>
 
-  <p>
-    Please include your full name, address, and email so we can send you a receipt. Contributions to the Integrity Project are tax-deductible under section 501(c)(3).
+  <p class="note">
+    Include your full name, mailing address, and email so we can send a receipt. Contributions are tax-deductible under section 501(c)(3).
   </p>
 
-  <p><strong>Note:</strong> We are not currently accepting online contributions. Your support helps sustain our civic platform and public engagement tools.</p>
+  <hr>
+
+  <p class="note">
+    Thank you for supporting Integrity Project, a 501(c)(3) nonprofit. No goods or services were provided in exchange for this contribution. EIN: 39-3335309.
+  </p>
 </div>
-{{< /rawhtml >}}

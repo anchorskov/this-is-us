@@ -21,6 +21,11 @@ database_name = "events_db_local"
 database_id   = "1624450c-f228-4802-8a76-9c65f29295fa"
 migrations_dir = "migrations"   
 
+[[d1_databases]]
+binding = "BALLOT_DB"
+database_name = "ballot_sources"
+database_id   = "9c4b0c27-eb33-46e6-a477-fb49d4c81474"
+
 [[r2_buckets]]
 binding             = "EVENT_PDFS"
 bucket_name         = "event-pdfs-bucket"

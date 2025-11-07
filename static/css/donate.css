@@ -1,0 +1,10 @@
+/* static/css/donate.css */
+.donate-wrap { padding: 2rem; line-height: 1.6; max-width: 720px; margin: 0 auto; }
+.donate-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0 2rem; }
+.btn { padding: .6rem 1rem; border-radius: .5rem; text-decoration: none; display: inline-block; }
+.btn-primary { background: var(--brand, #4f46e5); color: #fff; }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-secondary { background: #f3f4f6; color: #111827; }
+.btn-secondary:hover { filter: brightness(0.98); }
+.note { font-size: .95rem; color: #374151; }
+.addr { font-weight: 600; }
