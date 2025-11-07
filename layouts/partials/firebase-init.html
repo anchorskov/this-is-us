@@ -42,7 +42,8 @@
 <script type="module" src="/js/firebase-login.js"></script>
 <script type="module" src="/js/firebase-session.js"></script>
 <script type="module" src="/js/firebase-idle-logout.js"></script>
-<!-- (auth guard is injected once in extend_head.html) -->
+<script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script>
+<!-- auth guard lives here so Firebase is initialised first -->
 
 <!-- 6️⃣ Early auth status log -->
 <script type="module">

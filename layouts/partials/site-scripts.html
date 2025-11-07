@@ -8,6 +8,19 @@
 <script>
 (function () {
   const onHugoServer = location.hostname === 'localhost' && location.port === '1313';
+  const params       = new URLSearchParams(location.search);
+  const localPref    = localStorage.getItem('useLocalWorker');
+  const enabledViaQuery = params.get('useLocalWorker');
+
+  if (enabledViaQuery === '1') {
+    localStorage.setItem('useLocalWorker', '1');
+  } else if (enabledViaQuery === '0') {
+    localStorage.removeItem('useLocalWorker');
+  }
+
+  const shouldProbeLocal =
+    onHugoServer &&
+    (enabledViaQuery === '1' || localPref === '1');
 
   /* default:
        – prod build  →  /api
@@ -17,7 +30,7 @@
     : '/api';
 
   /* optional local Worker probe (wrangler dev --port 8787) */
-  if (onHugoServer) {
+  if (shouldProbeLocal) {
     const local = 'http://127.0.0.1:8787';
     fetch(local + '/api/_health', { mode: 'no-cors' })
       .then(() => {
@@ -28,6 +41,9 @@
         console.log('🐛 Using remote Worker →', window.EVENTS_API_URL);
       });
   } else {
+    if (onHugoServer) {
+      console.log('🐛 Skipping local Worker probe (enable with ?useLocalWorker=1)');
+    }
     console.log('🌐 Using API →', window.EVENTS_API_URL);
   }
 })();

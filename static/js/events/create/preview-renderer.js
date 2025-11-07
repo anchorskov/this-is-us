@@ -3,6 +3,9 @@
 import { submitEvent } from '../submit-event.js';
 // Updated import: Get the right modal function and the loading helper
 import { showSuccessModal, toggleLoading } from '../ui-feedback.js';
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+const auth = getAuth();
 
 export function renderPreview() {
   const pane = document.getElementById('event-preview');
@@ -60,6 +63,17 @@ export function renderPreview() {
       errLabel.classList.remove('hidden');
       return;
     }
+
+    const authUser = auth.currentUser;
+    if (!authUser) {
+      errLabel.textContent = 'Please sign in to submit your event.';
+      errLabel.classList.remove('hidden');
+      return;
+    }
+
+    data.userId = authUser.uid;
+    data.userEmail = authUser.email || '';
+    data.userDisplayName = authUser.displayName || '';
 
     try {
       // Use the toggleLoading helper for a better UX

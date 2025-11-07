@@ -109,8 +109,7 @@
   <script src="{{ "js/utils/disable-logs.js" | relURL }}"></script>
 {{ end }}
 
-<!-- ░░ AUTH GUARD (lazy-load after Firebase) ░░ -->
-{{/* <script type="module" src="{{ "js/firebase-auth-guard.js" | relURL }}"></script> */}}
+<!-- ░░ AUTH GUARD (loaded via firebase-init.html so Firebase app exists) ░░ -->
 
 <!-- ░░ Turnstile success stub (prevents "callback not a function") ░░ -->
 <script>

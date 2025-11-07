@@ -16,43 +16,100 @@ import {
   getFirestore
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 import {
-  getAuth
+  getAuth,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 /* Run **only after** the DOM is fully parsed so #map exists  */
-document.addEventListener('DOMContentLoaded', async () => {
-  /* 1️⃣  Wait for Firebase Auth to settle */
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🧱 create-event bootstrap ready');
   const auth = getAuth();
-  await auth.authStateReady;
-  const user = auth.currentUser;
-  const uid  = user?.uid ?? null;
+  const gate   = document.getElementById('create-auth-gate');
+  const wizard = document.getElementById('create-event-wizard');
+  const loginBox = document.getElementById('firebaseui-auth-container');
 
-  const db = getFirestore();
+  const showGate = () => {
+    console.log('🚧 create-event: showing auth gate');
+    gate?.classList.remove('hidden');
+    wizard?.classList.add('hidden');
+    loginBox?.classList.remove('hidden');
+  };
 
-  /* 2️⃣  If the user has a saved ZIP → centre the map there */
-  const savedZip = await getUserZip(db, uid);
-  if (savedZip) {
-    try {
-      const { lat, lon } = await geocode(savedZip);
-      document.dispatchEvent(new CustomEvent('zoomToZip', {
-        detail: { lat, lon, zoom: 10 }
-      }));
-      console.log('📦 Zoomed to saved ZIP:', savedZip);
-    } catch (err) {
-      console.warn('❗ Failed to geocode saved ZIP:', err.message);
+  const hideGate = () => {
+    console.log('✅ create-event: hiding auth gate, showing wizard');
+    gate?.classList.add('hidden');
+    wizard?.classList.remove('hidden');
+    loginBox?.classList.add('hidden');
+  };
+
+  let wizardInitialised = false;
+
+  const initWizard = async (user) => {
+    if (wizardInitialised) return;
+    wizardInitialised = true;
+
+    hideGate();
+
+    const db = getFirestore();
+
+    /* 1️⃣  If the user has a saved ZIP → centre the map there */
+    const savedZip = await getUserZip(db, user.uid);
+    if (savedZip) {
+      try {
+        const { lat, lon } = await geocode(savedZip);
+        document.dispatchEvent(new CustomEvent('zoomToZip', {
+          detail: { lat, lon, zoom: 10 }
+        }));
+        console.log('📦 Zoomed to saved ZIP:', savedZip);
+      } catch (err) {
+        console.warn('❗ Failed to geocode saved ZIP:', err.message);
+      }
     }
+
+    /* 2️⃣  ZIP → city/state auto-fill */
+    initAddressFields();
+
+    /* 3️⃣  Build the map & locator UI */
+    setupMapLocator({
+      mapId   : 'map',
+      formId  : 'addressForm',
+      errorId : 'errorMsg',
+      resultId: 'latlonDisplay',
+    });
+
+    /* 4️⃣  The event-details form is now managed by form-flow.js based on user interaction. */
+  };
+
+  // Default to gate while auth state is resolving
+  showGate();
+
+  const attemptImmediateBootstrap = () => {
+    const user = auth.currentUser || window.currentUser || null;
+    if (user) {
+      console.log('🟢 create-event: bootstrap via currentUser/window.currentUser');
+      initWizard(user);
+      return true;
+    }
+    return false;
+  };
+
+  if (!attemptImmediateBootstrap()) {
+    const poll = setInterval(() => {
+      if (attemptImmediateBootstrap()) clearInterval(poll);
+    }, 300);
   }
 
-  /* 3️⃣  ZIP → city/state auto-fill */
-  initAddressFields();
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      console.log('🔒 create-event: no user – showing login gate');
+      showGate();
+      if (wizardInitialised) {
+        window.location.reload();
+      }
+      return;
+    }
 
-  /* 4️⃣  Build the map & locator UI */
-  setupMapLocator({
-    mapId   : 'map',
-    formId  : 'addressForm',
-    errorId : 'errorMsg',
-    resultId: 'latlonDisplay',
+    console.log('🔓 create-event: user detected – bootstrapping wizard');
+    initWizard(user);
   });
-
-  /* 5️⃣  The event-details form is now managed by form-flow.js based on user interaction. */
 });

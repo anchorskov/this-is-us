@@ -54,6 +54,23 @@ export async function handleCreateEvent(request, env) {
   if (cors) return cors;
 
   const fd = await request.formData();
+  const userId = fd.get('userId');
+  if (!userId) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        code: 'AUTH_REQUIRED',
+        error: 'Login required to create events.'
+      }),
+      {
+        status: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders()
+        }
+      }
+    );
+  }
   const file = fd.get('file');
 
   let pdf_key = null, pdf_hash = null;
@@ -65,7 +82,7 @@ export async function handleCreateEvent(request, env) {
     `INSERT INTO events (user_id, name, date, location, pdf_key, lat, lng, sponsor, contact_email, contact_phone, pdf_hash, description)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
-    fd.get('userId') ?? 'anonymous', fd.get('name'), fd.get('date'), fd.get('location'),
+    userId, fd.get('name'), fd.get('date'), fd.get('location'),
     pdf_key, fd.get('lat'), fd.get('lng'), fd.get('sponsor') ?? '',
     fd.get('contactEmail') ?? '', fd.get('contactPhone') ?? '',
     pdf_hash, fd.get('description') ?? ''

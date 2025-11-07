@@ -20,6 +20,8 @@ export function getUserFriendlyError(code, message) {
       return 'There was a problem uploading the file. Please try again.';
     case 'DB_ERROR':
       return 'There was a problem saving your event. Please try again.';
+    case 'AUTH_REQUIRED':
+      return 'Please sign in to create an event.';
     default:
       return message || 'Something went wrong. Please try again.';
   }

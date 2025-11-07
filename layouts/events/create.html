@@ -33,11 +33,23 @@
     <!-- FirebaseUI login container -->
     <div id="firebaseui-auth-container" class="mb-6"></div>
 
-    <!-- Step 1 – Address & Map -->
-    {{ partial "event-step-location.html" . }}
+    <!-- Auth gate notice -->
+    <div id="create-auth-gate"
+         class="mb-8 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900">
+      <p class="font-semibold">Sign in to continue.</p>
+      <p class="text-sm">
+        Use the login box above to sign in or create an account. Once you are signed in,
+        the event builder will unlock automatically.
+      </p>
+    </div>
 
-    <!-- Step 2 – Details Form -->
-    {{ partial "event-form.html" . }}
+    <div id="create-event-wizard" class="hidden">
+      <!-- Step 1 – Address & Map -->
+      {{ partial "event-step-location.html" . }}
+
+      <!-- Step 2 – Details Form -->
+      {{ partial "event-form.html" . }}
+    </div>
   </article>
 
   <!-- Page-specific scripts: -->
