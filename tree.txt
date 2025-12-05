@@ -1,0 +1,199 @@
+this-is-us/
+├── config files
+│   ├── config.toml
+│   ├── config.development.toml
+│   ├── package.json
+│   ├── jest.setup.cjs
+│   ├── postcss.config.js
+│   ├── uno.config.mjs
+│   ├── firebase.json
+│   ├── firestore.rules
+│   └── firestore.indexes.json
+│
+├── root scripts
+│   ├── index_project.py
+│   ├── setup_this_is_us.py
+│   ├── patch-thread-view.sh
+│   ├── hugos-path.md
+│   ├── logic-index.md
+│   ├── project-audit.md
+│   ├── contentballot.md
+│   ├── README.md
+│
+├── _dev/ (development)
+│   ├── review/
+│   └── townhall_stubs/
+│
+├── admin/
+│   └── dashboard.js
+│
+├── archetypes/
+│   └── default.md
+│
+├── archive_content/ (archived pages)
+│   ├── _index.md
+│   ├── about.md
+│   ├── contact.md
+│   ├── events.md
+│   ├── learn.md
+│   ├── podcast.md
+│   └── voices.md
+│
+├── assets/
+│   ├── css/
+│   │   ├── common/ (main styles)
+│   │   ├── core/ (base styles)
+│   │   ├── includes/ (utilities)
+│   │   └── main.css
+│
+├── ballots/ (ballot workers)
+│   ├── src/
+│   │   └── index.mjs
+│   ├── tools/
+│   │   ├── fetchBallotForZip.js
+│   │   └── generateBallotFromSources.js
+│   ├── package.json
+│   └── wrangler.toml
+│
+├── content/ (Hugo pages & posts)
+│   ├── _index.md (homepage)
+│   ├── about.md
+│   ├── account.md
+│   ├── contact.md
+│   ├── credits.md
+│   ├── donate.md
+│   ├── feedback.md
+│   ├── manifesto.md
+│   ├── podcast.md
+│   ├── voices.md
+│   ├── volunteer.md
+│   ├── SkovgardFamily.md
+│   ├── account/ (account pages)
+│   ├── admin/ (admin pages)
+│   ├── ballot/ (ballot pages)
+│   ├── candidates/ (candidate pages)
+│   ├── events/ (event pages)
+│   ├── forum/ (forum pages)
+│   ├── login/ (login pages)
+│   ├── sandbox/ (test pages)
+│   └── townhall/ (townhall pages)
+│
+├── d1-local/ (local database)
+│   └── v3/
+│
+├── data/ (data files)
+│   ├── 0001_create_townhall_posts.sql
+│   ├── 0002_seed_townhall_posts.sql
+│   └── us-state-centroids.json
+│
+├── documentation/ (project docs)
+│   ├── d1_raw_output.txt
+│   ├── d1_snapshot.md
+│   ├── open_states_update.md
+│   ├── preferences-summary.md
+│   ├── security-protocols.md
+│   ├── thisisus_snapshot_111225.md
+│   ├── logs/
+│   └── BILL_SCANNER_*.md
+│
+├── firebase-seeder/ (Firebase setup)
+│   ├── check-giscus-urls.js
+│   ├── full-reset-seeder.js
+│   ├── seed.js
+│   ├── patch-giscus-urls.js
+│   ├── package.json
+│   └── serviceAccountKey.json
+│
+├── functions/ (Firebase Cloud Functions)
+│   ├── index.js
+│   └── package.json
+│
+├── i18n/ (internationalization)
+│
+├── layouts/ (Hugo templates)
+│   ├── index.html (homepage template)
+│   ├── _default/
+│   ├── account/
+│   ├── admin/
+│   ├── ballot/
+│   ├── candidates/
+│   ├── events/
+│   ├── forum/
+│   ├── login/
+│   ├── partials/
+│   ├── sandbox/
+│   ├── shortcodes/
+│   └── townhall/
+│
+├── mcp/ (Model Context Protocol server)
+│   ├── src/
+│   │   ├── lib/ (utilities)
+│   │   ├── routes/ (endpoints)
+│   │   └── index.mjs
+│   ├── migrations/
+│   ├── tools/
+│   ├── package.json
+│   └── wrangler.toml
+│
+├── modules/ (Hugo modules)
+│
+├── resources/ (Hugo resources)
+│   └── _gen/
+│
+├── scripts/ (Python/JS utilities)
+│   ├── auth.py
+│   ├── cli_llm_interface.py
+│   ├── hugo-dependency-audit.py
+│   ├── hugo-layout-audit.py
+│   ├── hugo-section-comparison.py
+│   ├── id-audit.js
+│   ├── listLoadedStylesheets.js
+│   ├── projectcss-audit.py
+│   ├── public-css-audit.py
+│   └── scan_hugo_md.py
+│
+├── static/ (static assets)
+│
+├── storage/ (file storage)
+│
+├── tests/ (test files)
+│
+├── tmp/ (temporary files)
+│
+└── worker/ (main Cloudflare Worker)
+    ├── src/
+    │   ├── lib/
+    │   │   ├── hotTopicsAnalyzer.mjs (bill analysis)
+    │   │   ├── openAiSelfTest.mjs (API health check)
+    │   │   └── ... (other utilities)
+    │   ├── routes/
+    │   │   ├── civicScan.mjs (bill scanning endpoint)
+    │   │   ├── openAiSelfTest.mjs (self-test endpoint)
+    │   │   └── ... (other routes)
+    │   └── index.mjs (main entry point)
+    ├── migrations_wy/
+    │   ├── 0001_*.sql
+    │   ├── 0002_*.sql
+    │   ├── ...
+    │   └── 0010_add_reason_summary_to_civic_item_ai_tags.sql (NEW)
+    ├── .env (environment variables)
+    ├── package.json
+    └── wrangler.toml
+
+KEY WORKING DIRECTORIES:
+- worker/ → Main API server (Cloudflare Workers)
+- content/ → Hugo content & pages
+- layouts/ → Hugo templates
+- assets/ → CSS & styling
+- scripts/ → Utilities & automation
+- data/ → Database migrations & seeds
+- documentation/ → Project docs
+- firebase-seeder/ → Firebase setup
+- functions/ → Cloud Functions
+
+EXCLUDED (vendor/generated):
+- node_modules/ → Dependencies
+- .git/ → Git history
+- themes/ → Hugo themes
+- public/ → Built static site
+- _gen/ → Generated files

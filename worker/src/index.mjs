@@ -45,7 +45,10 @@ import userTopics from "./routes/api/user-topics/index.js"; // ⬅ NEW ROUTES
 import { handleVoterLookup } from "./routes/voters.js";
 import { handleGetCivicItem } from "./routes/civicItems.mjs";
 import { handleOpenStatesSearch } from "./routes/openStatesSearch.mjs";
-import { handlePendingBills } from "./routes/pendingBills.mjs";
+import {
+  handlePendingBills,
+  handlePendingBillsWithTopics,
+} from "./routes/pendingBills.mjs";
 import { handleListHotTopics, handleGetHotTopic } from "./routes/hotTopics.mjs";
 import { handleVoteCivicItem } from "./routes/civicVotes.mjs";
 import { handleScanPendingBills, handleTestOne } from "./routes/civicScan.mjs";
@@ -112,6 +115,7 @@ router.get("/api/civic/items/:id", handleGetCivicItem);
 router.post("/api/civic/items/:id/vote", handleVoteCivicItem);
 router.get("/api/civic/openstates/search", handleOpenStatesSearch);
 router.get("/api/civic/pending-bills", handlePendingBills);
+router.get("/api/civic/pending-bills-with-topics", handlePendingBillsWithTopics);
 
 // Test routes (Milestones 1–2)
 router.get("/api/internal/civic/test-one", handleTestOne);

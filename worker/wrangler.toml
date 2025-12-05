@@ -9,6 +9,7 @@ FIREBASE_PROJECT_ID   = "this-is-us-events"
 FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
 OPENSTATES_API_KEY    = "34c97a5b-a758-407a-961f-7bfd54460c5c"
+OPENAI_API_KEY        = "${OPENAI_API_KEY}"
 
 [env.production.triggers]
 crons = ["0 1 * * *"]
@@ -46,6 +47,7 @@ FIREBASE_PROJECT_ID   = "this-is-us-events"
 FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
 OPENSTATES_API_KEY    = "34c97a5b-a758-407a-961f-7bfd54460c5c"
+OPENAI_API_KEY        = "${OPENAI_API_KEY}"
 
 [[env.preview.d1_databases]]
 binding       = "EVENTS_DB"
@@ -75,6 +77,7 @@ FIREBASE_PROJECT_ID   = "this-is-us-events"
 FIREBASE_CLIENT_EMAIL = "firebase-adminsdk@this-is-us.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY  = "${FIREBASE_PRIVATE_KEY}"
 OPENSTATES_API_KEY    = "34c97a5b-a758-407a-961f-7bfd54460c5c"
+OPENAI_API_KEY        = "${OPENAI_API_KEY}"
 
 [[env.production.d1_databases]]
 binding              = "EVENTS_DB"

@@ -465,6 +465,25 @@ export function buildUserPromptTemplate(billNumber, topicLabel) {
  * @param {Object} analysis - Result from analyzeBillForHotTopics()
  * @returns {Promise<void>}
  */
+/**
+ * saveHotTopicAnalysis(env, billId, analysis)
+ * 
+ * Persists AI analysis results to both WY_DB and EVENTS_DB.
+ * 
+ * **Phase 1:** Save to WY_DB.civic_item_ai_tags
+ * - Stores: item_id, topic_slug, confidence, trigger_snippet, reason_summary
+ * - reason_summary: One to two sentences explaining plainly why this bill matches this topic.
+ *   Example: "This bill directly addresses homeowner concerns by capping property tax assessment 
+ *   increases to 3% per year, protecting families and retirees from sudden tax spikes."
+ * 
+ * **Phase 2:** Link to EVENTS_DB hot_topics
+ * - Creates references from hot_topic_civic_items junction table
+ * - Links only bills that matched at least one canonical topic
+ * 
+ * @param {Object} env - Cloudflare Worker environment with WY_DB and EVENTS_DB bindings
+ * @param {string} billId - Bill ID (e.g., "ocd-bill/us-wy:bill/2025/HB 22")
+ * @param {Object} analysis - Result from analyzeBillForHotTopics() with topics array
+ */
 export async function saveHotTopicAnalysis(env, billId, analysis) {
   const { topics = [], other_flags = [] } = analysis || {};
 
@@ -497,6 +516,9 @@ export async function saveHotTopicAnalysis(env, billId, analysis) {
 
   // Phase 2: Link to EVENTS_DB.hot_topic_civic_items
   // Fetch active hot_topics from EVENTS_DB
+  // Future: match_criteria_json column can be used to apply rule-based filters
+  // (e.g., require specific keywords, exclude others, or enforce minimum confidence thresholds).
+  // For now, analyzeBillForHotTopics() uses OpenAI-based matching.
   let topicMap = new Map();
   try {
     const { results = [] } = await env.EVENTS_DB.prepare(
