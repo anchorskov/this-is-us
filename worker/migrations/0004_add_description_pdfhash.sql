@@ -1,3 +1,3 @@
--- These columns were already added in migration 0003
--- ALTER TABLE events ADD COLUMN description TEXT;
--- ALTER TABLE events ADD COLUMN pdf_hash    TEXT;
+-- No-op migration
+-- The description column was already added in a previous migration
+SELECT 1;

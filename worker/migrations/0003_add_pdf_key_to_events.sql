@@ -1,2 +1,4 @@
-ALTER TABLE events ADD COLUMN pdf_hash TEXT;
-ALTER TABLE events ADD COLUMN description TEXT;
+-- These columns were already added in a previous migration on production
+-- Migration is now a no-op to maintain compatibility
+-- The pdf_hash and description columns already exist in the events table
+SELECT 1;
