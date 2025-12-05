@@ -49,7 +49,7 @@ if (host !== "127.0.0.1" && host !== "localhost") {
 ```
 
 **Impact:**
-- ✅ **Local:** Use `http://127.0.0.1:8787/api/internal/civic/scan-pending-bills`
+- ✅ **Local:** Use `http://127.0.0.1:8787/api/internal/civic/scan-pending-bills` (or `localhost`)
 - ❌ **Remote:** Automatically rejected with 403
 - 🚀 **Future Production:** Replace with auth token or scheduled event
 
@@ -240,7 +240,7 @@ Topic distribution:
 | Symptom | Cause | Fix |
 |---------|-------|-----|
 | 403 "Scanner disabled" | BILL_SCANNER_ENABLED not set | `export BILL_SCANNER_ENABLED=true` |
-| 403 "Forbidden. Dev access only." | Wrong hostname | Use `127.0.0.1`, not `localhost` or IP |
+| 403 "Forbidden. Dev access only." | Wrong hostname | Use `127.0.0.1` or `localhost` |
 | Empty results (topics: []) | Missing OPENAI_API_KEY | `export OPENAI_API_KEY="sk-..."` |
 | Scan hangs | wrangler dev not running | Start `npx wrangler dev --local` first |
 | No pending bills | civic_items table empty | Run `/api/dev/openstates/sync?session=2025` |

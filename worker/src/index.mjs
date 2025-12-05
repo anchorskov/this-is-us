@@ -48,6 +48,7 @@ import { handleOpenStatesSearch } from "./routes/openStatesSearch.mjs";
 import { handlePendingBills } from "./routes/pendingBills.mjs";
 import { handleListHotTopics, handleGetHotTopic } from "./routes/hotTopics.mjs";
 import { handleVoteCivicItem } from "./routes/civicVotes.mjs";
+import { handleScanPendingBills, handleTestOne } from "./routes/civicScan.mjs";
 import { syncWyomingBills } from "./lib/openStatesSync.mjs";
 
 // User sync
@@ -110,6 +111,13 @@ router.get("/api/civic/items/:id", handleGetCivicItem);
 router.post("/api/civic/items/:id/vote", handleVoteCivicItem);
 router.get("/api/civic/openstates/search", handleOpenStatesSearch);
 router.get("/api/civic/pending-bills", handlePendingBills);
+
+// Test routes (Milestones 1–2)
+router.get("/api/internal/civic/test-one", handleTestOne);
+router.post("/api/internal/civic/test-one", handleTestOne);
+
+// Production scan route (Milestone 4)
+router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
 
 // DEV ONLY sync route for OpenStates bills into civic_items (uses WY_DB)
 router.get("/api/dev/openstates/sync", async (req, env) => {
