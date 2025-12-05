@@ -49,6 +49,7 @@ import { handlePendingBills } from "./routes/pendingBills.mjs";
 import { handleListHotTopics, handleGetHotTopic } from "./routes/hotTopics.mjs";
 import { handleVoteCivicItem } from "./routes/civicVotes.mjs";
 import { handleScanPendingBills, handleTestOne } from "./routes/civicScan.mjs";
+import { handleOpenAiSelfTest } from "./routes/openAiSelfTest.mjs";
 import { syncWyomingBills } from "./lib/openStatesSync.mjs";
 
 // User sync
@@ -118,6 +119,9 @@ router.post("/api/internal/civic/test-one", handleTestOne);
 
 // Production scan route (Milestone 4)
 router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
+
+// OpenAI API key self-test (dev only)
+router.get("/api/internal/openai-self-test", handleOpenAiSelfTest);
 
 // DEV ONLY sync route for OpenStates bills into civic_items (uses WY_DB)
 router.get("/api/dev/openstates/sync", async (req, env) => {
