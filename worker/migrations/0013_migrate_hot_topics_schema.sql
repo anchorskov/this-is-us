@@ -2,6 +2,9 @@
 -- Drops old table and recreates with correct field names and structure
 -- The old data is discarded; topics will be re-seeded
 
+-- Temporarily disable foreign key constraints to allow table recreation
+PRAGMA foreign_keys = OFF;
+
 DROP TABLE IF EXISTS hot_topics;
 
 -- Create hot_topics with correct schema
@@ -19,6 +22,9 @@ CREATE TABLE hot_topics (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Re-enable foreign key constraints
+PRAGMA foreign_keys = ON;
 
 -- Trigger to keep updated_at fresh on updates
 CREATE TRIGGER trg_hot_topics_updated

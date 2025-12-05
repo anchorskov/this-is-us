@@ -1,7 +1,7 @@
 -- Migration 022: Add voter data normalization and archival tables
 
 -- Table for raw voter import data
-CREATE TABLE voters_raw (
+CREATE TABLE IF NOT EXISTS voters_raw (
   voter_id TEXT PRIMARY KEY,
   first_name TEXT,
   last_name TEXT,
@@ -14,7 +14,7 @@ CREATE TABLE voters_raw (
 );
 
 -- Table for normalized voter records
-CREATE TABLE voters_norm (
+CREATE TABLE IF NOT EXISTS voters_norm (
   voter_id TEXT PRIMARY KEY,
   party_form5 TEXT,
   reg_year INTEGER

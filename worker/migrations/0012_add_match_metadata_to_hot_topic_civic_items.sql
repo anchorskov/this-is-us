@@ -20,4 +20,4 @@ ADD COLUMN excerpt TEXT;
 -- Create index for efficient querying of strongest matches per topic
 -- Helps with "top bills for topic" queries and sorting by relevance
 CREATE INDEX IF NOT EXISTS idx_hot_topic_matches_topic_score 
-ON hot_topic_civic_items(hot_topic_id, match_score DESC);
+ON hot_topic_civic_items(topic_id, match_score DESC);
