@@ -1,13 +1,13 @@
-# Database Snapshot – December 4, 2025
+# Database Snapshot – December 5, 2025
 
 ## Overview
-This document captures the current state of the This Is Us project's D1 databases, including schemas, tables, indexes, and access patterns as of December 4, 2025.
+This document captures the current state of the This Is Us project's D1 databases, including schemas, tables, indexes, and access patterns as of December 5, 2025.
 
-**Recent Updates (December 4, 2025):**
-- Hot Topics feature with civic engagement tracking (migration 0011 applied to all environments)
-- Open States bill integration for Wyoming civic_items (5 bills seeded)
-- UI scaffolding for hot topics list and detail views (`/hot-topics` and `/hot-topics/:slug`)
-- Direct SQLite access methods documented for offline database inspection
+**Recent Updates (December 5, 2025):**
+- Schema alignment between local and production environments (migrations 0013-0014)
+- Match metadata infrastructure added (migration 0012) for automatic bill-to-topic matching
+- All 3 D1 databases now have identical schemas: EVENTS_DB hot_topics and hot_topic_civic_items fully aligned
+- Migration compatibility fixes for older migrations (0003, 0004, 0011) to handle production schema variations
 
 ---
 
@@ -21,8 +21,9 @@ The project uses **3 D1 databases** across local development, preview, and produ
 - Preview: `events_db_preview` (ID: `1624450c-f228-4802-8a76-9c65f29295fa`)
 - Production: `events_db` (ID: `b5814930-2779-4bfb-8052-24ee419e09fd`)
 
-**Current State:** 12 tables (added hot_topics migration 0011 with test fixture migration 0010)
+**Current State:** 12 tables (hot_topics infrastructure with match metadata support)
 **Size:** ~90 KB (local)
+**Migrations Applied:** 0001-0014 (local & production aligned as of Dec 5, 2025)
 **Note:** Includes `voters_addr_norm` and `wy_city_county` from test fixture (migration 0010)
 
 ### 2. BALLOT_DB
@@ -121,15 +122,25 @@ CREATE TABLE hot_topics (
 )
 ```
 
-**hot_topic_civic_items** – Junction table linking bills to hot topics (NEW – Migration 0011)
+**hot_topic_civic_items** – Junction table linking bills to hot topics with match metadata (Migrations 0011, 0012, 0013, 0014)
 ```sql
 CREATE TABLE hot_topic_civic_items (
   topic_id INTEGER NOT NULL,
-  civic_item_id TEXT NOT NULL,
+  civic_item_id INTEGER NOT NULL,
+  match_score REAL,
+  matched_terms_json TEXT,
+  excerpt TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (topic_id, civic_item_id),
   FOREIGN KEY (topic_id) REFERENCES hot_topics(id)
 )
 ```
+
+**Schema Evolution:**
+- **0011** (original): Created table with compound key (topic_id, civic_item_id TEXT)
+- **0012** (Dec 5): Added match metadata columns (match_score, matched_terms_json, excerpt, created_at index)
+- **0013-0014** (Dec 5): Migration 0013 dropped and recreated hot_topics; Migration 0014 recreated hot_topic_civic_items with INTEGER civic_item_id and full metadata
+- **Current Schema** (local & production aligned): topic_id (INTEGER), civic_item_id (INTEGER), match_score (REAL), matched_terms_json (TEXT), excerpt (TEXT), created_at (DATETIME)
 
 **Seeded Hot Topics (6):**
 1. `property-tax-relief` (priority 10, badge: Taxes) – Rising assessments impact on homeowners
@@ -303,7 +314,8 @@ Index: `idx_votes_target` on `(target_type, target_id)`
 - civic_items: 5 Wyoming 2025 session bills (HB 22, HB 23, HB 264, SF 2, SF 4) + test data
 - user_ideas: 0 rows (ready for constituent input with up_votes/down_votes aggregation)
 - votes: Granular vote tracking with target_type/target_id support (0 rows, ready for endorsements)
-- hot_topic_civic_items (junction): 1 test link (property-tax-relief ← HB 22)
+- hot_topic_civic_items (junction): Links bills to topics; new columns support match_score, matched_terms_json, excerpt
+- **Match Metadata Ready:** Infrastructure in place for automatic bill scanning to populate match scores and matched terms
 
 ### Activity & Tracking Tables
 
@@ -560,31 +572,40 @@ database_id   = "4b4227f1-bf30-4fcf-8a08-6967b536a5ab"
    - **Implementation:** Junction table stores civic_item_ids → application queries WY_DB for bill details → results combined in response
    - **Status:** Fully functional; test data: 1 bill linked to property-tax-relief topic
 
-2. **Town Hall still uses Firestore**
+2. **Schema Alignment (Local ↔ Production) - RESOLVED (Dec 5)**
+   - ✅ Migrations 0013-0014 dropped and recreated tables to match local schema
+   - ✅ hot_topics: Field names aligned (slug, title, summary, badge, image_url, cta_label, cta_url, priority, is_active, created_at, updated_at)
+   - ✅ hot_topic_civic_items: PK and column names aligned (topic_id INTEGER, civic_item_id INTEGER, match_score, matched_terms_json, excerpt, created_at)
+   - ✅ All databases now have identical schemas
+   - **Status:** Local and production fully synchronized as of Dec 5, 2025
+
+3. **Town Hall still uses Firestore**
    - `townhall_posts` table exists but isn't actively used
    - Frontend still reads/writes directly to Firestore instead of D1
    - No convergence on single source of truth
 
-3. **Event creation is incomplete**
+4. **Event creation is incomplete**
    - Worker has `/api/events/create` endpoint but it's not fully implemented
    - Field name mismatches between UI and Worker (user_id vs userId)
    - PDF uploads to R2 not implemented
 
-4. **Auth & Voter Verification not enforced**
+5. **Auth & Voter Verification not enforced**
    - Worker APIs don't validate Firebase tokens
    - No voter status lookup against WY_DB
    - CORS is open to all origins (Access-Control-Allow-Origin: *)
    - Caller-supplied user_id parameters are trusted
 
-5. **BALLOT_DB binding missing from production config**
+6. **BALLOT_DB binding missing from production config**
    - Wrangler warning indicates incomplete environment configuration
 
-6. **Hot Topics UI - Civic Items Display**
+7. **Hot Topics UI - Civic Items Display (Match Metadata Ready)**
    - List view shows bill count (0) pending civic item links
    - Detail view displays "No bills linked" placeholder
    - Requires manual INSERT into `hot_topic_civic_items` to link bills
-   - **Status:** Ready for population as more bills are tracked
+   - **New (Dec 5):** match_score, matched_terms_json, excerpt columns ready for automatic scanning
+   - **Status:** Infrastructure complete; next: implement bill scanner to populate match metadata
    - **Test data:** 1 bill linked to property-tax-relief (HB 22 / bill_number)
+   - **Match Metadata:** Columns available but unpopulated; ready for bill-scanning service
 
 ---
 
@@ -709,6 +730,19 @@ npx wrangler d1 migrations apply WY_DB --remote --env production
   - Creates: hot_topics, hot_topic_civic_items
   - Seeds: 6 hot topics (property-tax-relief, water-rights, education-funding, energy-permitting, public-safety-fentanyl, housing-land-use)
   - Status: ✅ Applied to local, preview, production
+- `0012_add_match_metadata_to_hot_topic_civic_items.sql` – Match infrastructure (Dec 5, 2025)
+  - Adds: match_score (REAL), matched_terms_json (TEXT), excerpt (TEXT) columns
+  - Creates: idx_hot_topic_matches_topic_score index for efficient matching queries
+  - Status: ✅ Applied to local and production
+- `0013_migrate_hot_topics_schema.sql` – Schema alignment (Dec 5, 2025)
+  - Drops and recreates hot_topics with canonical schema (slug, title, summary, badge, image_url, cta_label, cta_url, priority, is_active, created_at, updated_at)
+  - Re-seeds: 6 hot topics
+  - Status: ✅ Applied to production (local: created from 0011)
+- `0014_migrate_hot_topic_civic_items_schema.sql` – Schema alignment (Dec 5, 2025)
+  - Drops and recreates hot_topic_civic_items with compound PK (topic_id, civic_item_id INTEGER)
+  - Includes: match_score, matched_terms_json, excerpt, created_at columns
+  - Updates: Index references hot_topic_id → topic_id
+  - Status: ✅ Applied to production (local: created from 0011-0012)
 
 **WY_DB Migrations:**
 - `0001-0005` – Core voter and campaign tables
@@ -716,6 +750,15 @@ npx wrangler d1 migrations apply WY_DB --remote --env production
 - `0007_create_user_ideas.sql` – User comments/ideas on bills (Dec 4, 2025)
 - `0008_create_votes.sql` – Vote/endorsement tracking (Dec 4, 2025)
 - Status: ✅ Applied to local and production
+
+### Schema Alignment Status (Dec 5, 2025)
+
+**Local ↔ Production Alignment:** ✅ COMPLETE
+- hot_topics: Identical schemas (12 columns, same types)
+- hot_topic_civic_items: Identical schemas (6 columns, compound PK, match metadata)
+- All field names aligned (topic_id, civic_item_id, match_score, etc.)
+- All field types aligned (INTEGER, TEXT, REAL, DATETIME)
+- Indexes synchronized (idx_hot_topic_matches_topic_score)
 
 ### View Applied Migrations
 
