@@ -20,6 +20,7 @@ import {
   analyzeBillForHotTopics, 
   saveHotTopicAnalysis,
   getSinglePendingBill,
+  buildUserPromptTemplate,
 } from "../lib/hotTopicsAnalyzer.mjs";
 
 const PENDING_STATUSES = ["introduced", "in_committee", "pending_vote"];
@@ -95,10 +96,14 @@ export async function handleScanPendingBills(request, env) {
 
         // Collect results
         const topicSlugs = analysis.topics.map(t => t.slug);
+        const userPromptTemplates = analysis.topics.map(t => 
+          buildUserPromptTemplate(bill.bill_number, t.label)
+        );
         results.push({
           bill_id: bill.id,
           bill_number: bill.bill_number,
           topics: topicSlugs,
+          user_prompt_templates: userPromptTemplates,
           confidence_avg:
             topicSlugs.length > 0
               ? (

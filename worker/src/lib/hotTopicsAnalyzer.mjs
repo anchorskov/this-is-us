@@ -29,7 +29,8 @@
  *       "slug": "property-tax-relief",
  *       "label": "Property Tax Relief",
  *       "confidence": 0.92,
- *       "trigger_snippet": "Short quoted or paraphrased passage from the bill"
+ *       "trigger_snippet": "Short quoted or paraphrased passage from the bill",
+ *       "reason_summary": "One to three sentences explaining why this bill matches this topic."
  *     }
  *   ],
  *   "other_flags": [
@@ -55,6 +56,11 @@
  *   - Single bill scan ≈ $0.00015 (est. 100 prompt + 60 completion tokens)
  *   - 10-bill batch ≈ $0.0015 (most cost-efficient per bill)
  *   - 40-bill session ≈ $0.006 total
+ * 
+ * **User Prompt Template Helper:**
+ * The buildUserPromptTemplate(billNumber, topicLabel) function (no OpenAI call)
+ * returns a citizen-friendly prompt string suitable for pasting into any LLM.
+ * Used to help citizens understand bills in their own words.
  * 
  * **Canonical Hot Topics:**
  * Only these six slugs may appear in topics array:
@@ -141,7 +147,8 @@ Return STRICT JSON only, no extra prose:
       "slug": "property-tax-relief",
       "label": "Property Tax Relief",
       "confidence": 0.92,
-      "trigger_snippet": "Brief quoted or paraphrased passage from the bill"
+      "trigger_snippet": "Brief quoted or paraphrased passage from the bill",
+      "reason_summary": "One to three sentences explaining plainly why this bill matches this topic. Mention key changes and why Wyomingites care."
     }
   ],
   "other_flags": [
@@ -385,6 +392,7 @@ export async function analyzeBillForHotTopics(env, bill, opts = {}) {
         label: canonical.label,
         confidence: conf,
         trigger_snippet: t.trigger_snippet || null,
+        reason_summary: t.reason_summary || "",
       };
     });
 
@@ -398,6 +406,29 @@ export async function analyzeBillForHotTopics(env, bill, opts = {}) {
     : [];
 
   return { topics, other_flags, tokens: tokenData };
+}
+
+/**
+ * buildUserPromptTemplate(billNumber, topicLabel)
+ * 
+ * Construct a citizen-friendly LLM prompt template without calling OpenAI.
+ * Returns a string that citizens can paste into any LLM (ChatGPT, Claude, etc.)
+ * to get an explanation of how a Wyoming bill relates to a topic they care about.
+ * 
+ * @param {string} billNumber - Bill identifier (e.g., "HB 22")
+ * @param {string} topicLabel - Human-readable topic (e.g., "Property Tax Relief")
+ * @returns {string} A prompt suitable for copy-pasting into any LLM
+ */
+export function buildUserPromptTemplate(billNumber, topicLabel) {
+  return (
+    `You are a civic educator explaining Wyoming legislation to a regular citizen.\n\n` +
+    `Bill: ${billNumber}\n` +
+    `Topic: ${topicLabel}\n\n` +
+    `Explain how this bill relates to "${topicLabel}" in clear, everyday language. ` +
+    `Describe the main changes the bill proposes, what problem it tries to solve, ` +
+    `and how it might affect daily life for Wyoming residents. ` +
+    `Avoid legal jargon—use simple examples if needed.`
+  );
 }
 
 /**
@@ -449,14 +480,15 @@ export async function saveHotTopicAnalysis(env, billId, analysis) {
     }
 
     const stmt = env.WY_DB.prepare(
-      `INSERT INTO civic_item_ai_tags (item_id, topic_slug, confidence, trigger_snippet)
-         VALUES (?1, ?2, ?3, ?4)`
+      `INSERT INTO civic_item_ai_tags (item_id, topic_slug, confidence, trigger_snippet, reason_summary)
+         VALUES (?1, ?2, ?3, ?4, ?5)`
     );
     for (const topic of topics) {
       const conf = typeof topic.confidence === "number" ? topic.confidence : 0;
       const snippet = topic.trigger_snippet || null;
+      const reason = topic.reason_summary || "";
       try {
-        await stmt.bind(billId, topic.slug, conf, snippet).run();
+        await stmt.bind(billId, topic.slug, conf, snippet, reason).run();
       } catch (err) {
         console.warn(`⚠️ Failed to insert tag for ${billId}/${topic.slug}:`, err);
       }
