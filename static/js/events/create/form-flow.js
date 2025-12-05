@@ -1,7 +1,6 @@
 /*  zip-first locator → full form → preview
     --------------------------------------------------------------- */
-import { setupMapLocator } from './map-locator.js';
-import { renderPreview    } from './preview-renderer.js';
+import { renderPreview } from './preview-renderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('📋 form-flow.js loaded');
@@ -33,13 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('description')?.focus()
     );
 
-  /* 2️⃣  Bootstrap map-locator */
-  setupMapLocator({
-    mapId   : 'map',
-    formId  : 'addressForm',
-    errorId : 'errorMsg',
-    resultId: 'latlonDisplay',
-  });
+  // Map bootstrap happens inside create/bootstrap.js once the wizard is visible,
+  // so we avoid instantiating Leaflet while the container is hidden.
 
   /* 3️⃣  OK-button → reveal full form (and wire preview once) */
   const okBtn   = document.getElementById('loc-ok');

@@ -1,0 +1,406 @@
+{{ define "main" }}
+<div class="hot-topic-detail-container" id="topicDetail">
+  <div class="loading">Loading topic...</div>
+</div>
+
+<style>
+  .hot-topic-detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+  }
+
+  .error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 2rem;
+    color: #991b1b;
+    text-align: center;
+  }
+
+  .topic-header {
+    margin-bottom: 2rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #1a73e8;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+
+  .topic-header h1 {
+    font-size: 2.25rem;
+    margin: 0 0 1rem 0;
+    color: #1a1a1a;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  /* Badge color variants */
+  .badge.taxes { background: #fef3c7; color: #92400e; }
+  .badge.water { background: #cffafe; color: #164e63; }
+  .badge.education { background: #ddd6fe; color: #4c1d95; }
+  .badge.energy { background: #dcfce7; color: #166534; }
+  .badge.safety { background: #fee2e2; color: #991b1b; }
+  .badge.housing { background: #fed7aa; color: #92400e; }
+
+  .topic-summary {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #444;
+    margin-bottom: 2rem;
+    border-left: 4px solid #1a73e8;
+    padding-left: 1.5rem;
+  }
+
+  .section {
+    margin: 2.5rem 0;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+  }
+
+  .section-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #555;
+  }
+
+  .cta-section {
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    margin: 2.5rem 0;
+  }
+
+  .cta-button {
+    background: #1a73e8;
+    color: #fff;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background 0.2s;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .cta-button:hover {
+    background: #1557b0;
+  }
+
+  .bills-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .bill-item {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bill-info {
+    flex-grow: 1;
+  }
+
+  .bill-number {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.95rem;
+  }
+
+  .bill-title {
+    color: #555;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+
+  .bill-status {
+    font-size: 0.8rem;
+    color: #999;
+    text-transform: uppercase;
+  }
+
+  .no-bills {
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    background: #f9fafb;
+    border-radius: 6px;
+  }
+
+  .vote-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .vote-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 999px;
+    background: #fff;
+    color: #374151;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .vote-button:hover {
+    border-color: #2563eb;
+    color: #1d4ed8;
+  }
+
+  .vote-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .vote-count {
+    font-weight: 600;
+  }
+
+  .vote-button[data-hint]:hover::after {
+    content: attr(data-hint);
+    position: absolute;
+    background: #111827;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    top: 120%;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    z-index: 5;
+  }
+
+  .vote-button-group {
+    position: relative;
+    display: inline-flex;
+    gap: 0.35rem;
+  }
+
+  @media (max-width: 640px) {
+    .hot-topic-detail-container {
+      padding: 1rem;
+    }
+
+    .topic-header h1 {
+      font-size: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+    }
+
+    .cta-section {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Extract slug from URL path
+  const slug = window.location.pathname.split('/').filter(p => p).pop();
+
+  async function loadTopic() {
+    const container = document.getElementById('topicDetail');
+    const API_BASE = (window.EVENTS_API_READY
+      ? await window.EVENTS_API_READY
+      : (window.EVENTS_API_URL || '/api'));
+    
+    if (!slug) {
+      container.innerHTML = '<div class="error">Topic not found.</div>';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/hot-topics/${slug}`);
+      if (!response.ok) throw new Error('Topic not found');
+
+      const data = await response.json();
+      const topic = data.results && data.results[0] ? data.results[0] : data;
+      const badgeClass = topic.badge.toLowerCase().replace(/[\s&]/g, '');
+      const civicItems = topic.civic_items || [];
+
+      let billsHtml = '';
+      if (civicItems.length > 0) {
+        billsHtml = `
+          <div class="section">
+            <h2 class="section-title">Related Bills</h2>
+            <ul class="bills-list">
+              ${civicItems.map(bill => `
+                <li class="bill-item">
+                  <div class="bill-info">
+                    <div class="bill-number">${bill.bill_number || 'Unknown Bill'}</div>
+                    <div class="bill-title">${bill.title || ''}</div>
+                    <div class="bill-status">${bill.status || 'pending'}</div>
+                    <div class="vote-actions" data-bill-id="${bill.id}">
+                      <div class="vote-button-group">
+                        <button class="vote-button" data-direction="up" data-hint="Support this bill">
+                          👍 <span class="vote-count">${bill.up_votes ?? 0}</span>
+                        </button>
+                        <button class="vote-button" data-direction="down" data-hint="Oppose this bill">
+                          👎 <span class="vote-count">${bill.down_votes ?? 0}</span>
+                        </button>
+                        <button class="vote-button" data-direction="info" data-hint="Need more info">
+                          ❓ <span class="vote-count">${bill.info_votes ?? 0}</span>
+                        </button>
+                      </div>
+                      <span class="vote-message text-xs text-gray-500"></span>
+                    </div>
+                  </div>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      } else {
+        billsHtml = `
+          <div class="section">
+            <h2 class="section-title">Related Bills</h2>
+            <div class="no-bills">
+              No bills linked to this topic yet. Check back soon as the 2025 session progresses.
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = `
+        <div class="topic-header">
+          <a href="/hot-topics" class="back-link">← Back to Hot Topics</a>
+          <span class="badge ${badgeClass}">${topic.badge}</span>
+          <h1>${topic.title}</h1>
+        </div>
+
+        <div class="topic-summary">
+          ${topic.summary}
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">Why It Matters</h2>
+          <div class="section-content">
+            <p>
+              This topic is a priority for Wyoming voters and policymakers. 
+              The ${topic.badge.toLowerCase()} sector directly impacts communities, 
+              families, and the state's economic future. Track the bills below 
+              to stay informed about legislative progress.
+            </p>
+          </div>
+        </div>
+
+        ${billsHtml}
+
+        <div class="cta-section">
+          <h2 class="section-title">Get Involved</h2>
+          <p>Stay engaged with this topic and make your voice heard.</p>
+          <a href="${topic.cta_url || '#'}" class="cta-button">
+            ${topic.cta_label || 'View More'}
+          </a>
+        </div>
+      `;
+    } catch (error) {
+      console.error('Error loading topic:', error);
+      container.innerHTML = '<div class="error">Error loading topic. Please try again.</div>';
+    }
+  }
+
+  // Load topic when page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadTopic);
+  } else {
+    loadTopic();
+  }
+
+  // Vote handlers (event delegation)
+  document.addEventListener('click', async (evt) => {
+    const btn = evt.target.closest('.vote-button');
+    if (!btn) return;
+
+    const container = btn.closest('.vote-actions');
+    if (!container) return;
+    const billId = container.getAttribute('data-bill-id');
+    const direction = btn.getAttribute('data-direction');
+    if (!billId || !direction) return;
+
+    const user = window.currentUser || null;
+    if (!user?.uid) {
+      const msg = container.querySelector('.vote-message');
+      if (msg) msg.textContent = 'Sign in to vote.';
+      return;
+    }
+
+    const API_BASE = window.EVENTS_API_URL || '/api';
+    const buttons = container.querySelectorAll('.vote-button');
+    buttons.forEach((b) => (b.disabled = true));
+
+    const msgEl = container.querySelector('.vote-message');
+    try {
+      const res = await fetch(`${API_BASE}/civic/items/${billId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vote: direction, user_id: user.uid })
+      });
+      const data = await res.json();
+      if (res.ok && data) {
+        const upEl = container.querySelector('[data-direction="up"] .vote-count');
+        const downEl = container.querySelector('[data-direction="down"] .vote-count');
+        const infoEl = container.querySelector('[data-direction="info"] .vote-count');
+        if (upEl && typeof data.up_votes !== 'undefined') upEl.textContent = data.up_votes;
+        if (downEl && typeof data.down_votes !== 'undefined') downEl.textContent = data.down_votes;
+        if (infoEl && typeof data.info_votes !== 'undefined') infoEl.textContent = data.info_votes;
+        if (msgEl) msgEl.textContent = 'Thanks for your feedback!';
+      } else {
+        if (msgEl) msgEl.textContent = data?.error || 'Vote failed';
+      }
+    } catch (err) {
+      console.error('vote error', err);
+      if (msgEl) msgEl.textContent = 'Vote failed';
+    } finally {
+      buttons.forEach((b) => (b.disabled = false));
+    }
+  });
+</script>
+{{ end }}

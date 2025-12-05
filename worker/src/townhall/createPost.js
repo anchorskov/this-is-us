@@ -1,9 +1,13 @@
 // worker/src/townhall/createPost.js
 
+import { requireAuth } from "../auth/verifyFirebaseOrAccess.mjs";
+import { withRestrictedCORS, TOWNHALL_ALLOWED_ORIGINS } from "../utils/cors.js";
+
 export async function handleCreateTownhallPost(request, env) {
+  const identity = await requireAuth(request, env);
   const form = await request.formData();
 
-  const userId    = form.get('user_id')    || 'anonymous';
+  const userId    = identity.uid;
   const title     = form.get('title')?.trim();
   const prompt    = form.get('prompt')?.trim();
   const file      = form.get('file');
@@ -48,16 +52,22 @@ export async function handleCreateTownhallPost(request, env) {
       createdAt, r2Key, fileSize, expiresAt
     ).run();
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return withRestrictedCORS(
+      JSON.stringify({ success: true }),
+      201,
+      { 'Content-Type': 'application/json' },
+      request,
+      TOWNHALL_ALLOWED_ORIGINS
+    );
 
   } catch (err) {
     console.error("❌ Error creating post:", err.stack || err);
-    return new Response(JSON.stringify({ error: 'Failed to create post' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return withRestrictedCORS(
+      JSON.stringify({ error: 'Failed to create post' }),
+      500,
+      { 'Content-Type': 'application/json' },
+      request,
+      TOWNHALL_ALLOWED_ORIGINS
+    );
   }
 }

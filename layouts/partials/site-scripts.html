@@ -7,10 +7,17 @@
 {{/* 1️⃣ Dynamic API root (dev ⇆ prod ⇆ local-worker) */}}
 <script>
 (function () {
-  const onHugoServer = location.hostname === 'localhost' && location.port === '1313';
-  const params       = new URLSearchParams(location.search);
-  const localPref    = localStorage.getItem('useLocalWorker');
-  const enabledViaQuery = params.get('useLocalWorker');
+  let resolveApiReady;
+  window.EVENTS_API_READY = new Promise((r) => (resolveApiReady = r));
+
+  const host   = location.hostname;
+  const port   = location.port;
+  const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  const onHugoServer = isLocalHost && port === '1313';
+
+  const params          = new URLSearchParams(location.search);
+  const localPref       = localStorage.getItem('useLocalWorker');
+  const enabledViaQuery = params.get('useLocalWorker'); // "1" | "0" | null
 
   if (enabledViaQuery === '1') {
     localStorage.setItem('useLocalWorker', '1');
@@ -18,27 +25,37 @@
     localStorage.removeItem('useLocalWorker');
   }
 
+  // Default to local probe whenever we're on localhost/127 and the user
+  // hasn't explicitly disabled it with ?useLocalWorker=0.
   const shouldProbeLocal =
-    onHugoServer &&
-    (enabledViaQuery === '1' || localPref === '1');
+    isLocalHost &&
+    enabledViaQuery !== '0' &&
+    (enabledViaQuery === '1' || localPref === '1' || onHugoServer);
 
   /* default:
-       – prod build  →  /api
-       – hugo server →  remote Worker on production */
+       – prod build / worker origin → /api (same origin)
+       – hugo server → remote Worker on production (will switch if local probe succeeds) */
   window.EVENTS_API_URL = onHugoServer
     ? 'https://this-is-us.org/api'
     : '/api';
+  let resolved = false;
 
-  /* optional local Worker probe (wrangler dev --port 8787) */
+  /* local Worker probe (wrangler dev --port 8787) */
   if (shouldProbeLocal) {
     const local = 'http://127.0.0.1:8787';
-    fetch(local + '/api/_health', { mode: 'no-cors' })
-      .then(() => {
-        window.EVENTS_API_URL = local + '/api';
-        console.log('🔄 Local Worker detected – API →', window.EVENTS_API_URL);
+    fetch(local + '/api/_health')
+      .then((res) => {
+        if (res.ok) {
+          window.EVENTS_API_URL = local + '/api';
+          console.log('🔄 Local Worker detected – API →', window.EVENTS_API_URL);
+          resolveApiReady && resolveApiReady(window.EVENTS_API_URL);
+          resolved = true;
+        } else {
+          console.log('🐛 Local Worker probe responded', res.status, '— staying on', window.EVENTS_API_URL);
+        }
       })
       .catch(() => {
-        console.log('🐛 Using remote Worker →', window.EVENTS_API_URL);
+        console.log('🐛 Local Worker probe failed — using', window.EVENTS_API_URL);
       });
   } else {
     if (onHugoServer) {
@@ -46,6 +63,11 @@
     }
     console.log('🌐 Using API →', window.EVENTS_API_URL);
   }
+
+  // Resolve promise after a short tick if not already resolved
+  setTimeout(() => {
+    if (!resolved) resolveApiReady && resolveApiReady(window.EVENTS_API_URL);
+  }, 50);
 })();
 </script>
 

@@ -1,17 +1,24 @@
 // worker/src/townhall/deletePost.js
 
+import { requireAuth } from "../auth/verifyFirebaseOrAccess.mjs";
+import { withRestrictedCORS, TOWNHALL_ALLOWED_ORIGINS } from "../utils/cors.js";
+
 export async function handleDeleteTownhallPost(request, env) {
   try {
+    const identity = await requireAuth(request, env);
     const form = await request.formData();
     const id = form.get('id');
-    const userId = form.get('user_id'); // required
-    const userRole = form.get('role') || 'citizen'; // optional but recommended
+    const userId = identity.uid; // enforced server-side
+    const userRole = form.get('role') || (identity.source === "access" ? "admin" : "citizen");
 
     if (!id || !userId) {
-      return new Response(JSON.stringify({ error: 'Missing post ID or user ID' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return withRestrictedCORS(
+        JSON.stringify({ error: 'Missing post ID or user ID' }),
+        400,
+        { 'Content-Type': 'application/json' },
+        request,
+        TOWNHALL_ALLOWED_ORIGINS
+      );
     }
 
     // Fetch the post
@@ -20,10 +27,13 @@ export async function handleDeleteTownhallPost(request, env) {
     `).bind(id).all();
 
     if (results.length === 0) {
-      return new Response(JSON.stringify({ error: 'Post not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return withRestrictedCORS(
+        JSON.stringify({ error: 'Post not found' }),
+        404,
+        { 'Content-Type': 'application/json' },
+        request,
+        TOWNHALL_ALLOWED_ORIGINS
+      );
     }
 
     const post = results[0];
@@ -33,10 +43,13 @@ export async function handleDeleteTownhallPost(request, env) {
     const isAdmin = userRole.toLowerCase() === 'admin';
 
     if (!isOwner && !isAdmin) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return withRestrictedCORS(
+        JSON.stringify({ error: 'Unauthorized' }),
+        403,
+        { 'Content-Type': 'application/json' },
+        request,
+        TOWNHALL_ALLOWED_ORIGINS
+      );
     }
 
     // Delete from R2 if exists
@@ -54,16 +67,22 @@ export async function handleDeleteTownhallPost(request, env) {
       `DELETE FROM townhall_posts WHERE id = ?`
     ).bind(id).run();
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return withRestrictedCORS(
+      JSON.stringify({ success: true }),
+      200,
+      { 'Content-Type': 'application/json' },
+      request,
+      TOWNHALL_ALLOWED_ORIGINS
+    );
 
   } catch (err) {
     console.error("❌ Deletion error:", err);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return withRestrictedCORS(
+      JSON.stringify({ error: 'Internal server error' }),
+      500,
+      { 'Content-Type': 'application/json' },
+      request,
+      TOWNHALL_ALLOWED_ORIGINS
+    );
   }
 }

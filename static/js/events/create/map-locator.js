@@ -21,6 +21,22 @@ export function setupMapLocator({
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap",
   }).addTo(map);
+  mapEl._leaflet_map = map;
+
+  const ensureMapFits = () => requestAnimationFrame(() => map.invalidateSize());
+  ensureMapFits();
+  setTimeout(ensureMapFits, 150);
+  setTimeout(ensureMapFits, 600);
+
+  if ("ResizeObserver" in window) {
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(mapEl);
+  }
+
+  document.addEventListener("wizardShown", () => {
+    ensureMapFits();
+    setTimeout(ensureMapFits, 200);
+  }, { once: true });
 
   let marker = null;
 

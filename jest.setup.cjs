@@ -13,6 +13,18 @@ function fromRoot(rel) {
 }
 
 /* ───────── 3 │ Browser-API polyfills / stubs ───────────────── */
+const { TextEncoder, TextDecoder } = require('util');
+if (!global.TextEncoder) global.TextEncoder = TextEncoder;
+if (!global.TextDecoder) global.TextDecoder = TextDecoder;
+if (!global.Response) {
+  global.Response = class {
+    constructor(body = null, init = {}) {
+      this.body = body;
+      this.status = init.status || 200;
+      this.headers = init.headers || {};
+    }
+  };
+}
 
 /* 3-a │ fetch – ZIP lookup & geocoder */
 global.fetch = jest.fn((url) => {

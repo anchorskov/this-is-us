@@ -16,9 +16,8 @@ import {
 const auth = getAuth();
 const db = getFirestore();
 
-// Detect local dev vs production
-const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-const apiBase = isLocal ? "http://127.0.0.1:8787/api" : "/api";
+// Detect local dev vs production (prefer injected EVENTS_API_URL)
+const apiBase = (window.EVENTS_API_URL || "/api").replace(/\/$/, "");
 
 /**
  * Sync current Firebase user to D1 `user_preferences` table.
@@ -45,13 +44,12 @@ async function seedUserToD1(user) {
       })
     });
 
-    if (res.ok) {
-      console.log("🌱 Seeded user into D1");
-    } else {
+    if (!res.ok) {
       console.warn("⚠️ Failed to seed D1 – status", res.status);
     }
+    // Do not block UX on sync failures; swallowing errors above is sufficient
   } catch (err) {
-    console.error("❌ Error syncing user to D1", err);
+    console.warn("❌ Error syncing user to D1 (non-blocking)", err);
   }
 }
 
@@ -88,7 +86,7 @@ onAuthStateChanged(auth, async (user) => {
       console.log("👋 Firestore profile updated.");
     }
 
-    await seedUserToD1(user);
+    seedUserToD1(user); // fire-and-forget; do not block UI
 
     window.currentUserRole = role;
     document.body.setAttribute("data-user-role", role);

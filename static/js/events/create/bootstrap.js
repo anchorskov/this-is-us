@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     gate?.classList.add('hidden');
     wizard?.classList.remove('hidden');
     loginBox?.classList.add('hidden');
+    document.dispatchEvent(new Event('wizardShown'));
   };
 
   let wizardInitialised = false;
@@ -76,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
       errorId : 'errorMsg',
       resultId: 'latlonDisplay',
     });
+    document.dispatchEvent(new Event('wizardShown'));
 
     /* 4️⃣  The event-details form is now managed by form-flow.js based on user interaction. */
   };

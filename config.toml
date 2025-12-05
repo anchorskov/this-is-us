@@ -114,6 +114,12 @@ buildFuture  = false
   weight     = 6
 
 [[menu.main]]
+  identifier = "hot-topics"
+  name       = "Hot Topics"
+  url        = "/hot-topics/"
+  weight     = 7
+
+[[menu.main]]
   identifier = "townhall"
   name       = "Town Hall"
   url        = "/townhall/"

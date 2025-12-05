@@ -1,0 +1,267 @@
+=== D1 Configuration ===
+Local:  events_db_local
+Prod:   events_db
+Ballot: ballot_sources
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+┌──────────────────────────────────────┬───────────────────┬──────────────────────────┬────────────┬────────────┬───────────┬──────────────┐
+│ uuid                                 │ name              │ created_at               │ version    │ num_tables │ file_size │ jurisdiction │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ de78cb41-176d-40e8-bd3b-e053e347ac3f │ wy_preview        │ 2025-10-09T11:50:32.991Z │ production │ 0          │ 1568768   │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ 4b4227f1-bf30-4fcf-8a08-6967b536a5ab │ wy                │ 2025-09-30T22:20:26.496Z │ production │ 0          │ 106311680 │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ 6c3fffd4-e6dc-47b8-b541-3857c2882e0c │ events_db_local   │ 2025-07-02T01:51:37.088Z │ production │ 0          │ 0         │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ 9c4b0c27-eb33-46e6-a477-fb49d4c81474 │ ballot_sources    │ 2025-05-18T12:12:12.252Z │ production │ 1          │ 77824     │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ 1624450c-f228-4802-8a76-9c65f29295fa │ events_db_preview │ 2025-05-05T13:59:50.370Z │ production │ 4          │ 45056     │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ b5814930-2779-4bfb-8052-24ee419e09fd │ events_db         │ 2025-05-05T12:03:41.589Z │ production │ 8          │ 73728     │              │
+├──────────────────────────────────────┼───────────────────┼──────────────────────────┼────────────┼────────────┼───────────┼──────────────┤
+│ aeedccf4-14bb-48f8-91c0-a9023c9f153c │ sibidrift         │ 2025-03-15T00:51:53.315Z │ production │ 4          │ 2646016   │              │
+└──────────────────────────────────────┴───────────────────┴──────────────────────────┴────────────┴────────────┴───────────┴──────────────┘
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+🌀 Executing on local database events_db_local (1624450c-f228-4802-8a76-9c65f29295fa) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "name": "_cf_METADATA"
+      },
+      {
+        "name": "candidates"
+      },
+      {
+        "name": "d1_migrations"
+      },
+      {
+        "name": "events"
+      },
+      {
+        "name": "sqlite_sequence"
+      },
+      {
+        "name": "topic_index"
+      },
+      {
+        "name": "topic_requests"
+      },
+      {
+        "name": "townhall_posts"
+      },
+      {
+        "name": "user_preferences"
+      },
+      {
+        "name": "user_topic_prefs"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 1
+    }
+  }
+]
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+🌀 Executing on local database events_db_local (1624450c-f228-4802-8a76-9c65f29295fa) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "sql": "CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )"
+      },
+      {
+        "sql": "CREATE TABLE candidates (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  office TEXT NOT NULL,\n  location TEXT NOT NULL,\n  pdf_url TEXT NOT NULL,\n  pdf_key TEXT NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE d1_migrations(\n\t\tid         INTEGER PRIMARY KEY AUTOINCREMENT,\n\t\tname       TEXT UNIQUE,\n\t\tapplied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id INTEGER NOT NULL,\n  name TEXT NOT NULL,\n  date DATE NOT NULL,\n  location TEXT NOT NULL,\n  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  sponsor TEXT,\n  contact_email TEXT,\n  contact_phone TEXT,\n  lat REAL,\n  lng REAL,\n  pdf_hash TEXT,\n  description TEXT,\n  pdf_key TEXT\n)"
+      },
+      {
+        "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+      },
+      {
+        "sql": "CREATE TABLE topic_index (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  slug TEXT NOT NULL UNIQUE\n)"
+      },
+      {
+        "sql": "CREATE TABLE topic_requests (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id TEXT NOT NULL,\n  user_email TEXT NOT NULL,\n  proposed_name TEXT NOT NULL,\n  status TEXT DEFAULT 'pending', \n  submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+      },
+      {
+        "sql": "CREATE TABLE townhall_posts (\n  id TEXT PRIMARY KEY,\n  user_id TEXT NOT NULL,\n  title TEXT NOT NULL,\n  prompt TEXT,\n  created_at TEXT NOT NULL,\n  r2_key TEXT,\n  file_size INTEGER,\n  expires_at TEXT,\n  city TEXT DEFAULT '',\n  state TEXT DEFAULT ''\n)"
+      },
+      {
+        "sql": "CREATE TABLE user_preferences (\n  firebase_uid TEXT PRIMARY KEY,\n  email TEXT,\n  theme TEXT,\n  notifications_enabled BOOLEAN DEFAULT TRUE,\n  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n, city TEXT, state TEXT)"
+      },
+      {
+        "sql": "CREATE TABLE user_topic_prefs (\n  user_id TEXT NOT NULL,\n  topic_id INTEGER NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (user_id, topic_id),\n  FOREIGN KEY (topic_id) REFERENCES topic_index(id)\n)"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 0
+    }
+  }
+]
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+  
+    - "env.production" environment configuration
+      - There is a d1_databases binding with name "BALLOT_DB" at the top level, but not on "env.production".
+        This is not what you probably want, since "d1_databases" configuration is not inherited by environments.
+        Please add a binding for "BALLOT_DB" to "env.production.d1_databases.bindings".
+
+
+🌀 Executing on local database events_db (1624450c-f228-4802-8a76-9c65f29295fa) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "name": "_cf_METADATA"
+      },
+      {
+        "name": "candidates"
+      },
+      {
+        "name": "d1_migrations"
+      },
+      {
+        "name": "events"
+      },
+      {
+        "name": "sqlite_sequence"
+      },
+      {
+        "name": "topic_index"
+      },
+      {
+        "name": "topic_requests"
+      },
+      {
+        "name": "townhall_posts"
+      },
+      {
+        "name": "user_preferences"
+      },
+      {
+        "name": "user_topic_prefs"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 0
+    }
+  }
+]
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProcessing wrangler.toml configuration:[0m
+
+  
+    - "env.production" environment configuration
+      - There is a d1_databases binding with name "BALLOT_DB" at the top level, but not on "env.production".
+        This is not what you probably want, since "d1_databases" configuration is not inherited by environments.
+        Please add a binding for "BALLOT_DB" to "env.production.d1_databases.bindings".
+
+
+🌀 Executing on local database events_db (1624450c-f228-4802-8a76-9c65f29295fa) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "sql": "CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )"
+      },
+      {
+        "sql": "CREATE TABLE candidates (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  office TEXT NOT NULL,\n  location TEXT NOT NULL,\n  pdf_url TEXT NOT NULL,\n  pdf_key TEXT NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE d1_migrations(\n\t\tid         INTEGER PRIMARY KEY AUTOINCREMENT,\n\t\tname       TEXT UNIQUE,\n\t\tapplied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL\n)"
+      },
+      {
+        "sql": "CREATE TABLE events (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id INTEGER NOT NULL,\n  name TEXT NOT NULL,\n  date DATE NOT NULL,\n  location TEXT NOT NULL,\n  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  sponsor TEXT,\n  contact_email TEXT,\n  contact_phone TEXT,\n  lat REAL,\n  lng REAL,\n  pdf_hash TEXT,\n  description TEXT,\n  pdf_key TEXT\n)"
+      },
+      {
+        "sql": "CREATE TABLE sqlite_sequence(name,seq)"
+      },
+      {
+        "sql": "CREATE TABLE topic_index (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  name TEXT NOT NULL,\n  slug TEXT NOT NULL UNIQUE\n)"
+      },
+      {
+        "sql": "CREATE TABLE topic_requests (\n  id INTEGER PRIMARY KEY AUTOINCREMENT,\n  user_id TEXT NOT NULL,\n  user_email TEXT NOT NULL,\n  proposed_name TEXT NOT NULL,\n  status TEXT DEFAULT 'pending', \n  submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP\n)"
+      },
+      {
+        "sql": "CREATE TABLE townhall_posts (\n  id TEXT PRIMARY KEY,\n  user_id TEXT NOT NULL,\n  title TEXT NOT NULL,\n  prompt TEXT,\n  created_at TEXT NOT NULL,\n  r2_key TEXT,\n  file_size INTEGER,\n  expires_at TEXT,\n  city TEXT DEFAULT '',\n  state TEXT DEFAULT ''\n)"
+      },
+      {
+        "sql": "CREATE TABLE user_preferences (\n  firebase_uid TEXT PRIMARY KEY,\n  email TEXT,\n  theme TEXT,\n  notifications_enabled BOOLEAN DEFAULT TRUE,\n  last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n, city TEXT, state TEXT)"
+      },
+      {
+        "sql": "CREATE TABLE user_topic_prefs (\n  user_id TEXT NOT NULL,\n  topic_id INTEGER NOT NULL, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,\n  PRIMARY KEY (user_id, topic_id),\n  FOREIGN KEY (topic_id) REFERENCES topic_index(id)\n)"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 0
+    }
+  }
+]
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+🌀 Executing on local database ballot_sources (9c4b0c27-eb33-46e6-a477-fb49d4c81474) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [],
+    "success": true,
+    "meta": {
+      "duration": 1
+    }
+  }
+]
+
+
+ ⛅️ wrangler 4.45.2 (update available 4.47.0)
+─────────────────────────────────────────────
+🌀 Executing on local database ballot_sources (9c4b0c27-eb33-46e6-a477-fb49d4c81474) from .wrangler/state/v3/d1:
+🌀 To execute on your remote database, add a --remote flag to your wrangler command.
+🚣 1 command executed successfully.
+[
+  {
+    "results": [
+      {
+        "sql": "CREATE TABLE _cf_METADATA (\n        key INTEGER PRIMARY KEY,\n        value BLOB\n      )"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "duration": 0
+    }
+  }
+]

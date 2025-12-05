@@ -47,9 +47,7 @@
     "setupFiles": [
       "./jest.setup.cjs"
     ],
-    "transform": {
-      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
-    },
+    "transform": {},
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "identity-obj-proxy"
     },
