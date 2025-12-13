@@ -157,12 +157,15 @@ export async function syncWyomingBills(env, db, { session, limit = 20 } = {}) {
   if (!env.OPENSTATES_API_KEY) throw new Error("Missing OPENSTATES_API_KEY");
   if (!session) throw new Error("session is required");
 
-  console.log(`[SYNC] Starting OpenStates sync for Wyoming, session=${session}, limit=${limit}`);
+  // OpenStates API only accepts per_page 1-20, so cap the limit
+  const perPage = Math.min(Math.max(limit, 1), 20);
+  
+  console.log(`[SYNC] Starting OpenStates sync for Wyoming, session=${session}, limit=${limit} (capped to per_page=${perPage})`);
 
   const params = new URLSearchParams({
     jurisdiction: "Wyoming",
     session,
-    per_page: String(limit),
+    per_page: String(perPage),
     sort: "updated_desc",
   });
 
