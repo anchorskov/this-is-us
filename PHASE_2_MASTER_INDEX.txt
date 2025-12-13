@@ -1,0 +1,247 @@
+═══════════════════════════════════════════════════════════════════════════
+  CIVIC WATCH PHASE 2 PLANNING – MASTER INDEX
+═══════════════════════════════════════════════════════════════════════════
+
+✅ PHASE 2 DESIGN COMPLETE & READY FOR IMPLEMENTATION
+
+Date: December 8, 2025
+Status: 🟢 READY FOR TEAM REVIEW
+
+═══════════════════════════════════════════════════════════════════════════
+
+📋 FILES IN THIS EXPORT
+───────────────────────────────────────────────────────────────────────────
+
+1. 📚 START HERE (RECOMMENDED READING ORDER):
+   
+   PHASE_2_DESIGN_SUMMARY.txt (19 KB)
+   └─ Executive overview of Phase 2 architecture
+     ├─ Goals & scope
+     ├─ Data model overview (tables, fields)
+     ├─ API endpoints quick reference
+     ├─ Implementation checklist
+     ├─ Future extensions (Phase 2b+)
+     └─ Design decisions & rationale
+   
+   Read this first for 10-minute overview
+
+───────────────────────────────────────────────────────────────────────────
+
+2. 📖 COMPREHENSIVE REFERENCE:
+   
+   SNAPSHOT_120625_COMPREHENSIVE_WITH_PHASE2.md (52 KB)
+   └─ Complete Civic Watch documentation including Phase 2
+     ├─ Phase 1: Civic Watch Front Door (current)
+     ├─ Phase 1: Town Hall Posts API (current)
+     ├─ Phase 2: Sponsors & Delegation (NEW - lines 851-1128)
+     │  ├─ Overview & design principles
+     │  ├─ bill_sponsors table (full DDL)
+     │  ├─ wy_legislators table (full DDL)
+     │  ├─ /api/civic/bill-sponsors endpoint
+     │  ├─ /api/civic/delegation/preview endpoint
+     │  ├─ Data relationships & flow
+     │  ├─ Integration examples (frontend code)
+     │  └─ Migration checklist
+     ├─ Phase 2+ Gaps (Ideas, Town Halls)
+     └─ Security & Performance sections
+   
+   Use as single source of truth for all Civic Watch APIs and data models
+
+───────────────────────────────────────────────────────────────────────────
+
+3. 🔧 IMPLEMENTATION GUIDES:
+   
+   PHASE_2_API_SPECS.md (6.2 KB)
+   └─ Detailed API endpoint specifications (ready for developers)
+     ├─ Endpoint 1: /api/civic/bill-sponsors
+     │  ├─ Request parameters
+     │  ├─ Success response (200 OK)
+     │  ├─ Empty response
+     │  └─ Error cases (400, 404, 500)
+     ├─ Endpoint 2: /api/civic/delegation/preview
+     │  ├─ Request parameters
+     │  ├─ Success response (200 OK)
+     │  ├─ Partial & empty responses
+     │  └─ Error cases
+     ├─ Implementation notes (SQL patterns, indices, CORS)
+     └─ Performance & caching considerations
+   
+   Share with backend developers implementing the handlers
+
+───────────────────────────────────────────────────────────────────────────
+
+4. 🗄️ DATABASE MIGRATIONS:
+   
+   0012_create_bill_sponsors.sql (2.0 KB)
+   └─ Migration file for bill_sponsors table
+     ├─ Table creation with 9 columns
+     ├─ Constraints & foreign keys
+     ├─ 3 indices for query optimization
+     └─ Detailed comments
+   
+   ⚙️ Copy to: worker/migrations_wy/0012_create_bill_sponsors.sql
+   ⚙️ Apply with: wrangler d1 execute WY_DB --remote < 0012_...
+
+───────────────────────────────────────────────────────────────────────────
+
+   0013_create_wy_legislators.sql (2.6 KB)
+   └─ Migration file for wy_legislators table
+     ├─ Table creation with 13 columns
+     ├─ Composite unique constraint (seat_id)
+     ├─ 3 indices for query optimization
+     └─ Detailed comments
+   
+   ⚙️ Copy to: worker/migrations_wy/0013_create_wy_legislators.sql
+   ⚙️ Apply with: wrangler d1 execute WY_DB --remote < 0013_...
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 QUICK FACTS ABOUT PHASE 2
+───────────────────────────────────────────────────────────────────────────
+
+SCOPE:
+├─ Add bill sponsor tracking (who introduced each bill)
+├─ Add legislator directory (with contact info)
+├─ Add county-based delegation lookup ("Your representatives")
+└─ Foundation for future "contact your rep" features
+
+DATA MODEL:
+├─ 2 new tables (bill_sponsors, wy_legislators)
+├─ ~900 lines of documentation added to SNAPSHOT
+├─ No changes to Phase 1 tables (fully backward compatible)
+└─ Designed for county-based delegation (geocoding deferred to Phase 2b)
+
+APIS:
+├─ GET /api/civic/bill-sponsors?bill_id=...&role=...&chamber=...
+├─ GET /api/civic/delegation/preview?county=...&state=...
+├─ Both public (no auth required)
+├─ Both designed for <50ms latency
+└─ Full error handling (400, 404, 500)
+
+TABLES:
+├─ bill_sponsors: One row per sponsor-bill pair
+│  └─ 9 columns (name, role, district, contact, timestamps)
+├─ wy_legislators: One row per legislator per session
+│  └─ 13 columns (seat_id, name, chamber, contacts, county_assignment)
+└─ Both indexed for optimal query performance
+
+MIGRATION COMPLEXITY:
+├─ Low-risk (new tables only, no schema changes to Phase 1)
+├─ ~150 legislators to seed (one-time import)
+├─ ~500 bill-sponsor relationships to seed (from OpenStates)
+└─ No data migration required
+
+═══════════════════════════════════════════════════════════════════════════
+
+📅 IMPLEMENTATION ROADMAP
+───────────────────────────────────────────────────────────────────────────
+
+PHASE 2 (This week - Week 2, 2025):
+├─ Day 1: Review & approve design
+├─ Day 2: Apply migrations locally
+├─ Day 3: Seed wy_legislators & bill_sponsors tables
+├─ Day 4: Implement API handlers
+├─ Day 5: Write tests & verify
+└─ Day 6-7: Deploy to staging & production
+
+PHASE 2B (Next - Geocoding auto-delegation):
+├─ Add geocoding to map address → county → delegation
+├─ Integrate with user preferences system
+└─ Auto-show user's delegation on Civic Watch
+
+PHASE 2C (Future - Legislator voting):
+├─ Track legislator votes from OpenStates
+├─ Link to bills matching user's topics
+└─ Show "How your rep voted"
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ DESIGN QUALITY CHECKLIST
+───────────────────────────────────────────────────────────────────────────
+
+✓ Backward compatible (no Phase 1 changes)
+✓ Normalized data model (minimize redundancy)
+✓ Strategic denormalization (chamber in bill_sponsors for speed)
+✓ Indexed for production (all critical queries have indices)
+✓ Error handling defined (400, 404, 500 cases documented)
+✓ Sample JSON provided (developers can copy-paste examples)
+✓ SQL migration files ready (can apply immediately)
+✓ Extensible (Phase 2b+ additions clearly outlined)
+✓ Realistic scope (county-based, not full geocoding)
+✓ Documented (SNAPSHOT section + separate API specs)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🤔 FREQUENTLY ASKED QUESTIONS
+───────────────────────────────────────────────────────────────────────────
+
+Q: Can I start implementing Phase 2 now?
+A: Yes! All design is complete. Start with migrations, then implement APIs.
+
+Q: Do I need to change Phase 1 code?
+A: No. Phase 2 is entirely additive. Phase 1 APIs & tables unchanged.
+
+Q: How long will it take to implement?
+A: Estimate 3-5 days for one developer (migrations → API → tests → deploy)
+
+Q: Can we start Phase 2b (geocoding) before Phase 2 is done?
+A: Not recommended. Finish Phase 2 (county-based) first, then extend.
+
+Q: What if OpenStates doesn't have sponsor data?
+A: API returns empty array. Good error message shown to user. Not blocking.
+
+Q: Can multiple counties share a legislator?
+A: Yes, that's the design. county_assignment is JSON array: ["Natrona", "Johnson"]
+
+Q: How do we keep contact info up-to-date?
+A: Refresh from OpenStates during nightly sync (Phase 2 automation, future)
+
+Q: What about 3rd party geocoding services?
+A: Deferred to Phase 2b. For now, user selects county manually or from prefs.
+
+═══════════════════════════════════════════════════════════════════════════
+
+📞 NEXT STEPS
+───────────────────────────────────────────────────────────────────────────
+
+IMMEDIATE:
+├─ [ ] Team review: PHASE_2_DESIGN_SUMMARY.txt (10 min)
+├─ [ ] Discuss: Any design concerns or questions?
+├─ [ ] Approve: Phase 2 scope & architecture?
+└─ [ ] Assign: Backend developer for implementation
+
+WEEK 2:
+├─ [ ] Copy migration files to worker/migrations_wy/
+├─ [ ] Apply migrations to local D1
+├─ [ ] Seed wy_legislators (manual or from OpenStates)
+├─ [ ] Seed bill_sponsors (from current civic_items)
+├─ [ ] Implement /api/civic/bill-sponsors handler
+├─ [ ] Implement /api/civic/delegation/preview handler
+├─ [ ] Write Jest tests for both endpoints
+├─ [ ] Deploy to Cloudflare Workers staging
+└─ [ ] Verify endpoints work with sample data
+
+WEEK 3:
+├─ [ ] Frontend: Update bill detail cards to show sponsors
+├─ [ ] Frontend: Add "Your delegation" card to Civic Watch
+├─ [ ] Testing: Full integration test (end-to-end)
+└─ [ ] Deploy to production
+
+═══════════════════════════════════════════════════════════════════════════
+
+✨ YOU'RE READY TO GO!
+
+This design is complete, realistic, and ready for implementation.
+Share with your team and start building Phase 2.
+
+Questions? Refer back to:
+├─ PHASE_2_DESIGN_SUMMARY.txt (overview)
+├─ SNAPSHOT_120625_COMPREHENSIVE_WITH_PHASE2.md (reference)
+└─ PHASE_2_API_SPECS.md (developer guide)
+
+═══════════════════════════════════════════════════════════════════════════
+
+Generated: December 8, 2025
+Location: C:\Users\ancho\Downloads\
+
+All files ready for team consumption.

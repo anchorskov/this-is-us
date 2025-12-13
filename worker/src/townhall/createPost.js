@@ -1,15 +1,36 @@
 // worker/src/townhall/createPost.js
+// POST /api/townhall/thread/:threadId/comment — create a comment in Town Hall thread
+// Requires verified voter status via WY_DB.verified_users bridge table
 
 import { requireAuth } from "../auth/verifyFirebaseOrAccess.mjs";
+import { getVerifiedUser } from "./verifiedUserHelper.mjs";
 import { withRestrictedCORS, TOWNHALL_ALLOWED_ORIGINS } from "../utils/cors.js";
 
 export async function handleCreateTownhallPost(request, env) {
   const identity = await requireAuth(request, env);
+  
+  // Check verified voter status
+  const verifiedUser = await getVerifiedUser(env, identity.uid);
+  if (!verifiedUser) {
+    return withRestrictedCORS(
+      JSON.stringify({
+        error: "not_verified",
+        message: "Verified county voter account required to post in Town Hall.",
+      }),
+      403,
+      { 'Content-Type': 'application/json' },
+      request,
+      TOWNHALL_ALLOWED_ORIGINS
+    );
+  }
+  
   const form = await request.formData();
 
   const userId    = identity.uid;
   const title     = form.get('title')?.trim();
   const prompt    = form.get('prompt')?.trim();
+  const city      = form.get('city')?.trim() || '';
+  const state     = form.get('state')?.trim() || '';
   const file      = form.get('file');
 
   // Validate required field
@@ -45,11 +66,11 @@ export async function handleCreateTownhallPost(request, env) {
     await env.EVENTS_DB.prepare(`
       INSERT INTO townhall_posts (
         id, user_id, title, prompt, created_at,
-        r2_key, file_size, expires_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        r2_key, file_size, expires_at, city, state
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       crypto.randomUUID(), userId, title, prompt,
-      createdAt, r2Key, fileSize, expiresAt
+      createdAt, r2Key, fileSize, expiresAt, city, state
     ).run();
 
     return withRestrictedCORS(

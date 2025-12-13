@@ -12,7 +12,7 @@ OPENSTATES_API_KEY    = "34c97a5b-a758-407a-961f-7bfd54460c5c"
 OPENAI_API_KEY        = "${OPENAI_API_KEY}"
 
 [env.production.triggers]
-crons = ["0 1 * * *"]
+crons = ["0 3 * * 1"] # Mondays at 03:00 UTC (weekly pending-bills refresh)
 
 # ✅ Enable bindings for local development
 [[d1_databases]]

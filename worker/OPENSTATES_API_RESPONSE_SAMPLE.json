@@ -1,0 +1,72 @@
+{
+  "results": [
+    {
+      "id": "ocd-bill/3bf03922-22fb-406e-a83b-54f93849e03f",
+      "session": "2025",
+      "jurisdiction": {
+        "id": "ocd-jurisdiction/country:us/state:wy/government",
+        "name": "Wyoming",
+        "classification": "state"
+      },
+      "from_organization": {
+        "id": "ocd-organization/683ca907-05d4-4c84-8d7b-f04f73e295ad",
+        "name": "House",
+        "classification": "lower"
+      },
+      "identifier": "HB 22",
+      "title": "Water and wastewater operator-emergency response.",
+      "classification": ["bill"],
+      "subject": [],
+      "extras": {
+        "chapter": "CH0032",
+        "wy_bill_id": 12109,
+        "effective_date": "2025-02-24",
+        "wy_enrolled_number": "HEA0005"
+      },
+      "created_at": "2024-12-10T08:46:51.281966+00:00",
+      "updated_at": "2025-09-12T06:01:57.491086+00:00",
+      "openstates_url": "https://openstates.org/wy/bills/2025/HB22/",
+      "first_action_date": "2024-12-09T16:58:36+00:00",
+      "latest_action_date": "2025-02-25T00:55:14+00:00",
+      "latest_action_description": "Assigned Chapter Number 32",
+      "latest_passage_date": "2025-02-18T18:07:20+00:00"
+    },
+    {
+      "id": "ocd-bill/940bc5ae-9d06-48f2-8be3-773725539a0e",
+      "session": "2025",
+      "jurisdiction": {
+        "id": "ocd-jurisdiction/country:us/state:wy/government",
+        "name": "Wyoming",
+        "classification": "state"
+      },
+      "from_organization": {
+        "id": "ocd-organization/683ca907-05d4-4c84-8d7b-f04f73e295ad",
+        "name": "House",
+        "classification": "lower"
+      },
+      "identifier": "HB 23",
+      "title": "Surrender driver's license-repeal.",
+      "classification": ["bill"],
+      "subject": [],
+      "extras": {
+        "chapter": "CH0009",
+        "wy_bill_id": 12232,
+        "effective_date": "2025-07-01",
+        "wy_enrolled_number": "HEA0014"
+      },
+      "created_at": "2024-12-11T08:46:40.365408+00:00",
+      "updated_at": "2025-07-09T06:01:33.723331+00:00",
+      "openstates_url": "https://openstates.org/wy/bills/2025/HB23/",
+      "first_action_date": "2024-12-11T01:18:01+00:00",
+      "latest_action_date": "2025-02-24T22:28:57+00:00",
+      "latest_action_description": "Assigned Chapter Number 9",
+      "latest_passage_date": "2025-02-14T18:36:12+00:00"
+    }
+  ],
+  "pagination": {
+    "per_page": 2,
+    "page": 1,
+    "max_page": 278,
+    "total_items": 556
+  }
+}

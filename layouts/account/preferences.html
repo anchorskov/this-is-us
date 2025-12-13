@@ -24,6 +24,14 @@
       <span id="prefs-loading-message">Loading topics...</span>
     </div>
 
+    <!-- Select-all control (JS hooks by ID) -->
+    <div class="my-2">
+      <button type="button" id="select-all-topics-btn"
+              class="px-3 py-2 rounded bg-slate-800 text-white text-sm">
+        Select all hot topics
+      </button>
+    </div>
+
     <!-- Hot-button check-boxes injected here -->
     <div id="topics-container" class="space-y-1"></div>
 
@@ -61,6 +69,4 @@
 {{ define "scripts" }}
   <!-- Preferences bundle -->
   <script type="module" src="{{ "js/account/preferences.js" | relURL }}" defer></script>
-  <!-- Hot-button topic loader -->
-  <script type="module" src="{{ "js/account/user-topics.js" | relURL }}" defer></script>
 {{ end }}

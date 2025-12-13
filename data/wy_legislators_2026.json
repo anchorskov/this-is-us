@@ -1,0 +1,1119 @@
+{
+  "firstName": null,
+  "lastName": null,
+  "name": "Senator Liisa Anselmi-Dalton",
+  "eMail": null,
+  "party": "Democrat",
+  "district": "Senate District 12",
+  "currentDistrict": "S12",
+  "county": "Sweetwater County",
+  "remarks": null,
+  "legID": 2026,
+  "chamber": "S",
+  "occupationDesc": null,
+  "civicOrgs": [],
+  "legEducation": [],
+  "legLeadership": [
+    {
+      "startYear": "2019",
+      "endYear": "2020",
+      "position": "Senate Minority Whip",
+      "currentLeader": true
+    },
+    {
+      "startYear": "2017",
+      "endYear": "2018",
+      "position": "Senate Minority Caucus Chairman",
+      "currentLeader": false
+    }
+  ],
+  "legCommittees": [
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Water Committee",
+      "commCode": "SWC",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Tribal Relations",
+      "commCode": "STR",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "NCSL - Law and Criminal Justice",
+      "commCode": "N08",
+      "membership": "Member",
+      "type": "N",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Judiciary",
+      "commCode": "J01",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Travel, Recreation, Wildlife & Cultural Resources",
+      "commCode": "J06",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2017",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Journal",
+      "commCode": "J11",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Travel, Recreation, Wildlife & Cultural Resources",
+      "commCode": "J06",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Journal",
+      "commCode": "J11",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "NCSL - Law and Criminal Justice",
+      "commCode": "N08",
+      "membership": "Member",
+      "type": "N",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Tribal Relations",
+      "commCode": "STR",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Water Committee",
+      "commCode": "SWC",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Judiciary",
+      "commCode": "S1",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2018",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Family Medicine Residency Programs",
+      "commCode": "S2",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Judiciary",
+      "commCode": "J01",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Travel, Recreation, Wildlife & Cultural Resources",
+      "commCode": "J06",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Rules & Procedure",
+      "commCode": "J12",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Management Council",
+      "commCode": "SMC",
+      "membership": "Member",
+      "type": "M",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Water Committee",
+      "commCode": "SWC",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Tribal Relations",
+      "commCode": "STR",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "NCSL - Law and Criminal Justice",
+      "commCode": "N08",
+      "membership": "Member",
+      "type": "N",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2019",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Legislative Facilities, Technology and Process",
+      "commCode": "SFT",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Judiciary",
+      "commCode": "J01",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Travel, Recreation, Wildlife & Cultural Resources",
+      "commCode": "J06",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Senate Rules & Procedure",
+      "commCode": "J12",
+      "membership": "Member",
+      "type": "J",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Management Council",
+      "commCode": "SMC",
+      "membership": "Member",
+      "type": "M",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Water Committee",
+      "commCode": "SWC",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Tribal Relations",
+      "commCode": "STR",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "NCSL - Law and Criminal Justice",
+      "commCode": "N08",
+      "membership": "Member",
+      "type": "N",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Community College Funding",
+      "commCode": "S23",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    },
+    {
+      "commYear": "2020",
+      "chairman": "False",
+      "viceChair": "False",
+      "description": "Select Committee on Legislative Facilities, Technology and Process",
+      "commCode": "SFT",
+      "membership": "Member",
+      "type": "SE",
+      "notes": "",
+      "alternate": "False"
+    }
+  ],
+  "legCommYears": [
+    {
+      "commYear": "2020"
+    },
+    {
+      "commYear": "2019"
+    },
+    {
+      "commYear": "2018"
+    },
+    {
+      "commYear": "2017"
+    }
+  ],
+  "legBillSponsor": [
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0007",
+      "catchTitle": "Donation of antelope hunting licenses."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0012",
+      "catchTitle": "Shed antlers and horns.  "
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0033",
+      "catchTitle": "Principal and income act-principal place of administration."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0042",
+      "catchTitle": "Preference point amendments."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0043",
+      "catchTitle": "Midwife services-Medicaid."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0048",
+      "catchTitle": "Cruelty to animals-penalties."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0048",
+      "catchTitle": "Voyeurism-amendments."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0055",
+      "catchTitle": "Property offenses."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0055",
+      "catchTitle": "Transport of mobile homes-copy of title."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0058",
+      "catchTitle": "Sunset date-Wyoming investment in nursing program."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0067",
+      "catchTitle": "Child marriage restriction."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0068",
+      "catchTitle": "Sex offender-prohibited access to school facilities."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0086",
+      "catchTitle": "Medicaid birth cost recovery."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0088",
+      "catchTitle": "Repeal-seat belt evidence prohibition."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0096",
+      "catchTitle": "Healthcare provider-sexual assault protections."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0106",
+      "catchTitle": "Municipal court authority-conditional suspension of fines."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0108",
+      "catchTitle": "Estelle Reel."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0110",
+      "catchTitle": "Gunshot and stab wound reporting."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0123",
+      "catchTitle": "Pharmacists prescribing contraceptives."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "HB0126",
+      "catchTitle": "Elementary school foreign language requirement."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0126",
+      "catchTitle": "Emergency call location information."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0127",
+      "catchTitle": "Tax refund to elderly and disabled."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0132",
+      "catchTitle": "Hathaway scholarships-award increase. "
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0133",
+      "catchTitle": "Hathaway expand Wyoming scholarships."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0139",
+      "catchTitle": "Tax refund to elderly and disabled."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0143",
+      "catchTitle": "Prescription drugs-access and affordability."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0145",
+      "catchTitle": "Death penalty repeal-2."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0147",
+      "catchTitle": "K-2 foreign language requirement."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0151",
+      "catchTitle": "Naturopathy licensing board."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0152",
+      "catchTitle": "Student hazing."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0156",
+      "catchTitle": "State songs."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0157",
+      "catchTitle": "Health care providers-sexual assault protections-2."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0160",
+      "catchTitle": "Female genital mutilation."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "HB0166",
+      "catchTitle": "Alcohol taxation-school funding."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0166",
+      "catchTitle": "Death penalty repeal."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0170",
+      "catchTitle": "Child protective service workers-training."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0173",
+      "catchTitle": "Court supervised treatment program account."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0177",
+      "catchTitle": "Court supervised treatment programs-prosecutor's consent."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0181",
+      "catchTitle": "Wage garnishment amendments."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0184",
+      "catchTitle": "Sales and use tax rate."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HB0189",
+      "catchTitle": "Death penalty repeal."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "HB0192",
+      "catchTitle": "Court automation fee-2."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0197",
+      "catchTitle": "K-12 school district reserve increase."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0200",
+      "catchTitle": "Reliable and dispatchable low-carbon energy standards."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0204",
+      "catchTitle": "Common college transcript-implementation."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0206",
+      "catchTitle": "Support for food banks."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0211",
+      "catchTitle": "Mental health and substance use coverage parity."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HB0213",
+      "catchTitle": "Coal fired facility worker protections."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0227",
+      "catchTitle": "Child sexual abuse protection division."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "HB0238",
+      "catchTitle": "Nude image of a minor disseminated or possessed by a minor."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0249",
+      "catchTitle": "Psychiatric step down and coordination services-children."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HB0258",
+      "catchTitle": "Implementation requirements for medical marijuana."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "HB0292",
+      "catchTitle": "Community colleges-administrative procedure act exclusion."
+    },
+    {
+      "billType": "CJ",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "HJ0003",
+      "catchTitle": "Supporting federal missing and murdered persons efforts."
+    },
+    {
+      "billType": "CJ",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "HJ0008",
+      "catchTitle": "150th Anniversary of the 1868 Treaty of Fort Bridger."
+    },
+    {
+      "billType": "CJ",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "HJ0008",
+      "catchTitle": "Free and fair elections."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0034",
+      "catchTitle": "Hathaway Eligibility Act."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0058",
+      "catchTitle": "Game and fish licenses."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0060",
+      "catchTitle": "Antelope hunts."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0060",
+      "catchTitle": "Wyoming Women's Suffrage Pathway-highway designation."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0061",
+      "catchTitle": "Hunting colors-fluorescent pink."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0072",
+      "catchTitle": "Sexual assault biological evidence reporting."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0073",
+      "catchTitle": "Permits for small underground water wells."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0074",
+      "catchTitle": "Professional services procurement."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0076",
+      "catchTitle": "Warrants for digital records."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0076",
+      "catchTitle": "Governmental agency parking."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0078",
+      "catchTitle": "Archaeological human burial sites."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0082",
+      "catchTitle": "Do not resuscitate directives."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0085",
+      "catchTitle": "Wyoming Medicaid Fraud Control Act."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0092",
+      "catchTitle": "Peter Falk Act."
+    },
+    {
+      "billType": "SB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0093",
+      "catchTitle": "Child sexual abuse education and prevention."
+    },
+    {
+      "billType": "SB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0094",
+      "catchTitle": "Tobacco use nondiscrimination-repeal."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0094",
+      "catchTitle": "Hunting licenses-resident and nonresident."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0095",
+      "catchTitle": "Wyoming Colorado River committee."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0101",
+      "catchTitle": "Wage offset for employee theft."
+    },
+    {
+      "billType": "SB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0102",
+      "catchTitle": "Circuit court bank accounts."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0103",
+      "catchTitle": "Educational program commission."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0105",
+      "catchTitle": "Drug Donation Program Act-expansion."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0106",
+      "catchTitle": "Game and fish-special management permits."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0111",
+      "catchTitle": "Community colleges-bachelor of applied science programs."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0111",
+      "catchTitle": "Adult protective services amendments. "
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0113",
+      "catchTitle": "Felony fleeing or eluding police."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0113",
+      "catchTitle": "Community development districts."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0113",
+      "catchTitle": "Retail purchases of alcoholic liquors for resale."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SF0114",
+      "catchTitle": "Town and county development regulations."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0115",
+      "catchTitle": "Malicious cruelty to animals."
+    },
+    {
+      "billType": "SB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0115",
+      "catchTitle": "Order of protection-tolling during imprisonment."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0117",
+      "catchTitle": "University of Wyoming car and truck license plates."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0117",
+      "catchTitle": "First responder workplace mental injury coverage."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0120",
+      "catchTitle": "Office of guardian ad litem-2."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF0121",
+      "catchTitle": "Third judicial district-number of district judges."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0129",
+      "catchTitle": "Sexual assault-school employee."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SF0139",
+      "catchTitle": "Safe child act."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0150",
+      "catchTitle": "Long acting reversible contraception."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2017",
+      "billNumber": "SF0154",
+      "catchTitle": "Sex offender registration-accessories."
+    },
+    {
+      "billType": "CB",
+      "sponsorType": null,
+      "year": "2020",
+      "billNumber": "SF1005",
+      "catchTitle": "Coronavirus immunity provisions."
+    },
+    {
+      "billType": "CJ",
+      "sponsorType": null,
+      "year": "2018",
+      "billNumber": "SJ0002",
+      "catchTitle": "150th Anniversary of the 1868 Treaty of Fort Laramie."
+    },
+    {
+      "billType": "CJ",
+      "sponsorType": null,
+      "year": "2019",
+      "billNumber": "SJ0003",
+      "catchTitle": "Wyoming's Women Suffrage Day."
+    }
+  ],
+  "legSponsorYears": [
+    {
+      "sponsorYear": "2017"
+    },
+    {
+      "sponsorYear": "2018"
+    },
+    {
+      "sponsorYear": "2019"
+    },
+    {
+      "sponsorYear": "2020"
+    }
+  ],
+  "cityList": [],
+  "countyList": [],
+  "legPriorService": [
+    {
+      "chamber": "Senate",
+      "startYear": 2017,
+      "endYear": "2020",
+      "district": " District 12, "
+    }
+  ],
+  "districtList": [],
+  "officesHeld": [],
+  "spouseName": null,
+  "noChildren": null,
+  "noGChildren": null,
+  "occupWeb": null,
+  "dob": null,
+  "birthPlace": "Rock Springs, Wyoming",
+  "religion": null,
+  "firstYrHouse": null,
+  "lastYrHouse": null,
+  "firstYrSenate": null,
+  "lastYrSenate": null,
+  "houseYears": "",
+  "senateYears": "Senate: 2017-2020",
+  "deceased": "          ",
+  "yearDeceased": "",
+  "legPhoto": "Anselmi-DaltonLS12.jpg",
+  "address": null,
+  "city": null,
+  "state": null,
+  "zip": null,
+  "onWeb": null,
+  "phone": null,
+  "areaCode": null,
+  "phoneType": null,
+  "leadershipPosition": "",
+  "leadershipOrder": 0,
+  "currentLeadershipPosition": "Minority Whip",
+  "legStatus": "F",
+  "voteName": "Anselmi-Dalton"
+}

@@ -1,19 +1,19 @@
-# Database Snapshot – December 5, 2025
+# Database Snapshot – December 10, 2025
 
 ## Overview
-This document captures the current state of the This Is Us project's D1 databases, including schemas, tables, indexes, and access patterns as of December 5, 2025.
+This document captures the current state of the This Is Us project's D1 databases, including schemas, tables, indexes, and access patterns as of December 10, 2025.
 
-**Recent Updates (December 5, 2025):**
-- Schema alignment between local and production environments (migrations 0013-0014)
-- Match metadata infrastructure added (migration 0012) for automatic bill-to-topic matching
-- All 3 D1 databases now have identical schemas: EVENTS_DB hot_topics and hot_topic_civic_items fully aligned
-- Migration compatibility fixes for older migrations (0003, 0004, 0011) to handle production schema variations
+**Recent Updates (December 10, 2025):**
+- Project now uses 2 D1 databases (EVENTS_DB and WY_DB); BALLOT_DB binding exists but is unused and not configured for production.
+- Wyoming civic stack gained sponsor ingestion (`bill_sponsors.openstates_person_id`) and structural verification fields in `civic_item_verification` (is_wyoming, has_summary, has_wyoming_sponsor, structural_ok, structural_reason).
+- OpenStates sync calls detail endpoint to populate bill_sponsors; verification gating requires WY jurisdiction, summary, mapped sponsor, and model agreement.
+- Hot topics remain in EVENTS_DB; all bill data, sponsors, verification, legislators, and votes live in WY_DB.
 
 ---
 
 ## D1 Databases Configuration
 
-The project uses **3 D1 databases** across local development, preview, and production environments:
+The project uses **2 active D1 databases** across local development, preview, and production environments:
 
 ### 1. EVENTS_DB
 **Bindings & IDs:**
@@ -26,15 +26,7 @@ The project uses **3 D1 databases** across local development, preview, and produ
 **Migrations Applied:** 0001-0014 (local & production aligned as of Dec 5, 2025)
 **Note:** Includes `voters_addr_norm` and `wy_city_county` from test fixture (migration 0010)
 
-### 2. BALLOT_DB
-**Bindings & IDs:**
-- Shared across all environments (ID: `9c4b0c27-eb33-46e6-a477-fb49d4c81474`)
-- Database name: `ballot_sources`
-
-**Current State:** 7 tables
-**Size:** ~77 KB
-
-### 3. WY_DB
+### 2. WY_DB
 **Bindings & IDs:**
 - Local: `wy` (ID: `4b4227f1-bf30-4fcf-8a08-6967b536a5ab`)
 - Preview: `wy_preview` (ID: `de78cb41-176d-40e8-bd3b-e053e347ac3f`)
@@ -214,21 +206,6 @@ CREATE TABLE _cf_METADATA (
 - `user_topic_prefs.topic_id` → `topic_index.id`
 
 ---
-
-## BALLOT_DB Schema
-
-### Tables
-
-**ballot_sources** – Ballot source references
-**rl_submissions** – Request-level ballot submissions
-**sms_optins** – SMS opt-in tracking
-**volunteers** – Volunteer information
-**d1_migrations** – Migration tracking
-**sqlite_sequence** – Auto-increment sequence tracking
-**_cf_KV** – Cloudflare internal metadata
-
-**Size:** ~77 KB | **Row count:** ~25 rows
-
 ---
 
 ## WY_DB Schema
@@ -279,6 +256,11 @@ CREATE TABLE civic_items (
 ```
 Indexes: `civic_items_scope` (level, jurisdiction_key), `civic_items_kind_status` (kind, status), `civic_items_category` (category)
 
+**bill_sponsors** – Bill sponsors (OpenStates-derived, now includes openstates_person_id)
+Key columns: civic_item_id, sponsor_name, sponsor_role, sponsor_district, chamber, contact_email/phone/website, openstates_person_id, timestamps.
+
+**wy_legislators** – Legislator directory (name, chamber, district_label/number, contact info) used to map sponsors to WY legislators.
+
 **user_ideas** – User-generated ideas linked to civic items
 ```sql
 CREATE TABLE user_ideas (
@@ -310,12 +292,16 @@ CREATE TABLE votes (
 ```
 Index: `idx_votes_target` on `(target_type, target_id)`
 
+**civic_item_verification** – AI verification with structural gating
+Key columns: topic_match, summary_safe, issues, model, confidence, status, created_at, plus structural fields is_wyoming, has_summary, has_wyoming_sponsor, structural_ok, structural_reason.
+
 **Current Civic Data:**
-- civic_items: 5 Wyoming 2025 session bills (HB 22, HB 23, HB 264, SF 2, SF 4) + test data
+- civic_items: synced Wyoming bills for current session (volume varies by sync run)
 - user_ideas: 0 rows (ready for constituent input with up_votes/down_votes aggregation)
 - votes: Granular vote tracking with target_type/target_id support (0 rows, ready for endorsements)
-- hot_topic_civic_items (junction): Links bills to topics; new columns support match_score, matched_terms_json, excerpt
-- **Match Metadata Ready:** Infrastructure in place for automatic bill scanning to populate match scores and matched terms
+- bill_sponsors: populated by OpenStates detail sync (person sponsors only)
+- civic_item_verification: populated by internal verification route with structural gating
+- hot_topic_civic_items (junction): Links bills to topics; match_score/matched_terms_json/excerpt ready
 
 ### Activity & Tracking Tables
 
@@ -497,7 +483,7 @@ npx wrangler d1 execute WY_DB --remote --env production --command "SELECT name F
 - Results include metadata: `served_by`, `served_by_region`, `duration_ms`, `rows_read`, `rows_written`
 - Bindings are resolved from `wrangler.toml` environment configuration
 - Premium feature: requires Cloudflare paid plan
-- Both preview and production have hot topics and civic data (migrations applied Dec 4, 2025)
+- Both preview and production have hot topics; ensure WY_DB migrations are applied where civic endpoints run.
 
 ### Runtime Access (Worker Code)
 
@@ -749,7 +735,12 @@ npx wrangler d1 migrations apply WY_DB --remote --env production
 - `0006_create_civic_items.sql` – Civic items for bill tracking (Dec 4, 2025)
 - `0007_create_user_ideas.sql` – User comments/ideas on bills (Dec 4, 2025)
 - `0008_create_votes.sql` – Vote/endorsement tracking (Dec 4, 2025)
-- Status: ✅ Applied to local and production
+- `0012_create_bill_sponsors.sql` – Bill sponsor storage (Phase 2)
+- `0013_create_wy_legislators.sql` – Legislator directory
+- `0019_create_civic_item_verification.sql` – AI verification table
+- `0020_add_openstates_person_id_to_bill_sponsors.sql` – OpenStates person linkage for sponsors
+- `0021_add_structural_fields_to_civic_item_verification.sql` – Structural gating fields
+- Status: Apply through 0021 wherever OpenStates sync + verification run.
 
 ### Schema Alignment Status (Dec 5, 2025)
 
@@ -798,6 +789,10 @@ npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrati
 4. **Consolidate town hall from Firestore to D1** for single source of truth
 
 5. **Implement auth gates** using Firebase ID tokens in Worker
+
+6. **Verify migrations on target envs**
+   - Ensure WY_DB has 0020/0021 for sponsor ingestion and structural verification.
+   - Confirm bill_sponsors and wy_legislators populated so structural gating can pass.
 
 6. **Add voter verification** lookup against WY_DB `voters_addr_norm` table
 
@@ -859,4 +854,3 @@ npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrati
 - `worker/src/routes/hotTopics.mjs` – Hot topics API handlers
 - `worker/src/lib/openStatesSync.mjs` – Open States bill syncing logic
 - `worker/src/index.mjs` – Main router with route imports
-

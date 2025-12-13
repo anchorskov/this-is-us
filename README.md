@@ -76,3 +76,11 @@ Welcome to the development workspace for [this-is-us.org](https://this-is-us.org
 1. **Run the audit**  
    ```bash
    python summarize-logic.py --townhall-only --output -
+
+## 🛠 Local development with D1 (keep DB traffic local)
+
+- Start the Worker with local bindings: `cd worker && npm run dev` (alias for `wrangler dev --local`).
+- Apply migrations to local SQLite: `npm run db:migrate:all` (WY_DB + EVENTS_DB with `--local`).
+- Ad-hoc queries stay local: `npm run db:query:wy -- "SELECT COUNT(*) FROM civic_items"` (similar for `db:query:events`).
+- Put local-only secrets in `worker/.dev.vars` (git-ignored). Set `ENVIRONMENT=local` plus any needed API keys.
+- Hugo: `http://localhost:1313`; Worker API: `http://127.0.0.1:8787`.

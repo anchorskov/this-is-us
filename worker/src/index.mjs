@@ -29,6 +29,12 @@ import {
 import { handleCreateTownhallPost } from "./townhall/createPost.js";
 import { handleListTownhallPosts } from "./townhall/listPosts.js";
 import { handleDeleteTownhallPost } from "./townhall/deletePost.js";
+import {
+  handleListTownhallThreads,
+  handleCreateTownhallThread,
+  handleGetTownhallThread,
+  handleCreateTownhallReply,
+} from "./routes/townhall/posts.mjs";
 
 // Setup (seed topics, etc.)
 import { register as registerSetup } from "./routes/setup.js";
@@ -49,11 +55,21 @@ import {
   handlePendingBills,
   handlePendingBillsWithTopics,
 } from "./routes/pendingBills.mjs";
+import { handleBillSponsors } from "./routes/billSponsors.mjs";
+import { handleInternalVerifyBill } from "./routes/internalVerifyBill.mjs";
+import { handleDevLsoSync } from "./routes/devLsoSync.mjs";
+import { handleDevSampleCompleteBills } from "./routes/devSampleCompleteBills.mjs";
 import { handleListHotTopics, handleGetHotTopic } from "./routes/hotTopics.mjs";
 import { handleVoteCivicItem } from "./routes/civicVotes.mjs";
-import { handleScanPendingBills, handleTestOne } from "./routes/civicScan.mjs";
+import { handleScanPendingBills, handleTestOne, handleTestBillSummary } from "./routes/civicScan.mjs";
 import { handleOpenAiSelfTest } from "./routes/openAiSelfTest.mjs";
+import { handleFetchLsoText } from "./routes/fetchLsoText.mjs";
 import { syncWyomingBills } from "./lib/openStatesSync.mjs";
+import { handleDevLsoHydrate } from "./routes/devLsoHydrate.mjs";
+import { runPendingBillsRefresh } from "./jobs/pendingBillsRefresh.mjs";
+
+// Civic Watch – delegation lookup
+import { handleGetDelegation } from "./routes/civic/delegation.mjs";
 
 // User sync
 import { handleSyncUser } from "./routes/sync-user.js";
@@ -87,7 +103,10 @@ router
 /* Townhall */
 router
   .post("/api/townhall/create", handleCreateTownhallPost)
-  .get("/api/townhall/posts", handleListTownhallPosts)
+  .post("/api/townhall/posts", handleCreateTownhallThread)
+  .get("/api/townhall/posts", handleListTownhallThreads)
+  .get("/api/townhall/posts/:id", handleGetTownhallThread)
+  .post("/api/townhall/posts/:id/replies", handleCreateTownhallReply)
   .post("/api/townhall/delete", handleDeleteTownhallPost);
 
 /* Sandbox & debug */
@@ -116,10 +135,18 @@ router.post("/api/civic/items/:id/vote", handleVoteCivicItem);
 router.get("/api/civic/openstates/search", handleOpenStatesSearch);
 router.get("/api/civic/pending-bills", handlePendingBills);
 router.get("/api/civic/pending-bills-with-topics", handlePendingBillsWithTopics);
+router.get("/api/civic/bill-sponsors", handleBillSponsors);
+router.get("/api/civic/delegation", handleGetDelegation);
+router.get("/api/internal/civic/verify-bill", handleInternalVerifyBill);
+router.post("/api/internal/civic/fetch-lso-text", handleFetchLsoText);
+router.post("/api/dev/lso/hydrate-bills", handleDevLsoHydrate);
 
 // Test routes (Milestones 1–2)
 router.get("/api/internal/civic/test-one", handleTestOne);
 router.post("/api/internal/civic/test-one", handleTestOne);
+
+// Test bill summary route
+router.post("/api/internal/civic/test-bill-summary", handleTestBillSummary);
 
 // Production scan route (Milestone 4)
 router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
@@ -155,6 +182,43 @@ router.get("/api/dev/openstates/sync", async (req, env) => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+});
+
+// DEV ONLY: Sync LSO committee bills
+router.get("/api/dev/lso/sync-committee-bills", async (req, env) => {
+  const host = new URL(req.url).hostname;
+  const isLocal = host === "127.0.0.1" || host === "localhost";
+  if (!isLocal) {
+    return new Response(
+      JSON.stringify({ error: "Not available outside dev" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  const url = new URL(req.url);
+  const year = url.searchParams.get("year") || new Date().getFullYear();
+  try {
+    const result = await handleDevLsoSync(req, env);
+    return result;
+  } catch (err) {
+    console.error("❌ dev LSO sync error:", err);
+    return new Response(
+      JSON.stringify({ error: "lso_sync_failed", message: err.message }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+});
+
+// DEV ONLY: sample complete civic items
+router.get("/api/dev/civic/sample-complete-bills", async (req, env) => {
+  const host = new URL(req.url).hostname;
+  const isLocal = host === "127.0.0.1" || host === "localhost";
+  if (!isLocal) {
+    return new Response(
+      JSON.stringify({ error: "Not available outside dev" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  return handleDevSampleCompleteBills(req, env);
 });
 
 registerSetup(router); // mounts /api/setup/topics
@@ -204,6 +268,26 @@ export default {
   },
 
   async scheduled(controller, env, ctx) {
-    /* cron jobs */
+    ctx.waitUntil(
+      (async () => {
+        try {
+          const result = await runPendingBillsRefresh(env);
+          console.log(
+            "⏰ pending-bills cron complete:",
+            JSON.stringify(
+              {
+                ingest: result.ingest?.count ?? null,
+                scan: result.scan?.scanned ?? null,
+                skipped: result.scan?.skipped ?? false,
+              },
+              null,
+              2
+            )
+          );
+        } catch (err) {
+          console.error("❌ pending-bills cron failed:", err);
+        }
+      })()
+    );
   },
 };

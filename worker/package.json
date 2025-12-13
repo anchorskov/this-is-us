@@ -4,7 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "wrangler dev --local",
+    "dev:remote": "wrangler dev",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "civic:verify-bills": "node scripts/verify_all_pending_bills.js",
+    "db:migrate:wy": "wrangler d1 migrations apply WY_DB --local",
+    "db:migrate:events": "wrangler d1 migrations apply EVENTS_DB --local",
+    "db:migrate:all": "npm run db:migrate:wy && npm run db:migrate:events",
+    "db:query:wy": "wrangler d1 execute WY_DB --local --command",
+    "db:query:events": "wrangler d1 execute EVENTS_DB --local --command"
   },
   "keywords": [],
   "author": "",

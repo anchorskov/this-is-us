@@ -114,16 +114,22 @@ buildFuture  = false
   weight     = 6
 
 [[menu.main]]
+  identifier = "civic-watch"
+  name       = "Civic Watch"
+  url        = "/civic/watch/"
+  weight     = 7
+
+[[menu.main]]
   identifier = "hot-topics"
   name       = "Hot Topics"
   url        = "/hot-topics/"
-  weight     = 7
+  weight     = 8
 
 [[menu.main]]
   identifier = "townhall"
   name       = "Town Hall"
   url        = "/townhall/"
-  weight     = 8
+  weight     = 9
 
 #[[menu.main]]
 # identifier = "podcast"
@@ -135,4 +141,4 @@ buildFuture  = false
   identifier = "contact"
   name       = "Contact"
   url        = "/contact/"
-  weight     = 10
+  weight     = 11

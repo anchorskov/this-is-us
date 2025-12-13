@@ -1,0 +1,6 @@
+
+{
+  "error": {
+    "text": "no such column: lng at offset 84: SQLITE_ERROR"
+  }
+}

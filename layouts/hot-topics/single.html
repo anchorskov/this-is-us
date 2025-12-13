@@ -1,5 +1,6 @@
 {{ define "main" }}
 <div class="hot-topic-detail-container" id="topicDetail">
+  {{ partial "civic-nav.html" . }}
   <div class="loading">Loading topic...</div>
 </div>
 
@@ -318,6 +319,10 @@
         <div class="topic-summary">
           ${topic.summary}
         </div>
+        <p class="civic-hot-topics-next">
+          Want to see the actual bills behind these topics?
+          Visit the <a href="/civic/pending/">Pending bills</a> view.
+        </p>
 
         <div class="section">
           <h2 class="section-title">Why It Matters</h2>

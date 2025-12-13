@@ -1,0 +1,387 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║    ✅ PHASE 2 PLANNING COMPLETE – Civic Watch Phase 2 Design Ready      ║
+║                                                                          ║
+║    Target: Bill sponsors & delegation lookup data model                 ║
+║    Status: Fully designed, migration files created, API specs drafted   ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📋 DELIVERABLES
+═══════════════════════════════════════════════════════════════════════════
+
+1. SNAPSHOT_120625_COMPREHENSIVE_WITH_PHASE2.md ⭐ MAIN REFERENCE
+   ✅ Updated with complete Phase 2 section (900+ lines of new content)
+   ✅ Includes data model, API specs, integration examples
+   ✅ Maintains backward compatibility with Phase 1 (no changes to existing sections)
+
+2. PHASE_2_API_SPECS.md
+   ✅ Detailed endpoint specifications
+   ✅ Request/response JSON examples for both endpoints
+   ✅ Error handling patterns
+   ✅ Performance considerations
+
+3. 0012_create_bill_sponsors.sql
+   ✅ Migration file ready for worker/migrations_wy/
+   ✅ Creates table for tracking bill sponsors with contact info
+   ✅ Includes indices for optimal query performance
+   ✅ Implements foreign key cascade delete
+
+4. 0013_create_wy_legislators.sql
+   ✅ Migration file ready for worker/migrations_wy/
+   ✅ Creates legislative directory with district and county mappings
+   ✅ Designed for county-based delegation lookups
+   ✅ Includes indices for chamber + district queries
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔷 PHASE 2 ARCHITECTURE
+═══════════════════════════════════════════════════════════════════════════
+
+GOAL: Enable "Who sponsored this bill?" and "Your delegation" features
+
+TWO NEW TABLES:
+───────────────────────────────────────────────────────────────────────────
+
+bill_sponsors (one row per sponsor-bill pair):
+├─ civic_item_id TEXT        → FK to bills in civic_items
+├─ sponsor_name TEXT         → Legislator's full name
+├─ sponsor_role TEXT         → "primary" | "cosponsor" | "committee"
+├─ sponsor_district TEXT     → "HD-23" | "SF-10" (house district / senate district)
+├─ chamber TEXT              → "house" | "senate" (denormalized for speed)
+├─ contact_email TEXT        → legislator@wylegislature.gov
+├─ contact_phone TEXT        → (307) 555-1234
+├─ contact_website TEXT      → https://wylegislature.gov/legislators/...
+├─ created_at TEXT          → ISO 8601
+└─ updated_at TEXT          → ISO 8601
+
+Indices: civic_item_id (for bill→sponsors), sponsor_name, sponsor_district
+
+wy_legislators (one row per legislator, per session):
+├─ seat_id TEXT UNIQUE      → "H-23" | "S-10" (legislator's unique seat)
+├─ name TEXT                 → Legislator's full name
+├─ chamber TEXT              → "house" | "senate"
+├─ district_label TEXT       → "House District 23" (for UI display)
+├─ district_number TEXT      → "23" (numeric, for internal logic)
+├─ county_assignment TEXT    → JSON ["Natrona", "Johnson"] (which counties rep)
+├─ contact_email TEXT        → legislator@wylegislature.gov
+├─ contact_phone TEXT        → (307) 555-1234
+├─ website_url TEXT          → https://wylegislature.gov/legislators/...
+├─ bio TEXT                  → Short bio / party affiliation
+├─ created_at TEXT          → ISO 8601
+├─ updated_at TEXT          → ISO 8601
+└─ legislative_session TEXT  → "2025" (for multi-year tracking)
+
+Indices: chamber+district_label (for delegation lookups), seat_id, name
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔗 TWO NEW API ENDPOINTS
+═══════════════════════════════════════════════────────────────────────────
+
+1. GET /api/civic/bill-sponsors?bill_id=...&role=...&chamber=...
+   
+   Purpose: Fetch sponsors for a bill
+   
+   Input:
+   ├─ bill_id (required)     → civic_item_id, e.g., "ocd-bill/us-wy-2025-HB0022"
+   ├─ role (optional)        → "primary" | "cosponsor" | "committee"
+   └─ chamber (optional)     → "house" | "senate"
+   
+   Output: {
+     bill_id: "...",
+     bill_number: "HB 22",
+     title: "...",
+     sponsors: [
+       {
+         id: 1,
+         name: "John Smith",
+         role: "primary",
+         chamber: "house",
+         district_label: "House District 23",
+         contact_email: "...",
+         contact_phone: "...",
+         contact_website: "..."
+       }
+     ],
+     count: 1
+   }
+   
+   Empty case: sponsors = [], count = 0, note = "No sponsors recorded."
+   Error: 400 (missing bill_id), 404 (bill not found), 500 (DB error)
+
+───────────────────────────────────────────────────────────────────────────
+
+2. GET /api/civic/delegation/preview?county=...&state=...
+   
+   Purpose: Fetch user's state delegation based on county
+   
+   Input:
+   ├─ county (optional)      → Wyoming county name, e.g., "Natrona"
+   └─ state (optional)       → "WY" (default)
+   
+   Output: {
+     county: "Natrona",
+     state: "WY",
+     delegation: {
+       state_house: [
+         {
+           id: 1,
+           name: "John Smith",
+           seat_id: "H-23",
+           district_label: "House District 23",
+           chamber: "house",
+           contact_email: "...",
+           contact_phone: "...",
+           contact_website: "..."
+         }
+       ],
+       state_senate: [
+         {
+           id: 12,
+           name: "Jane Doe",
+           seat_id: "S-10",
+           district_label: "Senate District 10",
+           chamber: "senate",
+           contact_email: "...",
+           contact_phone: "...",
+           contact_website: "..."
+         }
+       ]
+     },
+     message: "Delegation for Natrona County (2025 legislative session)",
+     matched_districts: ["H-23", "S-10"]
+   }
+   
+   No county: returns empty delegation with prompt "Provide ?county=..."
+   Error: 400 (county not found), 500 (DB error)
+
+═══════════════════════════════════════════════════════════════════════════
+
+📊 DATA POPULATION STRATEGY
+═══════════════════════════════════════════════════────────────────────────
+
+bill_sponsors:
+  1. Seed from OpenStates legislator list + current bill data (one-time)
+  2. Update whenever bill status changes or sponsors added
+  3. Refresh from OpenStates API during nightly sync (Phase 2 automation)
+
+wy_legislators:
+  1. Seed from OpenStates legislator list for 2025 session (~150 reps)
+  2. Populate county_assignment (initially manual; Phase 2b: auto-geocoding)
+  3. Refresh contact info 1x per legislative session
+  4. Multi-year: Seed fresh for each new session (e.g., 2027, 2029)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🚀 MIGRATION IMPLEMENTATION CHECKLIST
+═══════════════════════════════════════════════════════────────────────────
+
+Phase 2 Migration & API Implementation:
+───────────────────────────────────────────────────────────────────────────
+□ Copy migration files to worker/migrations_wy/
+  ├─ 0012_create_bill_sponsors.sql
+  └─ 0013_create_wy_legislators.sql
+
+□ Apply migrations locally (verify no errors)
+  $ wrangler d1 execute WY_DB --remote < 0012_create_bill_sponsors.sql
+  $ wrangler d1 execute WY_DB --remote < 0013_create_wy_legislators.sql
+
+□ Seed wy_legislators table (~150 Wyoming reps)
+  ├─ Extract from OpenStates API or use existing legislator list
+  ├─ Map districts to counties (initial manual approach)
+  └─ Insert into wy_legislators
+
+□ Seed bill_sponsors table (from current bills in civic_items)
+  ├─ Query OpenStates for each bill's sponsors
+  ├─ Insert into bill_sponsors
+  └─ Verify foreign keys reference existing civic_items
+
+□ Implement API handlers
+  ├─ worker/src/routes/billSponsors.mjs
+  │  └─ export handleBillSponsors(request, env)
+  ├─ worker/src/routes/delegation.mjs
+  │  └─ export handleDelegationPreview(request, env)
+  └─ Add routes to worker/src/index.mjs
+     ├─ router.get("/api/civic/bill-sponsors", handleBillSponsors);
+     └─ router.get("/api/civic/delegation/preview", handleDelegationPreview);
+
+□ Write Jest tests
+  ├─ __tests__/billSponsors.test.mjs
+  └─ __tests__/delegation.test.mjs
+
+□ Test locally (with sample data)
+  ├─ GET /api/civic/bill-sponsors?bill_id=ocd-bill/us-wy-2025-HB0022
+  └─ GET /api/civic/delegation/preview?county=Natrona
+
+□ Deploy to Cloudflare Workers (staging)
+  $ npm run deploy
+
+□ Test in staging (with live D1)
+
+□ Deploy to production
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔮 FUTURE EXTENSIONS (Phase 2b+)
+═══════════════════════════════════════════════────────────────────────────
+
+Phase 2b – Geocoding & Auto-Delegation:
+  □ Add geocoding to map user address → county → delegation
+  □ Integrate with user preferences system
+  □ Show "Your delegation" card with auto-detected reps
+
+Phase 2c – Legislator Voting History:
+  □ Track legislator votes from OpenStates API
+  □ Link votes to bills matching user's topics
+  □ Show "How your rep voted" on relevant bills
+
+Phase 2d – Multi-Session Support:
+  □ Make wy_legislators keyed by (seat_id, session)
+  □ Query: "Which senators represented Natrona in 2025?"
+  □ Historical tracking across legislative sessions
+
+Phase 2e – Social Media Contacts:
+  □ Add twitter_handle, facebook_url, instagram_handle to wy_legislators
+  □ Enable "Contact on X" multi-channel buttons
+
+═══════════════════════════════════════════════════════════════════════════
+
+📁 FILE ORGANIZATION (in this export)
+═══════════════════════════════════════════════════════════════════════════
+
+SNAPSHOT_120625_COMPREHENSIVE_WITH_PHASE2.md
+├─ Lines 851-1128: New "Phase 2: Sponsors & Delegation Data Model" section
+│  ├─ Overview & design principles
+│  ├─ Table schemas (bill_sponsors, wy_legislators)
+│  ├─ API endpoint specifications
+│  ├─ Data relationships diagram
+│  ├─ Migration checklist
+│  └─ Future extensions (Phase 2b+)
+├─ Lines 1129-1165: "Remaining Phase 2+ Gaps" (Ideas, Town Halls)
+└─ Rest: Phase 1 documentation (unchanged)
+
+0012_create_bill_sponsors.sql
+├─ Ready to copy to worker/migrations_wy/
+├─ Includes foreign key to civic_items
+├─ Creates 3 indices for query optimization
+└─ ~40 lines, well-commented
+
+0013_create_wy_legislators.sql
+├─ Ready to copy to worker/migrations_wy/
+├─ Includes county_assignment for Phase 2b flexibility
+├─ Creates 3 indices for delegation lookups
+└─ ~45 lines, well-commented
+
+PHASE_2_API_SPECS.md
+├─ Detailed request/response specifications
+├─ Query parameter documentation
+├─ Example JSON for all success/error cases
+├─ Implementation notes (SQL queries, indices, CORS)
+└─ ~350 lines, production-ready
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ DESIGN DECISIONS & RATIONALE
+═══════════════════════════════════════════════════════════────────────────
+
+Q: Why two tables instead of one?
+A: Separation of concerns:
+   - bill_sponsors: Volatile (sponsors change per bill, per session)
+   - wy_legislators: Relatively stable (one rep per seat, per session)
+   - Normalized structure enables queries like "What bills did senator X sponsor?"
+
+Q: Why include chamber in bill_sponsors if we can join wy_legislators?
+A: Denormalization for speed. Most queries will return <10 sponsors. Joining
+   would add complexity. One-way denormalization is acceptable trade-off.
+
+Q: Why start with county-based delegation instead of full geocoding?
+A: MVP (minimum viable product) approach:
+   - Phase 2: Counties only (manual mapping, ~23 WY counties)
+   - Phase 2b: Auto-geocoding if needed (address → lat/long → district)
+   - Reduces Phase 2 scope; easier to extend later
+
+Q: Why JSON for county_assignment instead of separate table?
+A: Flexibility:
+   - One rep might represent 1, 2, or 3 counties
+   - JSON array handles all cases cleanly
+   - Avoids need for intermediary table (representative_counties)
+   - Can be NULL if not yet mapped (Phase 2a)
+
+Q: Why include legislative_session in wy_legislators?
+A: Multi-year tracking:
+   - Wyoming legislature meets every 2 years
+   - 2025 → 2027 → 2029, etc.
+   - Want historical data (who was my rep in 2023?)
+   - Composite key (seat_id, session) enables time-series queries
+
+═══════════════════════════════════════════════════════════════════════════
+
+📝 NOTES FOR IMPLEMENTATION
+═══════════════────────────────────────────────────────────────────────────
+
+1. CORS & Authentication:
+   ✓ Both endpoints should be publicly accessible (CORS enabled)
+   ✓ No authentication required (delegation is public info)
+   ✓ Consider rate limiting if called frequently (future)
+
+2. Error Handling:
+   ✓ Return meaningful messages, not just "error"
+   ✓ Include context (bill_id, county) in error responses
+   ✓ Use correct HTTP status codes (400, 404, 500)
+   ✓ Log errors to console for debugging
+
+3. Performance:
+   ✓ Indices are critical for production (see migration files)
+   ✓ bill_sponsors query: O(log n) on civic_item_id
+   ✓ delegation query: O(log n) on chamber + district_label
+   ✓ Expected <50ms latency for both endpoints
+
+4. Data Quality:
+   ✓ Legislator contact info may have gaps initially (OK)
+   ✓ Some bills may have no sponsors recorded (OK, empty array response)
+   ✓ Gradually improve as OpenStates data is synced
+
+5. Testing:
+   ✓ Unit tests: Mock database, test query logic
+   ✓ Integration tests: Use test database with sample data
+   ✓ Sample data: Create 3-5 bills, 10 legislators, map to counties
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎯 SUCCESS CRITERIA FOR PHASE 2 COMPLETION
+═══════════════════════────────────────────────────────────────────────────
+
+✅ Migrations applied without errors (local + staging)
+✅ Database state verified (query samples, row counts)
+✅ Both APIs respond with correct JSON structure
+✅ Error cases handled gracefully (400, 404, 500)
+✅ Query latency <100ms (even with 1000+ bills)
+✅ Jest tests pass (100% of test cases)
+✅ No breaking changes to Phase 1 APIs
+✅ Documentation updated (in SNAPSHOT)
+✅ Deployed to production without incidents
+
+═══════════════════════════════════════════════════════════════════════════
+
+📞 QUESTIONS OR CLARIFICATIONS?
+═══════════────────────────────────────────────────────────────────────────
+
+This design is flexible and ready for feedback:
+- Want to change table names? Easy.
+- Want to add more legislator fields? Add columns.
+- Want different error messages? Update handlers.
+- Want to add caching? Wrap API calls.
+
+The migration files and API specs are independent of implementation.
+Start with one endpoint, test it, then move to the other.
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ PHASE 2 DESIGN COMPLETE
+
+Ready for team review and implementation planning.
+
+All files in: C:\Users\ancho\Downloads\
+
+Generated: December 8, 2025

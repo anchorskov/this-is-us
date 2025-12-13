@@ -3,6 +3,7 @@ console.log("🎯 preferences.js loaded");
 
 import { getApps, initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 /* ──────────────────────────────────────────────────────────
    1) Ensure Firebase app exists (in case firebase-config.js
@@ -36,19 +37,38 @@ const prefsLoadingSpinner = document.getElementById("prefs-loading");
 const prefsLoadingMessage = document.getElementById("prefs-loading-message");
 const prefsFeedbackEl     = document.getElementById("prefs-feedback");
 
-const topicsContainer = document.createElement("div");
-topicsContainer.id = "topics-container";
+let topicsContainer = document.getElementById("topics-container");
+if (!topicsContainer) {
+  topicsContainer = document.createElement("div");
+  topicsContainer.id = "topics-container";
+  console.warn("⚠️ topics-container missing in DOM; creating fallback container");
+  if (formEl) {
+    formEl.insertBefore(topicsContainer, formEl.firstChild);
+  }
+}
 
 /* Initial state */
 if (prefsLoadingSpinner) prefsLoadingSpinner.style.display = "none"; // hide spinner
 
-/* Insert topics container just before the feedback element, or at top of form */
-if (formEl) {
-  if (prefsFeedbackEl && formEl.contains(prefsFeedbackEl)) {
-    formEl.insertBefore(topicsContainer, prefsFeedbackEl);
+/* Select-all control: prefer server-rendered button, fallback to create */
+let selectAllBtn = document.getElementById("select-all-topics-btn");
+if (!selectAllBtn) {
+  const selectAllContainer = document.createElement("div");
+  selectAllContainer.className = "my-2";
+  selectAllBtn = document.createElement("button");
+  selectAllBtn.type = "button";
+  selectAllBtn.id = "select-all-topics-btn";
+  selectAllBtn.className = "px-3 py-2 rounded bg-slate-800 text-white text-sm";
+  selectAllBtn.textContent = "Select all hot topics";
+  selectAllContainer.appendChild(selectAllBtn);
+  if (formEl && topicsContainer) {
+    formEl.insertBefore(selectAllContainer, topicsContainer);
+    console.log("✅ Select-all button created and inserted");
   } else {
-    formEl.prepend(topicsContainer);
+    console.warn("⚠️ Select-all button fallback could not be inserted");
   }
+} else {
+  console.log("✅ Select-all button found in DOM");
 }
 
 const showPrefsFeedback = (msg, type = "success") => {
@@ -117,19 +137,21 @@ onAuthStateChanged(auth, async (user) => {
     }
     
     /* Render topic check-boxes */
-    if (!Array.isArray(list) || !list.length) {
-      topicsContainer.innerHTML = "<p>No topics available yet.</p>";
-    } else {
-      topicsContainer.innerHTML = "";               // clear any previous markup
-      list.forEach(t => {
-        const label = document.createElement("label");
-        label.className = "block my-1";
-        label.innerHTML = `
-          <input type="checkbox" value="${t.id}" ${t.checked ? "checked" : ""}>
-          ${t.name}
-        `;
-        topicsContainer.appendChild(label);
-      });
+    if (topicsContainer) {
+      if (!Array.isArray(list) || !list.length) {
+        topicsContainer.innerHTML = "<p>No topics available yet.</p>";
+      } else {
+        topicsContainer.innerHTML = "";               // clear any previous markup
+        list.forEach(t => {
+          const label = document.createElement("label");
+          label.className = "block my-1";
+          label.innerHTML = `
+            <input type="checkbox" value="${t.id}" ${t.checked ? "checked" : ""}>
+            ${t.name}
+          `;
+          topicsContainer.appendChild(label);
+        });
+      }
     }
 
     // Diagnostic delay for spinner dismissal - Temporarily commented out for testing
@@ -148,25 +170,67 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* 💾 Save handler Post immediately on toggle */
-topicsContainer.addEventListener("change", async (evt) => {
-  if (evt.target && evt.target.type === "checkbox") {
-    const box      = /** @type {HTMLInputElement} */ (evt.target);
-    const topicId  = Number(box.value);
-    const idToken  = await auth.currentUser.getIdToken();
+/* 💾 Save handler: Post immediately on toggle + save to Firestore preferences */
+if (topicsContainer) {
+  topicsContainer.addEventListener("change", async (evt) => {
+    if (evt.target && evt.target.type === "checkbox") {
+      const box      = /** @type {HTMLInputElement} */ (evt.target);
+      const topicId  = Number(box.value);
+      const user = auth.currentUser;
 
-    try {
-       await apiFetch("/user-topics", {
+      try {
+        // Save to D1 via API
+        await apiFetch("/user-topics", {
           method: "POST",
           body: JSON.stringify({ topicId, checked: box.checked }),
         });
-      showPrefsFeedback("Preference saved!");
-    } catch (err) {
-      console.error("Toggle failed:", err);
-      showPrefsFeedback("Error saving", "error");
-      box.checked = !box.checked;        // roll back UI
+        
+        // Also save to Firestore preferences.followedTopics
+        if (user) {
+          const db = getFirestore();
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          
+          let followedTopics = [];
+          if (userDocSnap.exists() && userDocSnap.data().preferences?.followedTopics) {
+            followedTopics = [...userDocSnap.data().preferences.followedTopics];
+          }
+          
+          if (box.checked && !followedTopics.includes(topicId)) {
+            followedTopics.push(topicId);
+          } else if (!box.checked) {
+            followedTopics = followedTopics.filter(id => id !== topicId);
+          }
+          
+          await updateDoc(userDocRef, {
+            "preferences.followedTopics": followedTopics,
+            "preferences.updated_at": new Date()
+          });
+        }
+        
+        showPrefsFeedback("Preference saved!");
+      } catch (err) {
+        console.error("Toggle failed:", err);
+        showPrefsFeedback("Error saving", "error");
+        box.checked = !box.checked;        // roll back UI
+      }
     }
-  }
+  });
+}
+
+/* Select all click handler */
+selectAllBtn.addEventListener("click", () => {
+  if (!topicsContainer) return;
+  const checkboxes = /** @type {NodeListOf<HTMLInputElement>} */ (
+    topicsContainer.querySelectorAll('input[type="checkbox"]')
+  );
+  checkboxes.forEach((box) => {
+    if (!box.checked) {
+      box.checked = true;
+      box.dispatchEvent(new Event("change"));
+    }
+  });
+  showPrefsFeedback("All topics selected");
 });
 
 /* ──────────────────────────────────────────────────────────

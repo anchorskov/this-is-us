@@ -3,6 +3,13 @@
  * 
  * Hot button topic analyzer for Wyoming bills using OpenAI gpt-4o.
  * 
+ * **NOTE: Two-Level Summarization Strategy**
+ * This module provides TOPIC-LEVEL AI analysis (why a bill matches specific hot topics).
+ * See worker/src/lib/billSummaryAnalyzer.mjs for BILL-LEVEL summaries (what the bill does).
+ * - hotTopicsAnalyzer → civic_item_ai_tags.reason_summary (topic-specific: "why this bill matters for X topic")
+ * - billSummaryAnalyzer → civic_items.ai_summary (bill-level: "what this bill does overall")
+ * Both cached, generated once per bill, reused for all card displays.
+ * 
  * **OpenAI Integration:**
  * - Uses same pattern as worker/src/routes/sandbox.js: env.OPENAI_API_KEY bearer token
  * - Model: gpt-4o
@@ -228,7 +235,10 @@ export async function getSinglePendingBill(env, options = {}) {
       chamber,
       last_action,
       last_action_date,
-      text_url
+      text_url,
+      ai_summary,
+      ai_key_points,
+      ai_summary_generated_at
     FROM civic_items
   `;
 
@@ -309,6 +319,99 @@ async function callOpenAI(env, body, billId) {
   } catch (err) {
     console.error(`❌ OpenAI API error [${billId}]:`, err.message);
     throw err;
+  }
+}
+
+/**
+ * generateBillSummary(env, bill)
+ * 
+ * Generate a short, citizen-friendly AI summary + key points for a bill.
+ * Cached in civic_items.ai_summary and ai_key_points to avoid repeated API calls.
+ * 
+ * **Output:**
+ * {
+ *   "ai_summary": "One to two sentences explaining the bill's main purpose in plain language.",
+ *   "ai_key_points": ["Point 1", "Point 2", "Point 3"]
+ * }
+ * 
+ * **Cost:** ~$0.0002 per bill (150 prompt + 60 completion tokens)
+ * 
+ * @param {Env} env - Worker environment with OPENAI_API_KEY
+ * @param {Object} bill - civic_items row with bill_number, title, summary, etc.
+ * @returns {Promise<{ai_summary: string, ai_key_points: Array<string>}>}
+ */
+export async function generateBillSummary(env, bill) {
+  if (!env?.OPENAI_API_KEY) {
+    console.warn("⚠️ Missing OPENAI_API_KEY; cannot generate bill summary");
+    return { ai_summary: "", ai_key_points: [] };
+  }
+
+  const billPrompt = `
+You are a civic educator explaining Wyoming legislation to regular citizens.
+
+**Bill:** ${bill.bill_number} - ${bill.title}
+**Summary:** ${bill.summary || "(No summary provided)"}
+**Status:** ${bill.status}
+**Chamber:** ${bill.chamber}
+
+Please provide:
+1. A plain-language explanation (1–2 sentences) of what this bill does and why it matters to regular Wyoming residents.
+2. Exactly 2–3 key points about the bill's main impacts or changes, formatted as a JSON array.
+
+Respond ONLY with valid JSON:
+{
+  "ai_summary": "...",
+  "ai_key_points": ["...", "...", "..."]
+}
+`.trim();
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: billPrompt,
+          },
+        ],
+        temperature: 0.2,
+        max_tokens: 300,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(`OpenAI API error: ${err.error?.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || "";
+
+    // Parse JSON response
+    let parsed;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      console.warn(`⚠️ Failed to parse bill summary response for ${bill.bill_number}:`, content);
+      return { ai_summary: "", ai_key_points: [] };
+    }
+
+    // Validate and sanitize
+    const ai_summary = String(parsed.ai_summary || "").slice(0, 500); // Limit to 500 chars
+    const ai_key_points = Array.isArray(parsed.ai_key_points)
+      ? parsed.ai_key_points.map((pt) => String(pt).slice(0, 200)).slice(0, 3)
+      : [];
+
+    return { ai_summary, ai_key_points };
+  } catch (err) {
+    console.error(`❌ Bill summary error [${bill.bill_number}]:`, err.message);
+    return { ai_summary: "", ai_key_points: [] };
   }
 }
 
@@ -469,6 +572,52 @@ export function buildUserPromptTemplate(billNumber, topicLabel) {
  * saveHotTopicAnalysis(env, billId, analysis)
  * 
  * Persists AI analysis results to both WY_DB and EVENTS_DB.
+ * 
+ * **Phase 1:** Save to WY_DB.civic_item_ai_tags
+ * - Stores: item_id, topic_slug, confidence, trigger_snippet, reason_summary
+ * - reason_summary: One to two sentences explaining plainly why this bill matches this topic.
+ *   Example: "This bill directly addresses homeowner concerns by capping property tax assessment 
+/**
+ * saveBillSummary(env, billId, summary, keyPoints, summaryVersion)
+ * 
+ * Persist bill-level AI summary and key points to WY_DB.civic_items.
+ * Includes version tracking to detect when bill text changes and summary needs refresh.
+ * 
+ * @param {Object} env - Cloudflare Worker environment with WY_DB binding
+ * @param {string} billId - Bill ID (e.g., "test-hb22")
+ * @param {string} summary - Plain-language bill summary (capped at 500 chars)
+ * @param {Array<string>} keyPoints - Array of 2-3 key points (each capped at 200 chars)
+ * @param {string} summaryVersion - Version identifier (e.g., text hash or timestamp)
+ */
+export async function saveBillSummary(env, billId, summary, keyPoints = [], summaryVersion = null) {
+  try {
+    const keyPointsJson = JSON.stringify(keyPoints);
+    const stmt = env.WY_DB.prepare(`
+      UPDATE civic_items
+      SET 
+        ai_summary = ?1,
+        ai_key_points = ?2,
+        ai_summary_version = ?3,
+        ai_summary_generated_at = ?4
+      WHERE id = ?5
+    `);
+    
+    await stmt.bind(
+      summary || "",
+      keyPointsJson,
+      summaryVersion || new Date().toISOString(),
+      new Date().toISOString(),
+      billId
+    ).run();
+  } catch (err) {
+    console.warn(`⚠️ Failed to save bill summary for ${billId}:`, err.message);
+  }
+}
+
+/**
+ * saveHotTopicAnalysis(env, billId, analysis)
+ * 
+ * Persist AI analysis results to both WY_DB and EVENTS_DB.
  * 
  * **Phase 1:** Save to WY_DB.civic_item_ai_tags
  * - Stores: item_id, topic_slug, confidence, trigger_snippet, reason_summary

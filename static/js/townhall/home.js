@@ -8,34 +8,17 @@
 console.log("🧠 townhall/home.js loaded (v9)");
 
 import { showSignInGate } from "/js/utils/show-sign-in.js";
-
-import {
-  getAuth,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  orderBy,
-  limit,
-  where,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-/* ───── Module-level singletons ───── */
-const auth = getAuth();
-const db   = getFirestore();
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 let userLocation = null;
-let map          = null;
-let threadMarkers;          // Leaflet layer group (init lazily)
+let map = null;
+let threadMarkers;
 
 /* 1️⃣  DOM ready → set up UI ------------------------------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   attachTabs();
   attachLocationControls();
-  loadTrending();          // default tab
+  loadTrending(); // default tab
 
   onAuthStateChanged(auth, (user) => {
     console.log("🔄 Auth state:", user ? user.email : "Not signed in");
@@ -128,20 +111,19 @@ async function geocode(q) {
   }
 }
 
-/* 4️⃣  Firestore loaders ---------------------------------------------- */
 async function loadTrending() {
   const container = document.getElementById("tab-trending");
   container.innerHTML = "<p class='text-gray-500'>Loading trending threads…</p>";
 
   try {
-    const q  = query(collection(db, "townhall_threads"),
-                     orderBy("replyCount", "desc"), limit(10));
-    const qs = await getDocs(q);
-    renderThreads(qs, container);
+    const res = await fetch("/api/townhall/posts?limit=10");
+    const data = await res.json();
+    const posts = Array.isArray(data) ? data : data.results || [];
+    renderThreads(posts, container);
   } catch (err) {
-    console.error("Firestore (Trending):", err);
+    console.error("Townhall trending:", err);
     container.innerHTML =
-      "<p class='text-red-500'>Error loading threads (need index?).</p>";
+      "<p class='text-red-500'>Error loading threads.</p>";
   }
 }
 
@@ -151,12 +133,13 @@ async function loadNearby() {
   container.innerHTML = "<p class='text-gray-500'>Finding threads near you…</p>";
 
   try {
-    const q  = query(collection(db, "townhall_threads"),
-                     orderBy("timestamp", "desc"), limit(30));
-    const qs = await getDocs(q);
-    renderThreads(qs, container);
+    // No geo filter server-side yet; reuse trending for now
+    const res = await fetch("/api/townhall/posts?limit=30");
+    const data = await res.json();
+    const posts = Array.isArray(data) ? data : data.results || [];
+    renderThreads(posts, container);
   } catch (err) {
-    console.error("Firestore (Nearby):", err);
+    console.error("Townhall nearby:", err);
     container.innerHTML =
       "<p class='text-red-500'>Error loading nearby threads.</p>";
   }
@@ -173,12 +156,13 @@ async function loadMine() {
   container.innerHTML = "<p class='text-gray-500'>Loading your threads…</p>";
 
   try {
-    const q  = query(collection(db, "townhall_threads"),
-                     where("authorUid", "==", window.currentUser.uid));
-    const qs = await getDocs(q);
-    renderThreads(qs, container);
+    const res = await fetch("/api/townhall/posts?limit=50");
+    const data = await res.json();
+    const posts = Array.isArray(data) ? data : data.results || [];
+    const mine = posts.filter((p) => p.user_id === window.currentUser.uid);
+    renderThreads(mine, container);
   } catch (err) {
-    console.error("Firestore (Mine):", err);
+    console.error("Townhall mine:", err);
     container.innerHTML =
       "<p class='text-red-500'>Error loading your threads.</p>";
   }
@@ -199,8 +183,8 @@ function addPinsToMap(threads) {
   });
 }
 
-function renderThreads(qs, container) {
-  if (qs.empty) {
+function renderThreads(posts, container) {
+  if (!posts || posts.length === 0) {
     container.innerHTML =
       "<p class='text-gray-600 col-span-full text-center py-10'>No threads found.</p>";
     return;
@@ -208,8 +192,7 @@ function renderThreads(qs, container) {
   container.innerHTML = "";
 
   const threadsForMap = [];
-  qs.forEach((doc) => {
-    const t = { id: doc.id, ...doc.data() };
+  posts.forEach((t) => {
     threadsForMap.push(t);
 
     const card = document.createElement("div");
@@ -218,9 +201,9 @@ function renderThreads(qs, container) {
     card.innerHTML = `
       <a href="/townhall/thread/${t.id}/"
          class="text-lg font-bold hover:text-blue-600">${t.title}</a>
-      <p class="text-sm text-gray-500 mt-1 mb-3">${t.location || "General"}</p>
-      <p class="text-gray-700 text-sm flex-grow">${(t.body || "").slice(0,120)}…</p>
-      <div class="text-xs text-gray-400 mt-4 pt-4 border-t">Replies: ${t.replyCount || 0}</div>
+      <p class="text-sm text-gray-500 mt-1 mb-3">${t.county || "General"}</p>
+      <p class="text-gray-700 text-sm flex-grow">${(t.prompt || t.snippet || "").slice(0,120)}…</p>
+      <div class="text-xs text-gray-400 mt-4 pt-4 border-t">Started: ${new Date(t.created_at || t.createdAt || "").toLocaleDateString()}</div>
     `;
     container.appendChild(card);
   });

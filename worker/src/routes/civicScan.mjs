@@ -23,6 +23,12 @@ import {
   buildUserPromptTemplate,
 } from "../lib/hotTopicsAnalyzer.mjs";
 
+import {
+  analyzeBillSummary,
+  saveBillSummary,
+  ensureBillSummary,
+} from "../lib/billSummaryAnalyzer.mjs";
+
 const PENDING_STATUSES = ["introduced", "in_committee", "pending_vote"];
 const BATCH_SIZE = 5; // Scan 5 bills per request for cost & safety
 
@@ -30,7 +36,7 @@ const BATCH_SIZE = 5; // Scan 5 bills per request for cost & safety
  * fetchPendingBills(env, limit)
  * 
  * Query WY_DB.civic_items for bills with pending status.
- * Ordered by most recent activity first.
+ * Prioritizes bills without AI summaries, then by most recent activity.
  */
 async function fetchPendingBills(env, limit = BATCH_SIZE) {
   const placeholders = PENDING_STATUSES.map(() => "?").join(",");
@@ -46,16 +52,93 @@ async function fetchPendingBills(env, limit = BATCH_SIZE) {
       legislative_session,
       chamber,
       last_action,
-      last_action_date
+      last_action_date,
+      ai_summary,
+      ai_summary_generated_at
     FROM civic_items
     WHERE status IN (${placeholders})
-    ORDER BY last_action_date DESC
+    ORDER BY 
+      CASE WHEN ai_summary IS NULL OR ai_summary = '' THEN 0 ELSE 1 END,
+      last_action_date DESC
     LIMIT ?
   `;
   const { results = [] } = await env.WY_DB.prepare(sql)
     .bind(...PENDING_STATUSES, limit)
     .all();
   return results;
+}
+
+async function scanPendingBillsInternal(env, { batchSize = BATCH_SIZE } = {}) {
+  try {
+    console.log("🚀 Starting pending bill scan...");
+    const bills = await fetchPendingBills(env, batchSize);
+    console.log(`📋 Found ${bills.length} pending bills to scan`);
+
+    const results = [];
+
+    for (const bill of bills) {
+      try {
+        console.log(`📄 Analyzing ${bill.bill_number}: ${bill.title}`);
+        
+        // Phase 1: Analyze bill against hot topics
+        const analysis = await analyzeBillForHotTopics(env, bill);
+        console.log(`   → Found ${analysis.topics.length} hot topics`);
+
+        // Phase 2: Save analysis to databases
+        await saveHotTopicAnalysis(env, bill.id, analysis);
+
+        // Phase 3: Ensure bill summary is generated and saved
+        // (Generates summary via OpenAI if not already cached)
+        const summaryResult = await ensureBillSummary(env, bill);
+        console.log(`   → Summary: ${summaryResult.plain_summary.length} chars, ${summaryResult.key_points.length} key points`);
+
+        // Collect results
+        const topicSlugs = analysis.topics.map(t => t.slug);
+        const userPromptTemplates = analysis.topics.map(t => 
+          buildUserPromptTemplate(bill.bill_number, t.label)
+        );
+        results.push({
+          bill_id: bill.id,
+          bill_number: bill.bill_number,
+          topics: topicSlugs,
+          user_prompt_templates: userPromptTemplates,
+          confidence_avg:
+            topicSlugs.length > 0
+              ? (
+                  analysis.topics.reduce((sum, t) => sum + (t.confidence || 0), 0) /
+                  topicSlugs.length
+                ).toFixed(2)
+              : null,
+          summary_generated: summaryResult.plain_summary.length > 0,
+        });
+      } catch (billErr) {
+        console.error(`❌ Error processing bill ${bill.bill_number}:`, billErr);
+        results.push({
+          bill_id: bill.id,
+          bill_number: bill.bill_number,
+          error: billErr.message,
+        });
+      }
+    }
+
+    console.log(`✅ Scan complete: ${results.length} bills processed`);
+    return {
+      scanned: results.length,
+      results,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err) {
+    console.error("❌ scanPendingBillsInternal error:", err);
+    throw err;
+  }
+}
+
+export async function runScheduledPendingBillScan(env, opts = {}) {
+  if (env.BILL_SCANNER_ENABLED !== "true") {
+    console.log("⏸️ Skipping pending bill scan: BILL_SCANNER_ENABLED != true");
+    return { scanned: 0, results: [], skipped: true, reason: "disabled" };
+  }
+  return scanPendingBillsInternal(env, opts);
 }
 
 export async function handleScanPendingBills(request, env) {
@@ -77,63 +160,11 @@ export async function handleScanPendingBills(request, env) {
   }
 
   try {
-    console.log("🚀 Starting pending bill scan...");
-    const bills = await fetchPendingBills(env, BATCH_SIZE);
-    console.log(`📋 Found ${bills.length} pending bills to scan`);
-
-    const results = [];
-
-    for (const bill of bills) {
-      try {
-        console.log(`📄 Analyzing ${bill.bill_number}: ${bill.title}`);
-        
-        // Phase 1: Analyze bill against hot topics
-        const analysis = await analyzeBillForHotTopics(env, bill);
-        console.log(`   → Found ${analysis.topics.length} hot topics`);
-
-        // Phase 2: Save analysis to databases
-        await saveHotTopicAnalysis(env, bill.id, analysis);
-
-        // Collect results
-        const topicSlugs = analysis.topics.map(t => t.slug);
-        const userPromptTemplates = analysis.topics.map(t => 
-          buildUserPromptTemplate(bill.bill_number, t.label)
-        );
-        results.push({
-          bill_id: bill.id,
-          bill_number: bill.bill_number,
-          topics: topicSlugs,
-          user_prompt_templates: userPromptTemplates,
-          confidence_avg:
-            topicSlugs.length > 0
-              ? (
-                  analysis.topics.reduce((sum, t) => sum + (t.confidence || 0), 0) /
-                  topicSlugs.length
-                ).toFixed(2)
-              : null,
-        });
-      } catch (billErr) {
-        console.error(`❌ Error processing bill ${bill.bill_number}:`, billErr);
-        results.push({
-          bill_id: bill.id,
-          bill_number: bill.bill_number,
-          error: billErr.message,
-        });
-      }
-    }
-
-    console.log(`✅ Scan complete: ${results.length} bills processed`);
-    return new Response(
-      JSON.stringify({
-        scanned: results.length,
-        results,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const result = await scanPendingBillsInternal(env, { batchSize: BATCH_SIZE });
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("❌ handleScanPendingBills error:", err);
     return new Response(
@@ -148,6 +179,8 @@ export async function handleScanPendingBills(request, env) {
     );
   }
 }
+
+
 
 /**
  * handleTestOne(request, env)
@@ -308,4 +341,121 @@ export async function handleTestOne(request, env) {
     status: 405,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+/**
+ * handleTestBillSummary(request, env)
+ * 
+ * **POST /api/internal/civic/test-bill-summary?bill_id=<id>**
+ * Test the bill summary analyzer on a single bill.
+ * 
+ * Query parameters:
+ * - bill_id: Specific bill ID (optional; if omitted, uses most recent)
+ * - save: true/false (default true; save results to database)
+ * 
+ * Returns:
+ * {
+ *   "bill_id": "test-hb22",
+ *   "bill_number": "HB 22",
+ *   "title": "Property Tax Assessment Cap",
+ *   "ai_summary": "2-3 sentence plain language explanation...",
+ *   "ai_key_points": ["Point 1", "Point 2"],
+ *   "cached": false,
+ *   "saved": true
+ * }
+ */
+export async function handleTestBillSummary(request, env) {
+  // 🔐 Restrict to localhost/127.0.0.1 for dev use only
+  const host = new URL(request.url).hostname;
+  if (host !== "127.0.0.1" && host !== "localhost") {
+    return new Response(JSON.stringify({ error: "Forbidden. Dev access only." }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (request.method !== "POST") {
+    return new Response(JSON.stringify({ error: "method_not_allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const url = new URL(request.url);
+    const billId = url.searchParams.get("bill_id");
+    const shouldSave = url.searchParams.get("save") !== "false";
+
+    console.log(`🧪 Testing bill summary analyzer (bill_id=${billId}, save=${shouldSave})`);
+
+    // Fetch the bill
+    const bill = await getSinglePendingBill(env, { itemId: billId });
+    if (!bill) {
+      return new Response(
+        JSON.stringify({
+          error: "bill_not_found",
+          message: "No bill found with given ID",
+        }),
+        {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log(`📄 Testing summary for: ${bill.bill_number} (${bill.id})`);
+
+    // Check if already cached
+    const isCached = bill.ai_summary_generated_at !== null;
+    let analysis;
+
+    if (isCached) {
+      console.log(`📦 Using cached summary`);
+      analysis = {
+        plain_summary: bill.ai_summary || "",
+        key_points: bill.ai_key_points ? JSON.parse(bill.ai_key_points) : [],
+      };
+    } else {
+      console.log(`🤖 Generating new summary via OpenAI`);
+      analysis = await analyzeBillSummary(env, bill);
+
+      // Optionally save to database
+      if (shouldSave && analysis.plain_summary) {
+        console.log(`💾 Saving to database`);
+        await saveBillSummary(env, bill.id, analysis);
+      }
+    }
+
+    console.log(`✅ Summary ready: ${analysis.plain_summary.length} chars, ${analysis.key_points.length} points`);
+
+    return new Response(
+      JSON.stringify({
+        bill_id: bill.id,
+        bill_number: bill.bill_number,
+        title: bill.title,
+        summary: bill.summary,
+        ai_summary: analysis.plain_summary,
+        ai_key_points: analysis.key_points,
+        cached: isCached,
+        saved: shouldSave && analysis.plain_summary.length > 0,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  } catch (err) {
+    console.error("❌ handleTestBillSummary error:", err);
+    return new Response(
+      JSON.stringify({
+        error: "test_failed",
+        message: err.message,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+  }
 }

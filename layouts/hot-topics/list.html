@@ -3,6 +3,7 @@
   <div class="hot-topics-header">
     <h1>Hot Topics</h1>
     <p class="subtitle">The issues driving civic engagement in Wyoming</p>
+    {{ partial "civic-nav.html" . }}
   </div>
 
   <div class="hot-topics-grid" id="hotTopicsList">
@@ -154,57 +155,5 @@
   }
 </style>
 
-<script>
-  async function loadHotTopics() {
-    const container = document.getElementById('hotTopicsList');
-    const API_BASE = (window.EVENTS_API_READY
-      ? await window.EVENTS_API_READY
-      : (window.EVENTS_API_URL || '/api'));
-    try {
-      const response = await fetch(`${API_BASE}/hot-topics`);
-      if (!response.ok) throw new Error('Failed to fetch topics');
-
-      const data = await response.json();
-      const topics = data.results || data;
-      
-      if (!Array.isArray(topics) || topics.length === 0) {
-        container.innerHTML = '<div class="error">No topics available.</div>';
-        return;
-      }
-
-      container.innerHTML = topics.map(topic => {
-        const badgeClass = topic.badge.toLowerCase().replace(/[\s&]/g, '');
-        const civicCount = (topic.civic_items || []).length;
-        
-        return `
-          <a href="/hot-topics/${topic.slug}" class="hot-topic-card">
-            <span class="badge ${badgeClass}">${topic.badge}</span>
-            <h3>${topic.title}</h3>
-            <p class="summary">${truncate(topic.summary, 150)}</p>
-            <div class="card-footer">
-              <span class="bill-count">
-                <strong>${civicCount}</strong> bill${civicCount !== 1 ? 's' : ''}
-              </span>
-              <button class="cta-button">${topic.cta_label || 'View'}</button>
-            </div>
-          </a>
-        `;
-      }).join('');
-    } catch (error) {
-      console.error('Error loading topics:', error);
-      container.innerHTML = '<div class="error">Error loading topics. Please try again.</div>';
-    }
-  }
-
-  function truncate(str, maxLen) {
-    return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
-  }
-
-  // Load topics when page loads
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadHotTopics);
-  } else {
-    loadHotTopics();
-  }
-</script>
+<script type="module" src="/js/civic/hot-topics.js"></script>
 {{ end }}

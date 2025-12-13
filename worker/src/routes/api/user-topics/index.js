@@ -13,16 +13,17 @@ export async function GET(request, env) {
     const uid = await getUserId(request, env);
 
     const { results } = await env.EVENTS_DB.prepare(`
-      SELECT t.id,
-             t.name,
-             t.slug,
-             CASE WHEN ut.topic_id IS NULL THEN 0 ELSE 1 END AS checked,
-             COALESCE(ut.updated_at,'') AS updated_at
-      FROM   topic_index t
-      LEFT  JOIN user_topic_prefs ut
-             ON ut.topic_id = t.id
-            AND ut.user_id  = ?1
-      ORDER BY t.name;`)
+      SELECT ht.id,
+             ht.title AS name,
+             ht.slug,
+             CASE WHEN utp.topic_id IS NULL THEN 0 ELSE 1 END AS checked,
+             COALESCE(utp.updated_at,'') AS updated_at
+      FROM   hot_topics ht
+      LEFT  JOIN user_topic_prefs utp
+             ON utp.topic_id = ht.id
+            AND utp.user_id  = ?1
+      WHERE ht.is_active = 1
+      ORDER BY ht.priority ASC, ht.title;`)
       .bind(uid)
       .all();
 

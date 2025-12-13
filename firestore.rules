@@ -1,107 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
-  match /databases/{db}/documents {
+  match /databases/{database}/documents {
 
-    // Helper function to check the role level from the user's auth token.
-    function getRoleLevel() {
-      // Ensure request.auth and request.auth.token exist before accessing roleLevel
-      return request.auth != null && request.auth.token != null ? request.auth.token.roleLevel : 0;
-    }
+    /*
+     * ═══════════════════════════════════════════════════════════════════════════
+     * FIRESTORE SECURITY RULES – Identity & Profile Only
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * ARCHITECTURE:
+     * - Firestore: User identity and profiles only (users/{uid})
+     * - D1 (EVENTS_DB): All civic content (town hall posts, bills, etc.)
+     * - Worker API: Server-side writes to D1 (POST /api/townhall/create, etc.)
+     *
+     * PRINCIPLE: Deny-first, allow minimal
+     * - No client-side writes to civic content collections (use Worker API)
+     * - Only authenticated users can read/write their own profile
+     * - All other collections denied by default
+     */
 
-    // Helper function to check if a user's email is verified.
-    // This function now safely checks the 'verified' field from the user's own document.
-    function isVerified() {
-      return request.auth != null &&
-             get(/databases/$(db)/documents/users/$(request.auth.uid)).data.verified == true;
-    }
-
-    /* ───────────────────────────────
-       👤  USER PROFILES
-       path: /users/{userId}
-    ─────────────────────────────── */
+    /* ───────────────────────────────────────────────────────────────────────────
+       👤  USER PROFILES – Identity & Profile Data
+       Collection: /users/{userId}
+       
+       Purpose: Store user profiles (name, email, city, state, preferences)
+       
+       Access:
+         - GET: Only the authenticated user can read their own profile
+         - CREATE: Only the user can create their own profile (on signup)
+         - UPDATE: Only the user can update their own profile (account settings)
+         - DELETE: Only the user can delete their own profile
+    ─────────────────────────────────────────────────────────────────────────── */
     match /users/{userId} {
-      // Allow a logged-in user to read their own entire document.
-      // Removed the restrictive 'hasOnly' condition.
+      // Allow authenticated user to read their own profile
       allow get: if request.auth != null && request.auth.uid == userId;
 
-      // A user can create their own profile (if authenticated).
-      // A user can update their own profile.
-      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Allow authenticated user to create their own profile
+      allow create: if request.auth != null && request.auth.uid == userId;
 
-      // A user can delete their own profile.
-      // An Admin (or higher) can also delete a user's profile.
-      allow delete: if (request.auth != null && request.auth.uid == userId) ||
-                        getRoleLevel() >= 80;
+      // Allow authenticated user to update their own profile
+      allow update: if request.auth != null && request.auth.uid == userId;
+
+      // Allow authenticated user to delete their own profile
+      allow delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    /* ───────────────────────────────
-       🗓️  EVENTS
-       path: /events/{eventId}
-    ─────────────────────────────── */
-    match /events/{eventId} {
-        // Anyone can read events.
-        allow read: if true;
-
-        // Creating events requires "Editor" level (50) or higher.
-        allow create: if getRoleLevel() >= 50;
-
-        // Updating is allowed by the author OR an Editor (or higher).
-        allow update: if (request.auth != null && request.auth.uid == resource.data.authorId) ||
-                          getRoleLevel() >= 50;
-
-        // Deleting is allowed by the author OR an Admin (or higher).
-        allow delete: if (request.auth != null && request.auth.uid == resource.data.authorId) ||
-                          getRoleLevel() >= 80;
-    }
-
-
-    /* ───────────────────────────────
-       🗣️  LEGACY /townhall_posts/*
-    ─────────────────────────────── */
-    match /townhall_posts/{postId} {
-      allow read: if true;
-      allow create: if isVerified();
-
-      // Allow update by the author.
-      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
-
-      // Deleting is allowed by the author OR a Moderator (or higher).
-      allow delete: if (request.auth != null && request.auth.uid == resource.data.createdBy) ||
-                        getRoleLevel() >= 30;
-    }
-
-    /* ───────────────────────────────
-       💬  THREADS & NESTED REPLIES
-       path: /townhall_threads/{threadId}
-    ─────────────────────────────── */
-    match /townhall_threads/{threadId} {
-
-      /* ---------- THREAD DOC ---------- */
-      allow get, list: if true;
-      allow create: if isVerified() && request.resource.data.createdBy == request.auth.uid;
-
-      // Allow update by the author.
-      allow update: if request.auth != null && request.auth.uid == resource.data.createdBy;
-
-      // Deleting is allowed by the author OR a Moderator (or higher).
-      allow delete: if (request.auth != null && request.auth.uid == resource.data.createdBy) ||
-                        getRoleLevel() >= 30;
-
-      /* ---------- NESTED REPLIES ---------- */
-      match /replies/{replyId} {
-        allow get, list: if true;
-        allow create: if isVerified() && request.resource.data.uid == request.auth.uid;
-
-        // Allow update by the author.
-        allow update: if request.auth != null && request.auth.uid == resource.data.uid;
-
-        // Deleting is allowed by the author OR a Moderator (or higher).
-        allow delete: if (request.auth != null && request.auth.uid == resource.data.uid) ||
-                          getRoleLevel() >= 30;
-      }
-    }
-
-    /* 🔒 deny everything else */
+    /* ───────────────────────────────────────────────────────────────────────────
+       🔒  DEFAULT DENY ALL OTHER COLLECTIONS
+       
+       Explicitly deny all other collections:
+       - townhall_threads/* (moved to D1 + Worker API)
+       - townhall_posts/* (moved to D1 + Worker API)
+       - events/* (moved to D1 + Worker API)
+       - admin/* (not needed in Firestore)
+       - Any other future collections (fail-secure)
+       
+       All civic content writes must go through Worker endpoints:
+       - POST /api/townhall/create → D1 townhall_posts table
+       - POST /api/townhall/delete → D1 deletion
+       - etc.
+    ─────────────────────────────────────────────────────────────────────────── */
     match /{document=**} {
       allow read, write: if false;
     }

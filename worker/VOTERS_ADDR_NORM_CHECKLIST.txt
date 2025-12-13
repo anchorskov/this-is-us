@@ -1,0 +1,183 @@
+VOTERS_ADDR_NORM LAT/LNG IMPLEMENTATION CHECKLIST
+==================================================
+
+Created: December 9, 2025
+
+════════════════════════════════════════════════════════════════════════════════
+SCHEMA SUMMARY (POST-MIGRATION)
+════════════════════════════════════════════════════════════════════════════════
+
+voter_id              TEXT PRIMARY KEY
+addr1                 TEXT          -- street address
+city                  TEXT NOT NULL
+state                 TEXT
+zip                   TEXT
+senate                TEXT          -- senate district ID
+house                 TEXT          -- house district ID
+fn                    TEXT          -- first name
+ln                    TEXT          -- last name
+city_county_id        INTEGER       -- FK to wy_city_county.id
+street_index_id       INTEGER       -- FK to streets_index.id
+lat                   REAL NEW      -- latitude (Census geocoding)
+lng                   REAL NEW      -- longitude (Census geocoding)
+
+Indexes:
+  ✓ PRIMARY KEY on voter_id
+  ✓ idx_voters_addr_norm_city (city)
+  ✓ idx_voters_addr_norm_lat_lng (lat, lng) WHERE NOT NULL
+  ✓ idx_voters_addr_norm_geocoded (voter_id) WHERE NOT NULL
+
+════════════════════════════════════════════════════════════════════════════════
+QUICK COMMANDS
+════════════════════════════════════════════════════════════════════════════════
+
+cd /home/anchor/projects/this-is-us/worker
+
+--- Verify Schema ---
+npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+
+--- Check Row Counts ---
+npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as total FROM voters_addr_norm;"
+npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as needing_geocode FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
+npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as geocoded FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
+
+--- Export to JSON ---
+npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" --json > ../data/voters_addr_norm_to_geocode.json
+
+--- JSON to CSV (using jq) ---
+jq -r '.[] | [.voter_id, .addr1, .city, .state, .zip] | @csv' ../data/voters_addr_norm_to_geocode.json > ../data/voters_addr_norm_to_geocode.csv
+
+--- View first 5 rows needing geocoding ---
+npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL LIMIT 5;" --json | jq '.'
+
+════════════════════════════════════════════════════════════════════════════════
+EXPORT/GEOCODE/IMPORT FLOW
+════════════════════════════════════════════════════════════════════════════════
+
+STEP 1: EXPORT
+  Output: data/voters_addr_norm_to_geocode.csv
+  Columns: voter_id, addr1, city, state, zip
+  Scope: All rows where lat IS NULL OR lng IS NULL
+
+STEP 2: GEOCODE (External)
+  Service: U.S. Census Batch Geocoder (https://geocoding.geo.census.gov/geocoder/)
+  Input: data/voters_addr_norm_to_geocode.csv (max 10k rows per batch)
+  Output: Geocoded results with lat/lng
+
+STEP 3: IMPORT
+  Input: data/voters_addr_norm_geocoded.csv
+  Columns: voter_id, lat, lng, status
+  Action: UPDATE voters_addr_norm SET lat, lng WHERE voter_id matches AND status='OK'
+
+════════════════════════════════════════════════════════════════════════════════
+INTEGRATION POINTS
+════════════════════════════════════════════════════════════════════════════════
+
+Helper Function: getVerifiedUserLocation(env, voterId)
+  Location: worker/src/lib/voterVerification.mjs
+  Returns: { voterId, homeLocation: { city, state, zip, county, coordinates }, districts: { house, senate } }
+  Coordinates: null if not geocoded, { lat, lng } if available
+
+Usage Pattern: After voter verification in worker/src/routes/voters.js
+  const location = await getVerifiedUserLocation(env, voterId);
+  if (location && location.homeLocation.coordinates) {
+    // Use verified coordinates; skip device location request
+  }
+
+════════════════════════════════════════════════════════════════════════════════
+PHASE BREAKDOWN
+════════════════════════════════════════════════════════════════════════════════
+
+PHASE 1: APPLY MIGRATION
+  □ Review: worker/migrations_wy/0014_add_lat_lng_to_voters_addr_norm.sql
+  □ Apply: npx wrangler d1 migrations apply WY_DB --local
+  □ Verify: npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+
+PHASE 2: EXPORT
+  □ Export JSON: npx wrangler d1 execute WY_DB --local ... --json > voters_addr_norm_to_geocode.json
+  □ Convert CSV: jq -r '.[] | [.voter_id, .addr1, .city, .state, .zip] | @csv' ... > voters_addr_norm_to_geocode.csv
+  □ Verify: wc -l voters_addr_norm_to_geocode.csv (should be ~274,657 including header)
+
+PHASE 3: GEOCODE (External)
+  □ Submit CSV to Census Batch Geocoder in chunks (max 10,000 rows)
+  □ Receive results with lat, lng, status
+  □ Save to data/voters_addr_norm_geocoded.csv
+
+PHASE 4: IMPORT
+  □ Load results into D1 using temp table or INSERT statements
+  □ UPDATE voters_addr_norm SET lat=?, lng=? WHERE voter_id=? AND status='OK'
+  □ Verify: SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NOT NULL; (should increase)
+
+PHASE 5: RUNTIME INTEGRATION
+  □ Add getVerifiedUserLocation() to worker/src/lib/voterVerification.mjs
+  □ Update worker/src/routes/voters.js to call helper after verification
+  □ Test that lat/lng are returned when available
+
+════════════════════════════════════════════════════════════════════════════════
+CSV SCHEMAS
+════════════════════════════════════════════════════════════════════════════════
+
+INPUT CSV: data/voters_addr_norm_to_geocode.csv
+  voter_id      TEXT    Unique voter identifier
+  addr1         TEXT    Street address (may contain quotes, commas)
+  city          TEXT    City name
+  state         TEXT    State (WY)
+  zip           TEXT    ZIP code
+
+Example:
+  voter_id,addr1,city,state,zip
+  WY00001,"123 Main St","Cheyenne","WY","82001"
+  WY00002,"456 Oak Ave","Laramie","WY","82070"
+
+OUTPUT CSV: data/voters_addr_norm_geocoded.csv
+  voter_id      TEXT    Voter identifier (matches input)
+  lat           REAL    Latitude (decimal degrees) or empty if NO_MATCH
+  lng           REAL    Longitude (decimal degrees) or empty if NO_MATCH
+  status        TEXT    OK | NO_MATCH | MULTIPLE_MATCHES | INVALID_ADDRESS | ERROR
+
+Example:
+  voter_id,lat,lng,status
+  WY00001,41.1400,-104.8202,OK
+  WY00002,41.1400,-105.5911,OK
+  WY00003,,NO_MATCH
+  WY00004,41.1400,-105.5911,MULTIPLE_MATCHES
+
+════════════════════════════════════════════════════════════════════════════════
+FILES CREATED/MODIFIED
+════════════════════════════════════════════════════════════════════════════════
+
+CREATED:
+  ✓ worker/migrations_wy/0014_add_lat_lng_to_voters_addr_norm.sql
+  ✓ worker/GEOCODING_WORKFLOW.md (detailed guide)
+  ✓ worker/VOTERS_ADDR_NORM_CHECKLIST.txt (this file)
+
+TO CREATE (during implementation):
+  - data/voters_addr_norm_to_geocode.csv (export from D1)
+  - data/voters_addr_norm_geocoded.csv (output from Census geocoder)
+  - worker/src/lib/voterVerification.mjs (add getVerifiedUserLocation function)
+  - Update worker/src/routes/voters.js (use helper in verification handler)
+
+════════════════════════════════════════════════════════════════════════════════
+TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+Q: How do I check if the migration was applied?
+A: npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+   Should show lat and lng columns.
+
+Q: How many rows need geocoding?
+A: npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
+
+Q: What if the Census geocoder returns multiple matches for an address?
+A: Mark status as MULTIPLE_MATCHES; do not auto-update lat/lng. Review manually or
+   use a deterministic tie-breaker (e.g., first match).
+
+Q: Can I update lat/lng in batches as geocoding completes?
+A: Yes. Each row in the output CSV can be processed independently. Use voter_id
+   as the key to UPDATE voters_addr_norm.
+
+Q: What if D1 doesn't support loading CSV directly?
+A: Convert CSV to INSERT statements using a Node/Python script, or load to JSON
+   and use a helper function to INSERT/UPDATE.
+
+════════════════════════════════════════════════════════════════════════════════

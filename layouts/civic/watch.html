@@ -1,0 +1,119 @@
+{{ define "main" }}
+<main class="mx-auto max-w-6xl px-4 py-10 space-y-10">
+  <header class="space-y-3">
+    <p class="text-sm uppercase tracking-[0.15em] text-gray-500">Wyoming Civic Watch</p>
+    <h1 class="text-3xl font-bold">Civic Watch</h1>
+    <p class="text-gray-700 max-w-3xl">
+      One front door to see what is happening, why it matters, and how to respond together.
+      Jump into the issues, the bills, and your county’s Town Hall.
+    </p>
+  </header>
+
+  <section class="grid gap-6 md:grid-cols-3">
+    <article class="cw-card" id="cw-hot-topics-card">
+      <div class="cw-card-header">
+        <h2>Hot Topics</h2>
+        <p class="cw-subtitle">Six core issues shaping Wyoming conversations.</p>
+      </div>
+      <div id="cw-hot-topics-preview" class="cw-preview">Loading topics…</div>
+      <div class="cw-actions">
+        <a class="cw-button" href="/hot-topics/">View topics</a>
+      </div>
+    </article>
+
+    <article class="cw-card" id="cw-pending-bills-card">
+      <div class="cw-card-header">
+        <h2>Pending Bills</h2>
+        <p class="cw-subtitle">Bills in Cheyenne that could affect daily life.</p>
+      </div>
+      <div id="cw-pending-preview" class="cw-preview">Loading bills…</div>
+      <div class="cw-actions">
+        <a class="cw-button" href="/civic/pending/">View bills</a>
+      </div>
+    </article>
+
+    <article class="cw-card" id="cw-townhall-card">
+      <div class="cw-card-header">
+        <h2>County Town Halls</h2>
+        <p class="cw-subtitle">County-level conversations: public to read, verified residents to participate.</p>
+      </div>
+      <div id="cw-townhall-preview" class="cw-preview">Loading town halls…</div>
+      <div class="cw-actions">
+        <a class="cw-button" href="/townhall/">Choose your county</a>
+      </div>
+    </article>
+  </section>
+</main>
+{{ end }}
+
+{{ define "scripts" }}
+<script type="module" src="{{ "js/civic/watch.js" | relURL }}"></script>
+{{ end }}
+
+{{ define "header" }}
+<style>
+  .cw-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 280px;
+  }
+  .cw-card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  .cw-subtitle {
+    color: #4b5563;
+    margin: 0.15rem 0 0;
+    font-size: 0.95rem;
+  }
+  .cw-preview {
+    flex: 1;
+    color: #374151;
+    font-size: 0.95rem;
+  }
+  .cw-preview ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .cw-preview li {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+    background: #f9fafb;
+  }
+  .cw-preview .meta {
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+  .cw-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .cw-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    background: #111827;
+    color: #f9fafb;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+  .cw-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
+  }
+</style>
+{{ end }}

@@ -37,6 +37,8 @@ content/test.md
 *.env
 serviceAccountKey.json
 firebase-seeder/
+worker/.dev.vars
+worker/.dev.vars.dev.vars
 
 # === Local Dev Tools ===
 .wrangler/
