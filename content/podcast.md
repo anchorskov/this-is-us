@@ -1,10 +1,9 @@
-<!-- content/podcast.md -->
 ---
-title: "Podcast"
+title: "This Is US Podcast"
 slug:  "podcast"
 ---
 
-## This Is US Podcast
+#
 
 Select below to visit This Is US/Jimmy Skovgard on Substack and listen to our latest episodes:
 

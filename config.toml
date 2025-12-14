@@ -133,10 +133,11 @@ buildFuture  = false
   weight     = 9
 
 #[[menu.main]]
-# identifier = "podcast"
-# name       = "Podcast"
-# url        = "/podcast/"
-# weight     = 9
+[[menu.main]]
+  identifier = "podcast"
+  name       = "Podcast"
+  url        = "/podcast/"
+  weight     = 10
 
 [[menu.main]]
   identifier = "contact"
