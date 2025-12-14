@@ -67,6 +67,7 @@ import { handleFetchLsoText } from "./routes/fetchLsoText.mjs";
 import { syncWyomingBills } from "./lib/openStatesSync.mjs";
 import { handleDevLsoHydrate } from "./routes/devLsoHydrate.mjs";
 import { runPendingBillsRefresh } from "./jobs/pendingBillsRefresh.mjs";
+import { handleGetPodcastSummary } from "./routes/podcastSummary.mjs";
 
 // Civic Watch – delegation lookup
 import { handleGetDelegation } from "./routes/civic/delegation.mjs";
@@ -153,6 +154,7 @@ router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
 
 // OpenAI API key self-test (dev only)
 router.get("/api/internal/openai-self-test", handleOpenAiSelfTest);
+router.get("/api/podcast/summary", handleGetPodcastSummary);
 
 // DEV ONLY sync route for OpenStates bills into civic_items (uses WY_DB)
 router.get("/api/dev/openstates/sync", async (req, env) => {
