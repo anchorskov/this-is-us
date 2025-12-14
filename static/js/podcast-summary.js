@@ -40,10 +40,17 @@
       date,
       part: String(part),
     });
-    const apiBase = await getApiBase();
-    const url = `${apiBase}/podcast/summary?${params.toString()}`;
+    const base = await getApiBase();
+    const normalized = base.replace(/\/$/, "");
+    const apiRoot = normalized.endsWith("/api")
+      ? normalized
+      : `${normalized}/api`;
+    const url = `${apiRoot}/podcast/summary?${params.toString()}`;
     console.log("🔗 Fetching from:", url);
     const res = await fetch(url);
+    if (res.status === 404) {
+      return { summary: null, reason: "Summary not available." };
+    }
     if (!res.ok) {
       throw new Error(`status ${res.status}`);
     }
