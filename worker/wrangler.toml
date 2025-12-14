@@ -37,6 +37,10 @@ binding             = "EVENT_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
 
+[[r2_buckets]]
+binding             = "PODCASTS"
+bucket_name         = "podcasts"
+
 # ✅ Preview / staging environment
 [env.preview]
 main         = "src/index.mjs"
@@ -101,3 +105,6 @@ migrations_dir       = "migrations_wy"
 binding             = "EVENT_PDFS"
 bucket_name         = "event-pdfs-bucket"
 preview_bucket_name = "event-pdfs-bucket-preview"
+[[env.production.r2_buckets]]
+binding             = "PODCASTS"
+bucket_name         = "podcasts"

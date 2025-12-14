@@ -1,0 +1,33 @@
+{{/* layouts/shortcodes/audio.html */}}
+{{ $srcParam := .Get "src" }}
+{{ if not $srcParam }}
+  <p>Audio source is required.</p>
+{{ else }}
+  {{ $title := .Get "title" }}
+  {{ $downloadFlag := true }}
+  {{ with .Get "download" }}
+    {{ $val := lower (printf "%v" .) }}
+    {{ $downloadFlag = in (slice "true" "1" "yes" "y" "on") $val }}
+  {{ end }}
+  {{ $resolvedSrc := "" }}
+  {{ if hasPrefix $srcParam "http" }}
+    {{ $resolvedSrc = $srcParam }}
+  {{ else }}
+    {{ $base := trim (default "" site.Params.mediaBaseUrl) "/" }}
+    {{ $cleanSrc := trim $srcParam "/" }}
+    {{ $resolvedSrc = printf "%s/%s" $base $cleanSrc }}
+  {{ end }}
+  <div class="podcast-audio">
+    {{ with $title }}
+      <div class="podcast-audio__title">{{ . }}</div>
+    {{ end }}
+    <audio controls preload="metadata" src="{{ $resolvedSrc }}">
+      Your browser does not support the audio element.
+    </audio>
+    {{ if $downloadFlag }}
+      <div class="podcast-audio__download">
+        <a href="{{ $resolvedSrc }}" download>Download</a>
+      </div>
+    {{ end }}
+  </div>
+{{ end }}

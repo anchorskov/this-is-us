@@ -1,7 +1,7 @@
 // static/js/admin/dashboard.js
 
 // Import the new modular functions from the Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
@@ -215,9 +215,17 @@ async function initializeDashboard(user) {
 
 // Main execution starts here
 document.addEventListener('DOMContentLoaded', () => {
-  // This assumes another script (firebase-config.js) has placed the config
-  // object on the window. We call initializeApp safely here.
-  const app = initializeApp(window.firebaseConfig);
+  // Reuse the app created by firebase-config.js; fall back to initializing if needed.
+  const hasExistingApp = getApps().length > 0;
+  if (!hasExistingApp && !window.firebaseConfig) {
+    console.error('Admin Dashboard: Firebase config missing.');
+    showPanel('denied');
+    return;
+  }
+
+  const app = hasExistingApp
+    ? getApp()
+    : initializeApp(window.firebaseConfig || {});
   const functions = getFunctions(app);
   const auth = getAuth(app);
 

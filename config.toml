@@ -1,6 +1,6 @@
+# config.toml
 # ------------------------------------------------------------
-# Hugo config – This Is Us
-# ------------------------------------------------------------
+# Hugo config - This Is Us
 
 baseURL      = "https://this-is-us.org/"
 languageCode = "en-us"
@@ -36,6 +36,7 @@ buildFuture  = false
   keywords            = ["community", "justice", "voices", "podcast"]
 
   donate_link         = "https://buy.stripe.com/9B6fZjb1g8Ue2D08Np5gc00"
+  mediaBaseUrl        = "https://media.this-is-us.org"
 
   defaultTheme        = "auto"
   disableScrollToTop  = false
@@ -48,7 +49,7 @@ buildFuture  = false
   UseHugoToc          = true
   hideFooter          = true
 
-  # Cloudflare Turnstile – test key for dev; Pages overrides via env var
+  # Cloudflare Turnstile - test key for dev; Pages overrides via env var
   turnstile_sitekey   = "1x0000000000000000000000000000000AA"
 
   [params.assets]
@@ -67,7 +68,7 @@ buildFuture  = false
     fallbackOffline = false
 
 # ------------------------------------------------------------
-# Markup (Goldmark) – moved to top level
+# Markup (Goldmark) - moved to top level
 # ------------------------------------------------------------
 [markup]
   [markup.goldmark]

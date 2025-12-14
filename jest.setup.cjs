@@ -21,7 +21,31 @@ if (!global.Response) {
     constructor(body = null, init = {}) {
       this.body = body;
       this.status = init.status || 200;
+      this.statusText = init.statusText || 'OK';
       this.headers = init.headers || {};
+    }
+    async text() {
+      return typeof this.body === 'string' ? this.body : JSON.stringify(this.body);
+    }
+    async json() {
+      return typeof this.body === 'string' ? JSON.parse(this.body) : this.body;
+    }
+  };
+}
+
+if (!global.Request) {
+  global.Request = class {
+    constructor(url, init = {}) {
+      this.url = url;
+      this.method = init.method || 'GET';
+      this.headers = new Map(Object.entries(init.headers || {}));
+      this.body = init.body;
+    }
+    async text() {
+      return this.body;
+    }
+    async json() {
+      return JSON.parse(this.body || '{}');
     }
   };
 }

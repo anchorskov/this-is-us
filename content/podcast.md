@@ -1,3 +1,4 @@
+<!-- content/podcast.md -->
 ---
 title: "Podcast"
 slug:  "podcast"
@@ -25,3 +26,22 @@ Select below to visit This Is US/Jimmy Skovgard on Substack and listen to ou
     </button>
   </div>
 {{< /rawhtml >}}
+## Listen on this page
+
+Play the JR Riggins interview directly below.
+
+## JR Riggins Interview - December 14, 2025
+
+A conversation with JR Riggins covering key topics in community engagement and civic participation.
+
+### Part 1: Introduction & Background
+
+{{< audio src="podcasts/jr-riggins/2025-12-14/JR_RIGGINS_-01.mp3" title="Part 1: Introduction & Background" >}}
+
+### Part 2: Core Discussion
+
+{{< audio src="podcasts/jr-riggins/2025-12-14/JR_RIGGINS_-02.mp3" title="Part 2: Core Discussion" >}}
+
+### Part 3: Insights & Conclusion
+
+{{< audio src="podcasts/jr-riggins/2025-12-14/JR_RIGGINS_-03.mp3" title="Part 3: Insights & Conclusion" >}}
