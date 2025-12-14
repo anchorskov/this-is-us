@@ -3,10 +3,17 @@
   const buttons = document.querySelectorAll(".podcast-summary-btn");
   if (!buttons.length) return;
 
-  // In dev: try API on current origin first, then fallback to port 8787
-  const getApiUrl = () => {
-    const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    return isDev ? `http://${window.location.hostname}:8787` : window.location.origin;
+  const getApiBase = async () => {
+    if (window.EVENTS_API_READY) {
+      try {
+        const ready = await window.EVENTS_API_READY;
+        if (ready) return ready.replace(/\/$/, "");
+      } catch (err) {
+        console.warn("EVENTS_API_READY failed, falling back", err);
+      }
+    }
+    const base = window.EVENTS_API_URL || "/api";
+    return base.replace(/\/$/, "");
   };
 
   const fetchSummary = async (guest, date, part) => {
@@ -15,8 +22,8 @@
       date,
       part: String(part),
     });
-    const apiBase = getApiUrl();
-    const res = await fetch(`${apiBase}/api/podcast/summary?${params.toString()}`);
+    const apiBase = await getApiBase();
+    const res = await fetch(`${apiBase}/podcast/summary?${params.toString()}`);
     if (!res.ok) {
       throw new Error(`status ${res.status}`);
     }
