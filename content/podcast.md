@@ -1,12 +1,9 @@
-<!-- content/podcast.md -->
 ---
-title: "JR Riggins on Service, Policy, and Civic Responsibility"
-slug:  "podcast"
+title: "This Is Us Podcast"
+slug: "podcast"
 ---
 
-# JR Riggins on Service, Policy, and Civic Responsibility
-
-A conversation with JR Riggins covering civic participation, policy, and the work behind the scenes.
+Welcome to the This Is Us Podcast, where we explore civic participation, community engagement, and the voices shaping our future.
 
 {{< rawhtml >}}
   <div style="text-align:center; margin:2em 0;">
@@ -22,17 +19,18 @@ A conversation with JR Riggins covering civic participation, policy, and the wor
         cursor: pointer;
       "
     >
-      Visit This Is US on Substack
+      Visit Substack
     </button>
   </div>
 {{< /rawhtml >}}
-## Listen on this page
 
-Play the JR Riggins interview directly below.
+## Featured Episodes
 
-## JR Riggins Interview - December 13, 2025
+Browse our latest episodes below and listen directly on this page.
 
-Listen to the full interview below.
+## JR Riggins Interview - December 14, 2025
+
+A conversation with Representative JR Riggins about community engagement, policy, and the work behind the scenes.
 
 ### Part 1: Entering the House and Facing Real Issues
 
