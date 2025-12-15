@@ -154,7 +154,63 @@ router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
 
 // OpenAI API key self-test (dev only)
 router.get("/api/internal/openai-self-test", handleOpenAiSelfTest);
+
+// Podcast summary – dual routes to handle routing edge cases
 router.get("/api/podcast/summary", handleGetPodcastSummary);
+router.get("/podcast/summary", handleGetPodcastSummary);
+
+// Debug endpoint – list all registered routes (dev only)
+router.get("/api/_routes", (req, env) => {
+  const host = new URL(req.url).hostname;
+  const isLocal = host === "127.0.0.1" || host === "localhost";
+  if (!isLocal) {
+    return new Response(
+      JSON.stringify({ error: "Not available outside dev" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+  return new Response(
+    JSON.stringify({
+      message: "Registered routes (debug)",
+      routes: [
+        "GET /api/events",
+        "GET /api/events/pdf/:key",
+        "POST /api/events/create",
+        "POST /api/townhall/create",
+        "POST /api/townhall/posts",
+        "GET /api/townhall/posts",
+        "GET /api/townhall/posts/:id",
+        "POST /api/townhall/posts/:id/replies",
+        "POST /api/townhall/delete",
+        "GET /api/_debug/schema",
+        "POST /api/sandbox/analyze",
+        "GET /api/preferences",
+        "GET /api/user-topics",
+        "POST /api/user-topics",
+        "GET /api/civic/items/:id",
+        "POST /api/civic/items/:id/vote",
+        "GET /api/civic/openstates/search",
+        "GET /api/civic/pending-bills",
+        "GET /api/civic/pending-bills-with-topics",
+        "GET /api/civic/bill-sponsors",
+        "GET /api/civic/delegation",
+        "GET /api/internal/civic/verify-bill",
+        "POST /api/internal/civic/fetch-lso-text",
+        "POST /api/dev/lso/hydrate-bills",
+        "GET /api/internal/civic/test-one",
+        "POST /api/internal/civic/test-one",
+        "POST /api/internal/civic/test-bill-summary",
+        "POST /api/internal/civic/scan-pending-bills",
+        "GET /api/internal/openai-self-test",
+        "GET /api/podcast/summary",
+        "GET /podcast/summary",
+        "GET /api/_routes",
+        "GET /api/_health"
+      ]
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
+});
 
 // DEV ONLY sync route for OpenStates bills into civic_items (uses WY_DB)
 router.get("/api/dev/openstates/sync", async (req, env) => {

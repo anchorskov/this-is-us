@@ -2,9 +2,12 @@
 export async function handleGetPodcastSummary(req, env) {
   try {
     const url = new URL(req.url);
+    console.log(`[podcast/summary] pathname: ${url.pathname}, query: ${url.search}`);
+    
     const guest = url.searchParams.get("guest");
     const episodeDate = url.searchParams.get("date");
     const partNumber = parseInt(url.searchParams.get("part") || "", 10);
+    console.log(`[podcast/summary] guest=${guest}, date=${episodeDate}, part=${partNumber}`);
 
     if (!guest || !episodeDate || Number.isNaN(partNumber)) {
       return jsonResponse(

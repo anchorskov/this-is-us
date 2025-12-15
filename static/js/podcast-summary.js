@@ -45,17 +45,28 @@
   const fetchSummary = async (guest, date, part) => {
     const params = new URLSearchParams({ guest, date, part: String(part) });
     const apiBase = await getApiBase();
-    const url = `${apiBase}/podcast/summary?${params.toString()}`;
+    const primaryUrl = `${apiBase}/podcast/summary?${params.toString()}`;
+    
+    // Try primary path first
     try {
-      const res = await fetch(url);
+      const res = await fetch(primaryUrl);
       if (res.status === 404) {
-        return { summary: null, reason: "Summary not available." };
+        // Try alternate path if primary returns 404
+        console.log("podcast summary: primary 404, retrying alternate path");
+        const altApiBase = apiBase.replace(/\/api$/, "");
+        const alternateUrl = `${altApiBase}/podcast/summary?${params.toString()}`;
+        const altRes = await fetch(alternateUrl);
+        if (!altRes.ok) {
+          return { summary: null, reason: "Summary not available." };
+        }
+        return altRes.json();
       }
       if (!res.ok) {
         return { summary: null, reason: `Summary request failed (${res.status})` };
       }
       return res.json();
     } catch (err) {
+      console.error("podcast summary fetch error:", err);
       return { summary: null, reason: "Summary not available." };
     }
   };
