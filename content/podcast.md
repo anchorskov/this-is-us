@@ -27,7 +27,7 @@ Welcome to the This Is Us Podcast, where we explore civic participation, communi
   </div>
 {{< /rawhtml >}}
 
-## JR Riggins Interview - December 14, 2025
+## JR Riggins Interview - December 13, 2025
 
 Listen to the full interview below.
 
