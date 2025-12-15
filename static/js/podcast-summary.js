@@ -3,58 +3,61 @@
   const buttons = document.querySelectorAll(".podcast-summary-btn");
   if (!buttons.length) return;
 
+  let modal, modalTitle, modalBody;
+
+  const ensureModal = () => {
+    if (modal) return modal;
+    modal = document.createElement("div");
+    modal.className = "podcast-summary-modal hidden";
+    modal.innerHTML = `
+      <div class="podcast-summary-modal__backdrop"></div>
+      <div class="podcast-summary-modal__dialog" role="dialog" aria-modal="true">
+        <div class="podcast-summary-modal__header">
+          <h3 class="podcast-summary-modal__title">Summary</h3>
+          <button class="podcast-summary-modal__close" aria-label="Close summary">×</button>
+        </div>
+        <div class="podcast-summary-modal__body"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modalTitle = modal.querySelector(".podcast-summary-modal__title");
+    modalBody = modal.querySelector(".podcast-summary-modal__body");
+
+    const hide = () => modal.classList.add("hidden");
+    modal.querySelector(".podcast-summary-modal__close").addEventListener("click", hide);
+    modal.querySelector(".podcast-summary-modal__backdrop").addEventListener("click", hide);
+    return modal;
+  };
+
   const getApiBase = async () => {
-    // Wait a bit for EVENTS_API_READY to resolve (local Worker probe)
     if (window.EVENTS_API_READY) {
       try {
-        const ready = await Promise.race([
-          window.EVENTS_API_READY,
-          new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 1000))
-        ]);
-        if (ready && ready.length > 0) {
-          console.log("📡 Using EVENTS_API_READY:", ready);
-          return ready.replace(/\/$/, "");
-        }
+        const ready = await window.EVENTS_API_READY;
+        if (ready) return ready.replace(/\/$/, "");
       } catch (err) {
-        console.warn("⚠️  EVENTS_API_READY failed/timeout:", err.message);
+        console.warn("podcast summary: EVENTS_API_READY failed", err);
       }
     }
-
-    // Fallback to EVENTS_API_URL (set directly by site-scripts)
-    let base = window.EVENTS_API_URL || "/api";
-    
-    // Ensure we have a valid base
-    if (!base || base.trim() === "") {
-      base = "/api";
-    }
-    
-    // Ensure absolute URLs are used as-is, relative paths stay relative
-    base = base.replace(/\/$/, "");
-    console.log("📡 Using fallback API base:", base);
-    return base;
+    const base = (window.EVENTS_API_URL || "/api").replace(/\/$/, "");
+    return base.endsWith("/api") ? base : `${base}/api`;
   };
 
   const fetchSummary = async (guest, date, part) => {
-    const params = new URLSearchParams({
-      guest,
-      date,
-      part: String(part),
-    });
-    const base = await getApiBase();
-    const normalized = base.replace(/\/$/, "");
-    const apiRoot = normalized.endsWith("/api")
-      ? normalized
-      : `${normalized}/api`;
-    const url = `${apiRoot}/podcast/summary?${params.toString()}`;
-    console.log("🔗 Fetching from:", url);
-    const res = await fetch(url);
-    if (res.status === 404) {
+    const params = new URLSearchParams({ guest, date, part: String(part) });
+    const apiBase = await getApiBase();
+    const url = `${apiBase}/podcast/summary?${params.toString()}`;
+    try {
+      const res = await fetch(url);
+      if (res.status === 404) {
+        return { summary: null, reason: "Summary not available." };
+      }
+      if (!res.ok) {
+        return { summary: null, reason: `Summary request failed (${res.status})` };
+      }
+      return res.json();
+    } catch (err) {
       return { summary: null, reason: "Summary not available." };
     }
-    if (!res.ok) {
-      throw new Error(`status ${res.status}`);
-    }
-    return res.json();
   };
 
   buttons.forEach((btn) => {
@@ -62,38 +65,30 @@
       const guest = btn.getAttribute("data-guest");
       const date = btn.getAttribute("data-date");
       const part = btn.getAttribute("data-part");
-      const targetId = btn.getAttribute("data-target");
-      const panel = document.getElementById(targetId);
-      if (!guest || !date || !part || !panel) return;
-
-      const isOpen = panel.getAttribute("data-open") === "1";
-      if (isOpen) {
-        panel.hidden = true;
-        panel.setAttribute("data-open", "0");
-        btn.setAttribute("aria-expanded", "false");
-        btn.textContent = "Show summary";
-        return;
-      }
+      if (!guest || !date || !part) return;
 
       btn.disabled = true;
+      const original = btn.textContent;
       btn.textContent = "Loading summary...";
-      panel.textContent = "Loading...";
-      panel.hidden = false;
+
       try {
         const data = await fetchSummary(guest, date, part);
         const text = data.summary || data.reason || "Summary not available.";
-        panel.textContent = text;
-        panel.setAttribute("data-open", "1");
+        ensureModal();
+        modalTitle.textContent = `Summary`;
+        modalBody.textContent = text;
+        modal.classList.remove("hidden");
         btn.setAttribute("aria-expanded", "true");
-        btn.textContent = "Hide summary";
       } catch (err) {
-        panel.textContent = "Could not load summary.";
-        panel.setAttribute("data-open", "1");
+        ensureModal();
+        modalTitle.textContent = "Summary";
+        modalBody.textContent = "Could not load summary.";
+        modal.classList.remove("hidden");
         btn.setAttribute("aria-expanded", "true");
-        btn.textContent = "Hide summary";
-        console.error("podcast summary fetch failed", err);
+        console.error("podcast summary fetch failed:", err);
       } finally {
         btn.disabled = false;
+        btn.textContent = original;
       }
     });
   });

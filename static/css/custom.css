@@ -174,3 +174,66 @@ button.bg-dark-blue:hover,.button-dark-blue:hover{ background-color:#003f88; }
 
 /* ── Map height fix ────────────────────────────────────────── */
 #map{ height:70vh; width:100%; display:block; position:relative; z-index:0; }
+
+/* ── Podcast summary styles ────────────────────────────────── */
+.podcast-summary-btn{
+  background-color:#b5e48c;
+  color:#0f2a10;
+  border:1px solid #8bcf6d;
+  padding:0.5em 1em;
+  border-radius:0.25em;
+  cursor:pointer;
+  font-weight:600;
+}
+.podcast-summary-btn:hover{
+  filter:brightness(0.97);
+}
+.podcast-summary-modal{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+}
+.podcast-summary-modal.hidden{
+  display:none;
+}
+.podcast-summary-modal__backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.45);
+}
+.podcast-summary-modal__dialog{
+  position:relative;
+  background:var(--theme);
+  color:var(--content);
+  padding:1.25rem;
+  border-radius:var(--radius);
+  box-shadow:0 10px 40px rgba(0,0,0,0.25);
+  max-width:600px;
+  width:90%;
+  z-index:1;
+}
+.podcast-summary-modal__header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:0.75rem;
+}
+.podcast-summary-modal__title{
+  margin:0;
+  font-size:1.1rem;
+  font-weight:700;
+}
+.podcast-summary-modal__close{
+  background:none;
+  border:none;
+  font-size:1.4rem;
+  line-height:1;
+  cursor:pointer;
+}
+.podcast-summary-modal__body{
+  font-size:0.98rem;
+  line-height:1.5;
+}
