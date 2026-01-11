@@ -95,8 +95,8 @@ VALUES (
 -- ════════════════════════════════════════════════════════════════════════════════
 -- Apply with:
 --   cd /home/anchor/projects/this-is-us/worker
---   npx wrangler d1 migrations apply EVENTS_DB --local
+--   ./scripts/wr d1 migrations apply EVENTS_DB --local
 --
 -- Verify with:
---   npx wrangler d1 execute EVENTS_DB --local --command "SELECT id, slug, badge, title, summary FROM hot_topics ORDER BY id;"
+--   ./scripts/wr d1 execute EVENTS_DB --local --command "SELECT id, slug, badge, title, summary FROM hot_topics ORDER BY id;"
 -- ════════════════════════════════════════════════════════════════════════════════

@@ -100,6 +100,13 @@ const hidePrefsSpinner = () => {
   }
 };
 
+const escapeAttribute = (value) =>
+  String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 /* ──────────────────────────────────────────────────────────
    3) Main logic
    ────────────────────────────────────────────────────────── */
@@ -130,24 +137,34 @@ onAuthStateChanged(auth, async (user) => {
     if (!resp.ok) throw new Error(`Back-end returned ${resp.status}`);
 
     const list = await resp.json();
+    const deduped = Array.isArray(list)
+      ? list.filter((item, idx, arr) => {
+          const key = item.slug || item.name || item.id;
+          return arr.findIndex((i) => (i.slug || i.name || i.id) === key) === idx;
+        })
+      : list;
     const introBanner = document.getElementById("intro-banner");
     if (introBanner) {
-      const allOff = list.every(t => !t.checked);   // no topics selected yet
+      const allOff = Array.isArray(deduped) && deduped.every(t => !t.checked);   // no topics selected yet
       introBanner.style.display = allOff ? "block" : "none";
     }
     
     /* Render topic check-boxes */
     if (topicsContainer) {
-      if (!Array.isArray(list) || !list.length) {
+      if (!Array.isArray(deduped) || !deduped.length) {
         topicsContainer.innerHTML = "<p>No topics available yet.</p>";
       } else {
         topicsContainer.innerHTML = "";               // clear any previous markup
-        list.forEach(t => {
+        deduped.forEach(t => {
           const label = document.createElement("label");
           label.className = "block my-1";
+          const description = t.description || t.summary || "";
+          const infoIcon = description
+            ? `<span class="ml-2 text-slate-500 cursor-help" title="${escapeAttribute(description)}" aria-label="${escapeAttribute(description)}" tabindex="0">ⓘ</span>`
+            : "";
           label.innerHTML = `
             <input type="checkbox" value="${t.id}" ${t.checked ? "checked" : ""}>
-            ${t.name}
+            ${t.name}${infoIcon}
           `;
           topicsContainer.appendChild(label);
         });

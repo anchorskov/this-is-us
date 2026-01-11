@@ -1,6 +1,7 @@
 // worker/test/civic-verification.test.mjs
 // Jest tests for civic_item_verification integration with pendingBills API
 
+import { jest } from "@jest/globals";
 import { handlePendingBillsWithTopics } from "../src/routes/pendingBills.mjs";
 
 // Mock environment
@@ -67,13 +68,13 @@ describe("Civic Item Verification - PendingBills Integration", () => {
       // Mock the main query that joins verification data
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValueOnce({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: mockResults }),
+          all: jest.fn().mockResolvedValue({ results: mockResults }),
         }),
       });
 
       // Mock the topic metadata query
       mockEnv.EVENTS_DB.prepare = jest.fn().mockReturnValue({
-        all: jest.fn().resolveValue({
+        all: jest.fn().mockResolvedValue({
           results: [
             {
               slug: "education",
@@ -134,12 +135,12 @@ describe("Civic Item Verification - PendingBills Integration", () => {
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValueOnce({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: mockResults }),
+          all: jest.fn().mockResolvedValue({ results: mockResults }),
         }),
       });
 
       mockEnv.EVENTS_DB.prepare = jest.fn().mockReturnValue({
-        all: jest.fn().resolveValue({ results: [] }),
+        all: jest.fn().mockResolvedValue({ results: [] }),
       });
 
       const request = createMockRequest();
@@ -185,12 +186,12 @@ describe("Civic Item Verification - PendingBills Integration", () => {
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValueOnce({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: mockResults }),
+          all: jest.fn().mockResolvedValue({ results: mockResults }),
         }),
       });
 
       mockEnv.EVENTS_DB.prepare = jest.fn().mockReturnValue({
-        all: jest.fn().resolveValue({
+        all: jest.fn().mockResolvedValue({
           results: [
             {
               slug: "taxation",
@@ -245,12 +246,12 @@ describe("Civic Item Verification - PendingBills Integration", () => {
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValueOnce({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: mockResults }),
+          all: jest.fn().mockResolvedValue({ results: mockResults }),
         }),
       });
 
       mockEnv.EVENTS_DB.prepare = jest.fn().mockReturnValue({
-        all: jest.fn().resolveValue({
+        all: jest.fn().mockResolvedValue({
           results: [
             {
               slug: "healthcare",

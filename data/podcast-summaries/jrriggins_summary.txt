@@ -1,0 +1,160 @@
+JR RIGGINS PODCAST - COMPLETE SUMMARY
+======================================
+
+Generated: Wed Dec 31 20:12:54 MST 2025
+Total Parts: 3
+
+Table of Contents:
+  Part 1: jr_riggins_part1.txt
+  Part 2: jr_riggins_part2.txt
+  Part 3: jr_riggins_part3.txt
+
+======================================
+
+PART 1
+----------
+
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-01.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 2718
+Lines: 256
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+Hello, this is Jim Skogard with This Is Us podcast. My guest today is J.R. Riggins from House District 59, State of Wyoming. How are you today, J.R.?
+I'm doing well, Jim. Thanks for the invitation and looking forward to how this all turns out.
+Hey, J.R., you know, me, I grew up in Grable Basin and I understand you grew up here in Casper?
+Actually, I'm a South Dakotan born, but I worked out here from the age of 15 over in Cody and until today.
+So I've been here as long as most people, except for 15 years, the age of 15 before that, I was mostly staying at home in South Dakota.
+Gotcha. J.R., you just started with the house in January 2025, is that correct?
+Yep. Elected here in the November election in the 24.
+In 24? Oh, so you were elected in the 24 election and you got sworn in in January.
+And what have been the challenges, do you think, so far?
+Was it a steep learning curve to figure out how to interact in the house?
+You know, I'm not completely, I'm not a novice to things like Robert's Rules from being involved in county politics and committee meetings.
+I was on the state committee for three years, but they use a different set of rules there.
+The biggest thing to get adjusted to is because there's 60-some people in there, so you don't trample over one another.
+Very specific ways to communicate on the floor.
+Lots of integration with other departments, the legislative service office, the membership, the whole process from getting a bill introduced to getting it passed.
+In a short time frame, in a hurry.
+I see.
+Did anything ever get done in a hurry, do you think?
+Well, we had a big goal of running, we had the five and dime plan.
+I think that was five bills passed in 10 days.
+
+[... Full transcript: 2718 words ...]
+
+KEY METRICS:
+- Total words: 2718
+- Total lines: 256
+- File size: 16K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+
+
+
+PART 2
+----------
+
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-02.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 2416
+Lines: 186
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+Well, we were talking about power, and might as well just keep talking about power.
+We got some data centers coming into the state of Wyoming, one being built in Cheyenne.
+I heard a proposal about one built between here and Casper and Glenrock, halfway between or something like that.
+It's going to be powered by natural gas.
+Tallgrass is a partner, the one in Cheyenne, right?
+They're providing the gas from their collection network.
+What can you tell me about those things?
+Full disclosure, I used to work for that company and retired here in July for Tallgrass Energy.
+Yeah, they're going to provide gas-powered turbines in Cheyenne,
+and I believe that's directly just for the purpose of the data centers there in that location.
+I don't know if it's just for the one.
+I'm just going to assume it's for one particular company.
+It had a pretty big, I don't know, in the gigawatt range.
+And, yeah, there is discussions going on here just to our east out of town between here and Glenrock about a proposal to put a data center.
+I think it might be a little bit different style.
+It's not like Google's planting something there.
+I think there's a developing trend where companies are putting the infrastructure together where they have the building and they have the power and they have a method for the cooling system, in a sense, for the actual processing.
+But then rent out the whole entity.
+All that, one of the big discussions in legislation has been the exemptions for sales tax or just elements of it, right?
+Not really for the construction.
+
+[... Full transcript: 2416 words ...]
+
+KEY METRICS:
+- Total words: 2416
+- Total lines: 186
+- File size: 16K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+
+
+
+PART 3
+----------
+
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-03.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 4980
+Lines: 263
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+causes and problems you know what people say that but i think people should uh read a little bit of
+read a little bit of more history a little more personal history look at look at the feud between
+jefferson and adams oh yeah look at the feud between hamilton and burr it doesn't get any
+worse than that one right right so well i mean we've always had these things there's a factionalism
+if you read i see that but but i i also see you know some some recent trends in violence and and
+you know and that's to me that's where it gets out of hand where we let the the rhetoric is fine for
+the folks up to a point up to a point when when you start seeing i i watched a documentary the other day
+and he showed showed the speaker of the house of of arizona after the 2026 um or not 2026 i'm sorry
+the 2020 election he was getting visits from folks out in front of his house where this was a pbs thing
+and they showed folks you know threatening him his him threatening his children and then i recently
+saw something with marjorie taylor green and i saw people threatening her when i saw them but
+you know she was complaining about that her her children were getting threatened you know because
+of the stance that she a political stance that she's taken and i'm thinking that's not really
+political division there that's that's to me there's a line that's being crossed or what would
+you say about something like that and how do we bring that that that conversation back to a more
+normal is it possible to bring it back to a more normal tone there's one i think there's probably
+one simple solution if most of that is on social media require your real name on every social media
+post you have to no more no more anonymity no no anonymous stuff you know i also would that what
+would that do it just in general i mean yeah people know who you are and you're not uh hiding behind
+is this a state thing is there is something we can do at the state level or is this more of a federal
+
+[... Full transcript: 4980 words ...]
+
+KEY METRICS:
+- Total words: 4980
+- Total lines: 263
+- File size: 28K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+
+
+

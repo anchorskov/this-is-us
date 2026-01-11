@@ -2,6 +2,7 @@
 import { withCORS } from "../utils/cors.js";
 import { buildUserPromptTemplate } from "../lib/hotTopicsAnalyzer.mjs";
 import { buildAiSummaryNotice } from "../lib/billSummaryAnalyzer.mjs";
+import { hasTable, hasColumn, getCivicDb } from "../lib/dbHelpers.mjs";
 
 const PENDING_STATUSES = ["introduced", "in_committee", "pending_vote"];
 const TOPIC_CONFIDENCE_THRESHOLD = 0.5;
@@ -46,14 +47,28 @@ function parseSubjectTags(raw) {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed.filter(Boolean);
+    if (Array.isArray(parsed)) {
+      const filtered = parsed
+        .filter(v => v !== null && v !== undefined && v !== "")
+        .map((s) => String(s).trim())
+        .filter(
+          (s) => s && !["null", "undefined", "none", ""].includes(s.toLowerCase())
+        );
+      return filtered;
+    }
   } catch (_) {
     // not JSON, fall through
   }
-  return String(raw)
+  const filtered = String(raw)
     .split(",")
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(
+      (s) => s && !["null", "undefined", "none", ""].includes(s.toLowerCase())
+    );
+  if (filtered.length === 0 && raw) {
+    console.log("ℹ️ Dropped empty/placeholder subject_tags", { raw });
+  }
+  return filtered;
 }
 
 function parseKeyPoints(raw) {
@@ -125,10 +140,6 @@ export async function handlePendingBillsWithTopics(request, env) {
              civh.has_lso_summary,
              civh.has_lso_text,
              civh.lso_text_source,
-             tags.topic_slug,
-             tags.confidence,
-             tags.trigger_snippet,
-             tags.reason_summary,
              bs.sponsor_name,
              bs.sponsor_role,
              bs.sponsor_district,
@@ -163,9 +174,6 @@ export async function handlePendingBillsWithTopics(request, env) {
                WHERE civh2.civic_item_id = ci.id
                  AND civh2.check_type = 'lso_hydration'
              )
-        LEFT JOIN civic_item_ai_tags tags
-          ON tags.item_id = ci.id
-         AND tags.confidence >= ?
         LEFT JOIN bill_sponsors bs
           ON bs.civic_item_id = ci.id
        WHERE ci.kind = 'bill'
@@ -175,7 +183,7 @@ export async function handlePendingBillsWithTopics(request, env) {
          AND ci.status IN (${statusPlaceholders})
     `;
 
-    const params = [TOPIC_CONFIDENCE_THRESHOLD, ...PENDING_STATUSES];
+    const params = [...PENDING_STATUSES];
 
     if (session) {
       sql += " AND ci.legislative_session = ?";
@@ -216,25 +224,38 @@ export async function handlePendingBillsWithTopics(request, env) {
     const { results = [] } = await env.WY_DB.prepare(sql).bind(...params).all();
     console.log(`📦 Raw query results: ${results.length} rows`);
 
-    // Fetch topic metadata from EVENTS_DB and map by slug
-    const { results: topicRows = [] } = await env.EVENTS_DB.prepare(
-      `SELECT slug, title, badge, priority
-         FROM hot_topics
-        WHERE is_active = 1`
-    ).all();
-    console.log(`📚 Loaded ${topicRows.length} topic metadata rows`);
-
-    const topicMeta = new Map(
-      topicRows.map((row) => [
-        row.slug,
-        {
-          slug: row.slug,
-          label: row.title,
-          badge: row.badge,
-          priority: row.priority,
-        },
-      ])
-    );
+    // Fetch topic metadata from WY_DB.hot_topics/hot_topic_civic_items
+    let topicRows = [];
+    if (results.length > 0) {
+      const billIds = results.map((r) => r.id);
+      const placeholders = billIds.map(() => "?").join(",");
+      const topicDb = getCivicDb(env);
+      const hasHotTopics = await hasTable(topicDb, "hot_topics");
+      const hasLinks = await hasTable(topicDb, "hot_topic_civic_items");
+      const hasInvalidated = await hasColumn(topicDb, "hot_topics", "invalidated");
+      if (hasHotTopics && hasLinks) {
+        const invalidatedFilter = hasInvalidated ? "AND ht.invalidated = 0" : "";
+        const topicSql = `
+          SELECT htc.civic_item_id AS bill_id,
+                 ht.slug AS topic_key,
+                 htc.confidence,
+                 ht.title AS label_short,
+                 ht.title AS label_full,
+                 ht.summary AS one_sentence
+            FROM hot_topic_civic_items htc
+            JOIN hot_topics ht ON ht.id = htc.topic_id
+           WHERE htc.civic_item_id IN (${placeholders})
+             AND (htc.confidence IS NULL OR htc.confidence >= ?)
+             ${invalidatedFilter}
+        `;
+        const topicParams = [...billIds, TOPIC_CONFIDENCE_THRESHOLD];
+        const topicRes = await topicDb.prepare(topicSql)
+          .bind(...topicParams)
+          .all();
+        topicRows = topicRes.results || [];
+        console.log(`📚 Loaded ${topicRows.length} topic rows (hot_topics)`);
+      }
+    }
 
     const bills = new Map();
     const topicSeen = new Map();
@@ -303,40 +324,6 @@ export async function handlePendingBillsWithTopics(request, env) {
         sponsorSeen.set(row.id, new Set());
       }
 
-      if (row.topic_slug) {
-        if (topicFilter && row.topic_slug !== topicFilter) continue;
-        const meta = topicMeta.get(row.topic_slug) || {
-          slug: row.topic_slug,
-          label: row.topic_slug,
-          badge: "",
-          priority: null,
-        };
-        const confidence =
-          typeof row.confidence === "number"
-            ? row.confidence
-            : row.confidence
-            ? parseFloat(row.confidence)
-            : null;
-
-        const seen = topicSeen.get(row.id);
-        if (seen.has(row.topic_slug)) continue;
-        seen.add(row.topic_slug);
-
-        bill.topics.push({
-          slug: row.topic_slug,
-          label: meta.label,
-          badge: meta.badge,
-          priority: meta.priority,
-          confidence,
-          reason_summary: row.reason_summary || "",
-          trigger_snippet: row.trigger_snippet || "",
-          user_prompt_template: buildUserPromptTemplate(
-            row.bill_number,
-            meta.label
-          ),
-        });
-      }
-
       if (row.sponsor_name) {
         const sSeen = sponsorSeen.get(row.id);
         const key = `${row.sponsor_name}-${row.sponsor_role || ""}`;
@@ -352,6 +339,28 @@ export async function handlePendingBillsWithTopics(request, env) {
           });
         }
       }
+    }
+
+    // Attach topic objects from bill_topics/topics
+    for (const tRow of topicRows) {
+      const bill = bills.get(tRow.bill_id);
+      if (!bill) continue;
+      const key = `${tRow.bill_id}-${tRow.topic_key}`;
+      const seenSet = topicSeen.get(tRow.bill_id) || new Set();
+      if (seenSet.has(key)) continue;
+      seenSet.add(key);
+      topicSeen.set(tRow.bill_id, seenSet);
+      bill.topics.push({
+        slug: tRow.topic_key,
+        label: tRow.label_short || tRow.topic_key,
+        full_label: tRow.label_full || tRow.label_short || tRow.topic_key,
+        confidence: tRow.confidence ?? null,
+        summary: tRow.one_sentence || "",
+        user_prompt_template: buildUserPromptTemplate(
+          bill.bill_number,
+          tRow.label_short || tRow.topic_key
+        ),
+      });
     }
 
     const billsArray = Array.from(bills.values());

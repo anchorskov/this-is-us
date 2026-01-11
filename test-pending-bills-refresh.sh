@@ -28,9 +28,9 @@ if [ "$RESET_DATA" = true ]; then
   echo "🧹 RESETTING DATA..."
   echo "   DELETE FROM civic_items WHERE source='openstates';"
   cd "$WORKER_DIR"
-  npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_items WHERE source='openstates';" 2>/dev/null || true
-  npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_item_ai_tags;" 2>/dev/null || true
-  npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_item_verification WHERE check_type='lso_hydration';" 2>/dev/null || true
+  ./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_items WHERE source='openstates';" 2>/dev/null || true
+  ./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_item_ai_tags;" 2>/dev/null || true
+  ./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_item_verification WHERE check_type='lso_hydration';" 2>/dev/null || true
   echo "   ✅ Data cleared"
   echo ""
 fi
@@ -134,7 +134,7 @@ echo ""
 # Step 6: Check database counts
 echo "6️⃣  DATABASE COUNTS"
 cd "$WORKER_DIR"
-COUNTS=$(npx wrangler d1 execute WY_DB --local --command "
+COUNTS=$(./scripts/wr d1 execute WY_DB --local --command "
   SELECT 
     (SELECT COUNT(*) FROM civic_items WHERE source='openstates') as openstates_bills,
     (SELECT COUNT(*) FROM civic_item_ai_tags) as ai_tags,

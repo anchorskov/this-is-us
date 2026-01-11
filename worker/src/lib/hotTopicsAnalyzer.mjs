@@ -90,8 +90,14 @@ const PENDING_STATUSES = ["introduced", "in_committee", "pending_vote"];
 /**
  * Canonical hot button topics for Wyoming with descriptive labels.
  * These are the ONLY valid slugs allowed in the topics array.
+ * 
+ * NOTE: Topics expanded to include broader categories that match our test dataset:
+ * - Original 6 "hot button" topics (high political sensitivity)
+ * - Extended 4 topics (broader policy areas reflecting current legislature)
+ * Total: 10 topics
  */
 const CANONICAL_TOPICS = {
+  // Original 6 hot button topics
   "property-tax-relief": {
     label: "Property Tax Relief",
     description: "Rising assessments squeezing homeowners; proposals cap increases and expand exemptions.",
@@ -116,12 +122,30 @@ const CANONICAL_TOPICS = {
     label: "Housing & Land Use",
     description: "Zoning reforms, infrastructure grants, and incentives for workforce housing near jobs.",
   },
+  
+  // Extended topics from current legislative session
+  "healthcare-access": {
+    label: "Healthcare Access & Medicaid",
+    description: "Medicaid coverage, hospital services, EMS funding, and healthcare provider support.",
+  },
+  "reproductive-health": {
+    label: "Reproductive Health & Rights",
+    description: "Pregnancy centers, birthing facilities, and reproductive healthcare access.",
+  },
+  "child-safety-education": {
+    label: "Child Safety & Education",
+    description: "Minor protection, school safety, curriculum oversight, and K-12 education initiatives.",
+  },
+  "criminal-justice-reform": {
+    label: "Criminal Justice & Public Safety",
+    description: "Crime amendments, penalties, law enforcement resources, and public safety initiatives.",
+  },
 };
 
 const SYSTEM_PROMPT = `
-You are a nonpartisan analyst matching Wyoming bills to six specific hot button topics likely to spark strong public interest.
+You are a nonpartisan analyst matching Wyoming bills to ten specific policy areas of public interest.
 
-**Only match these six topics:**
+**Match these ten topics only:**
 
 1. **property-tax-relief** – Property Tax Relief
    Rising assessments squeezing homeowners; proposals cap increases and expand exemptions.
@@ -141,19 +165,31 @@ You are a nonpartisan analyst matching Wyoming bills to six specific hot button 
 6. **housing-land-use** – Housing & Land Use
    Zoning reforms, infrastructure grants, and incentives for workforce housing near jobs.
 
+7. **healthcare-access** – Healthcare Access & Medicaid
+   Medicaid coverage, hospital services, EMS funding, and healthcare provider support.
+
+8. **reproductive-health** – Reproductive Health & Rights
+   Pregnancy centers, birthing facilities, and reproductive healthcare access.
+
+9. **child-safety-education** – Child Safety & Education
+   Minor protection, school safety, curriculum oversight, and K-12 education initiatives.
+
+10. **criminal-justice-reform** – Criminal Justice & Public Safety
+    Crime amendments, penalties, law enforcement resources, and public safety initiatives.
+
 **Confidence Guidelines:**
-- 0.85+ only for very clear, direct matches
-- 0.70–0.84 for strong relevance with minor ambiguity
-- <0.70 place in other_flags instead
+- 0.70+ for strong topical match (clearly related to topic area)
+- 0.50–0.69 for moderate relevance with reasonable connection
+- <0.50 place in other_flags instead (or omit if very weak)
 
 **Output Format:**
 Return STRICT JSON only, no extra prose:
 {
   "topics": [
     {
-      "slug": "property-tax-relief",
-      "label": "Property Tax Relief",
-      "confidence": 0.92,
+      "slug": "criminal-justice-reform",
+      "label": "Criminal Justice & Public Safety",
+      "confidence": 0.85,
       "trigger_snippet": "Brief quoted or paraphrased passage from the bill",
       "reason_summary": "One to three sentences explaining plainly why this bill matches this topic. Mention key changes and why Wyomingites care."
     }
@@ -161,13 +197,13 @@ Return STRICT JSON only, no extra prose:
   "other_flags": [
     {
       "label": "Other issue (use any label)",
-      "confidence": 0.65,
+      "confidence": 0.45,
       "trigger_snippet": "Short text that triggered this flag"
     }
   ]
 }
 
-Do NOT invent new topic slugs. Use ONLY the six listed above in the topics array.
+Do NOT invent new topic slugs. Use ONLY the ten listed above in the topics array.
 Use short snippets. Do not include any fields beyond those shown.
 `;
 
@@ -179,21 +215,29 @@ function buildUserPrompt(bill) {
     subject_tags,
     last_action,
     last_action_date,
+    ai_summary,
+    ai_key_points,
   } = bill || {};
 
-  // Default: cost-efficient prompt using only essential fields
-  // (summary, subject_tags, recent action, omit full text)
+  // Use AI-generated summary if available (richer, more detailed)
+  // Otherwise fall back to basic summary field
+  const bestSummary = ai_summary || summary;
+  const keyPointsText = Array.isArray(ai_key_points) && ai_key_points.length > 0
+    ? `Key points: ${ai_key_points.join(" | ")}`
+    : null;
+
   return [
     `Bill number: ${bill_number || "unknown"}`,
     `Title: ${title || "unknown"}`,
-    summary ? `Summary: ${summary}` : "Summary: (none provided)",
-    subject_tags ? `Subject tags: ${subject_tags}` : "Subject tags: (none)",
+    bestSummary ? `Summary: ${bestSummary}` : "Summary: (none provided)",
+    keyPointsText ? `${keyPointsText}` : null,
+    subject_tags ? `Subject tags: ${subject_tags}` : null,
     last_action ? `Last action: ${last_action}` : null,
     last_action_date ? `Last action date: ${last_action_date}` : null,
     "\nInstructions:",
-    "- Match to the six canonical topics when applicable.",
-    "- Place lower-confidence matches (<0.70) or off-topic ideas in other_flags.",
-    "- Never invent new topic slugs; only use the six provided.",
+    "- Match to the canonical topics when applicable.",
+    "- Place lower-confidence matches (<0.70) or off-topic bills in other_flags.",
+    "- Never invent new topic slugs; only use the provided topics.",
     "- Provide short trigger snippets (quoted or paraphrased from the bill).",
   ]
     .filter(Boolean)
@@ -478,7 +522,14 @@ export async function analyzeBillForHotTopics(env, bill, opts = {}) {
   let parsed = { topics: [], other_flags: [] };
 
   try {
-    parsed = JSON.parse(raw);
+    // Strip markdown code fences if present (e.g., ```json ... ```)
+    let jsonStr = raw.trim();
+    if (jsonStr.startsWith("```")) {
+      jsonStr = jsonStr
+        .replace(/^```(?:json)?\s*\n?/, "")
+        .replace(/\n?```\s*$/, "");
+    }
+    parsed = JSON.parse(jsonStr);
   } catch (err) {
     console.warn(`⚠️ Failed to parse AI JSON for bill ${billId}:`, raw);
     return { topics: [], other_flags: [], tokens: tokenData };
@@ -539,7 +590,7 @@ export function buildUserPromptTemplate(billNumber, topicLabel) {
  * 
  * Persists the analysis results to D1:
  * 1. Insert topic matches into WY_DB.civic_item_ai_tags
- * 2. Link matched topics to EVENTS_DB.hot_topic_civic_items (cross-database two-phase pattern)
+ * 2. (Deprecated) Linking to hot_topic_civic_items is handled elsewhere.
  * 
  * **Current tracking:**
  * - item_id: Bill OCD ID
@@ -563,7 +614,7 @@ export function buildUserPromptTemplate(billNumber, topicLabel) {
  * 
  * Implementation: Define in new migration 0010_enhance_civic_item_ai_tags.sql
  * 
- * @param {Env} env - Worker environment with WY_DB and EVENTS_DB
+ * @param {Env} env - Worker environment with WY_DB
  * @param {string} billId - civic_items.id (OCD bill ID)
  * @param {Object} analysis - Result from analyzeBillForHotTopics()
  * @returns {Promise<void>}
@@ -571,7 +622,7 @@ export function buildUserPromptTemplate(billNumber, topicLabel) {
 /**
  * saveHotTopicAnalysis(env, billId, analysis)
  * 
- * Persists AI analysis results to both WY_DB and EVENTS_DB.
+ * Persists AI analysis results to WY_DB.
  * 
  * **Phase 1:** Save to WY_DB.civic_item_ai_tags
  * - Stores: item_id, topic_slug, confidence, trigger_snippet, reason_summary
@@ -617,7 +668,7 @@ export async function saveBillSummary(env, billId, summary, keyPoints = [], summ
 /**
  * saveHotTopicAnalysis(env, billId, analysis)
  * 
- * Persist AI analysis results to both WY_DB and EVENTS_DB.
+ * Persist AI analysis results to WY_DB.
  * 
  * **Phase 1:** Save to WY_DB.civic_item_ai_tags
  * - Stores: item_id, topic_slug, confidence, trigger_snippet, reason_summary
@@ -625,86 +676,95 @@ export async function saveBillSummary(env, billId, summary, keyPoints = [], summ
  *   Example: "This bill directly addresses homeowner concerns by capping property tax assessment 
  *   increases to 3% per year, protecting families and retirees from sudden tax spikes."
  * 
- * **Phase 2:** Link to EVENTS_DB hot_topics
- * - Creates references from hot_topic_civic_items junction table
- * - Links only bills that matched at least one canonical topic
+ * **Phase 2:** No-op (hot_topic_civic_items is populated by billSummaryAnalyzer)
  * 
- * @param {Object} env - Cloudflare Worker environment with WY_DB and EVENTS_DB bindings
+ * @param {Object} env - Cloudflare Worker environment with WY_DB binding
  * @param {string} billId - Bill ID (e.g., "ocd-bill/us-wy:bill/2025/HB 22")
  * @param {Object} analysis - Result from analyzeBillForHotTopics() with topics array
  */
 export async function saveHotTopicAnalysis(env, billId, analysis) {
-  const { topics = [], other_flags = [] } = analysis || {};
-
-  // Phase 1: Save AI tags to WY_DB.civic_item_ai_tags
-  if (topics.length > 0) {
-    // Clear prior tags for this bill to avoid duplication
-    try {
-      await env.WY_DB.prepare(
-        "DELETE FROM civic_item_ai_tags WHERE item_id = ?"
-      ).bind(billId).run();
-    } catch (err) {
-      console.warn(`⚠️ Failed to clear existing tags for ${billId}:`, err);
-    }
-
-    const stmt = env.WY_DB.prepare(
-      `INSERT INTO civic_item_ai_tags (item_id, topic_slug, confidence, trigger_snippet, reason_summary)
-         VALUES (?1, ?2, ?3, ?4, ?5)`
-    );
+  const { topics = [], other_flags = [], legislative_session = "unknown" } = analysis || {};
+  
+  // NEW: Import and use staging system for review workflow
+  // This saves topics to staging table instead of directly to production
+  // allowing admin review before they appear to users
+  try {
+    const { saveTopicToStaging } = await import("./hotTopicsValidator.mjs");
+    
     for (const topic of topics) {
-      const conf = typeof topic.confidence === "number" ? topic.confidence : 0;
-      const snippet = topic.trigger_snippet || null;
-      const reason = topic.reason_summary || "";
       try {
-        await stmt.bind(billId, topic.slug, conf, snippet, reason).run();
-      } catch (err) {
-        console.warn(`⚠️ Failed to insert tag for ${billId}/${topic.slug}:`, err);
-      }
-    }
-  }
-
-  // Phase 2: Link to EVENTS_DB.hot_topic_civic_items
-  // Fetch active hot_topics from EVENTS_DB
-  // Future: match_criteria_json column can be used to apply rule-based filters
-  // (e.g., require specific keywords, exclude others, or enforce minimum confidence thresholds).
-  // For now, analyzeBillForHotTopics() uses OpenAI-based matching.
-  let topicMap = new Map();
-  try {
-    const { results = [] } = await env.EVENTS_DB.prepare(
-      "SELECT id, slug FROM hot_topics WHERE is_active = 1"
-    ).all();
-    topicMap = new Map(results.map(r => [r.slug, r.id]));
-  } catch (err) {
-    console.warn("⚠️ Failed to fetch hot_topics from EVENTS_DB:", err);
-    return; // If we can't fetch topics, exit early
-  }
-
-  // Clear prior links for this bill to avoid stale associations
-  try {
-    await env.EVENTS_DB.prepare(
-      "DELETE FROM hot_topic_civic_items WHERE civic_item_id = ?"
-    ).bind(billId).run();
-  } catch (err) {
-    console.warn(`⚠️ Failed to clear hot_topic_civic_items for ${billId}:`, err);
-  }
-
-  // Upsert into hot_topic_civic_items using INSERT OR IGNORE
-  const linkStmt = env.EVENTS_DB.prepare(
-    `INSERT OR IGNORE INTO hot_topic_civic_items (topic_id, civic_item_id)
-       VALUES (?1, ?2)`
-  );
-
-  for (const topic of topics) {
-    const topicId = topicMap.get(topic.slug);
-    if (topicId) {
-      try {
-        await linkStmt.bind(topicId, billId).run();
+        const result = await saveTopicToStaging(
+          env,
+          billId,
+          {
+            slug: topic.slug,
+            title: topic.label || topic.slug,
+            confidence: topic.confidence || 0,
+            trigger_snippet: topic.trigger_snippet || null,
+            reason_summary: topic.reason_summary || "",
+          },
+          "openai",
+          legislative_session
+        );
+        
+        if (!result.success) {
+          console.warn(
+            `⚠️ Failed to save topic to staging for ${billId}/${topic.slug}:`,
+            result.error
+          );
+        }
       } catch (err) {
         console.warn(
-          `⚠️ Failed to link bill ${billId} to topic ${topic.slug}:`,
-          err
+          `⚠️ Error saving topic to staging ${billId}/${topic.slug}:`,
+          err.message
         );
       }
     }
+  } catch (importErr) {
+    // Fallback: If staging system is not available, use legacy civic_item_ai_tags table
+    console.warn(
+      `⚠️ Staging system unavailable, falling back to legacy insert:`,
+      importErr.message
+    );
+    
+    const slugs = topics.map((t) => t.slug).filter(Boolean);
+
+    // Phase 1: Save AI tags to WY_DB.civic_item_ai_tags (idempotent)
+    try {
+      if (slugs.length === 0) {
+        await env.WY_DB.prepare(
+          "DELETE FROM civic_item_ai_tags WHERE item_id = ?"
+        ).bind(billId).run();
+      } else {
+        const placeholders = slugs.map(() => "?").join(",");
+        await env.WY_DB.prepare(
+          `DELETE FROM civic_item_ai_tags 
+            WHERE item_id = ? AND topic_slug NOT IN (${placeholders})`
+        )
+          .bind(billId, ...slugs)
+          .run();
+      }
+    } catch (err) {
+      console.warn(`⚠️ Failed to clear stale tags for ${billId}:`, err);
+    }
+
+    if (topics.length > 0) {
+      const stmt = env.WY_DB.prepare(
+        `INSERT OR REPLACE INTO civic_item_ai_tags (item_id, topic_slug, confidence, trigger_snippet, reason_summary)
+           VALUES (?1, ?2, ?3, ?4, ?5)`
+      );
+      for (const topic of topics) {
+        const conf = typeof topic.confidence === "number" ? topic.confidence : 0;
+        const snippet = topic.trigger_snippet || null;
+        const reason = topic.reason_summary || "";
+        try {
+          await stmt.bind(billId, topic.slug, conf, snippet, reason).run();
+        } catch (err) {
+          console.warn(`⚠️ Failed to upsert tag for ${billId}/${topic.slug}:`, err);
+        }
+      }
+    }
   }
+
+  return;
 }

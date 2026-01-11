@@ -27,8 +27,8 @@ You are helping on the `this-is-us.org` project. The goal is to implement a stru
 ```
 WSL root: /home/anchor/projects/this-is-us
 Worker: /home/anchor/projects/this-is-us/worker
-D1 binding: WY_DB (local: .wrangler/state/v3/d1/)
-Dev server: http://127.0.0.1:8787 (after `npx wrangler dev --local`)
+D1 binding: WY_DB (local: ../scripts/wr/state/v3/d1/)
+Dev server: http://127.0.0.1:8787 (after `./scripts/wr dev --local`)
 ```
 
 ---
@@ -60,7 +60,7 @@ Your job is to validate the pipeline by:
 cd /home/anchor/projects/this-is-us/worker
 
 # List pending migrations
-npx wrangler d1 migrations list WY_DB
+./scripts/wr d1 migrations list WY_DB
 ```
 
 **Expected:** Should show 0020 and 0021 in "Migrations to be applied" list.
@@ -69,7 +69,7 @@ npx wrangler d1 migrations list WY_DB
 
 ```bash
 # Apply all pending migrations (0020, 0021, and others)
-npx wrangler d1 migrations apply WY_DB --local
+./scripts/wr d1 migrations apply WY_DB --local
 ```
 
 **Expect:** Both should succeed. If column-already-exists errors occur, edit migrations to comment out ALTER TABLE statements (columns exist from previous manual creation).
@@ -78,10 +78,10 @@ npx wrangler d1 migrations apply WY_DB --local
 
 ```bash
 # Check bill_sponsors structure (look for openstates_person_id)
-npx wrangler d1 execute WY_DB --local --command "PRAGMA table_info(bill_sponsors);" | jq '.results[][] | {cid, name, type}'
+./scripts/wr d1 execute WY_DB --local --command "PRAGMA table_info(bill_sponsors);" | jq '.results[][] | {cid, name, type}'
 
 # Check civic_item_verification structure (look for structural fields)
-npx wrangler d1 execute WY_DB --local --command "PRAGMA table_info(civic_item_verification);" | jq '.results[][] | {cid, name, type}'
+./scripts/wr d1 execute WY_DB --local --command "PRAGMA table_info(civic_item_verification);" | jq '.results[][] | {cid, name, type}'
 ```
 
 **Expect columns in civic_item_verification:**
@@ -98,8 +98,8 @@ npx wrangler d1 execute WY_DB --local --command "PRAGMA table_info(civic_item_ve
 ### Check Environment Variables
 
 ```bash
-# Verify OPENSTATES_API_KEY is in wrangler.toml
-grep OPENSTATES_API_KEY worker/wrangler.toml
+# Verify OPENSTATES_API_KEY is in ./scripts/wr.toml
+grep OPENSTATES_API_KEY worker/./scripts/wr.toml
 
 # Should output something like:
 # OPENSTATES_API_KEY    = "34c97a5b-a758-407a-961f-7bfd54460c5c"
@@ -109,10 +109,10 @@ grep OPENSTATES_API_KEY worker/wrangler.toml
 
 ```bash
 # Reset all Wyoming OpenStates bills (clean slate)
-npx wrangler d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
+./scripts/wr d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
 
 # Verify count is 0
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT COUNT(*) as count FROM civic_items WHERE source='open_states';"
 ```
 
@@ -122,7 +122,7 @@ npx wrangler d1 execute WY_DB --local --command \
 
 ```bash
 # Start dev server (if not already running in background)
-npx wrangler dev --local &
+./scripts/wr dev --local &
 
 # Wait ~10 seconds for server to start, then sync
 curl -s "http://127.0.0.1:8787/api/dev/openstates/sync?session=2025" | jq '.synced, .count, .errors'
@@ -134,13 +134,13 @@ curl -s "http://127.0.0.1:8787/api/dev/openstates/sync?session=2025" | jq '.sync
 
 ```bash
 # Count bills and sponsors
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     (SELECT COUNT(*) FROM civic_items WHERE source='open_states') as bills,
     (SELECT COUNT(*) FROM bill_sponsors) as sponsors;"
 
 # Sample bills with sponsor count
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     ci.bill_number, 
     ci.chamber,
@@ -198,7 +198,7 @@ curl -s "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=$BILL_ID" | jq 
 
 ```bash
 # Count status distribution
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     status, 
     structural_ok,
@@ -316,7 +316,7 @@ Create file: `worker/OPENSTATES_VERIFICATION_RUNBOOK.md`
 
 4. **Checking results:**
    ```bash
-   npx wrangler d1 execute WY_DB --local --command \
+   ./scripts/wr d1 execute WY_DB --local --command \
      "SELECT bill_number, status, structural_reason FROM civic_item_verification WHERE ...;"
    ```
 
@@ -335,7 +335,7 @@ Create file: `worker/OPENSTATES_VERIFICATION_RUNBOOK.md`
 ### Local-Only Execution
 - All commands use `--local` flag
 - No production/preview databases affected
-- Data persists in `.wrangler/state/v3/d1/` directory
+- Data persists in `../scripts/wr/state/v3/d1/` directory
 
 ### Migration Gotchas
 - D1 SQLite doesn't support `IF NOT EXISTS` on ALTER TABLE ADD COLUMN
@@ -389,7 +389,7 @@ Create file: `worker/OPENSTATES_VERIFICATION_RUNBOOK.md`
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | "duplicate column" on 0020/0021 | Column already created manually | Comment out ALTER statements |
-| "OPENSTATES_API_KEY not found" | Missing env var | Check wrangler.toml `[vars]` section |
+| "OPENSTATES_API_KEY not found" | Missing env var | Check ./scripts/wr.toml `[vars]` section |
 | Sync returns 0 bills | API auth failure or wrong params | Verify API key, check query params (session=2025) |
 | No sponsors synced | Detail endpoint parsing failed | Check OpenStates API response format, add logging |
 | All bills "flagged" for no_wyoming_sponsor | wy_legislators empty | Expected - populate legislator table separately |

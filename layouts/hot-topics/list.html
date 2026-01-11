@@ -49,7 +49,6 @@
     padding: 1.5rem;
     background: #fff;
     transition: all 0.3s ease;
-    text-decoration: none;
     color: inherit;
     display: flex;
     flex-direction: column;
@@ -84,6 +83,11 @@
     font-size: 1.25rem;
     margin: 0 0 0.75rem 0;
     color: #1a1a1a;
+  }
+
+  .topic-link {
+    color: inherit;
+    text-decoration: none;
   }
 
   .hot-topic-card .summary {
@@ -125,6 +129,42 @@
 
   .cta-button:hover {
     background: #1557b0;
+  }
+
+  .bill-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    border-top: 1px solid #eee;
+  }
+
+  .bill-list li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f2f2f2;
+  }
+
+  .bill-list li:last-child {
+    border-bottom: none;
+  }
+
+  .bill-link {
+    display: block;
+    font-weight: 600;
+    color: #1a73e8;
+    text-decoration: none;
+    margin-bottom: 0.25rem;
+  }
+
+  .bill-summary {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.4;
+  }
+
+  .bill-empty {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #777;
   }
 
   .loading {

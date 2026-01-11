@@ -59,15 +59,26 @@ import { handleBillSponsors } from "./routes/billSponsors.mjs";
 import { handleInternalVerifyBill } from "./routes/internalVerifyBill.mjs";
 import { handleDevLsoSync } from "./routes/devLsoSync.mjs";
 import { handleDevSampleCompleteBills } from "./routes/devSampleCompleteBills.mjs";
+import { handleDebugLsoSample } from "./routes/debugLsoService.mjs";
 import { handleListHotTopics, handleGetHotTopic } from "./routes/hotTopics.mjs";
+import {
+  handleListDraftTopics,
+  handleEditDraftTopic,
+  handlePublishTopics,
+  handleRejectTopic,
+  handleApproveTopic,
+} from "./routes/adminHotTopics.mjs";
 import { handleVoteCivicItem } from "./routes/civicVotes.mjs";
-import { handleScanPendingBills, handleTestOne, handleTestBillSummary } from "./routes/civicScan.mjs";
+import { handleScanPendingBills, handleTestOne, handleTestBillSummary, handleHotTopicDbCheck } from "./routes/civicScan.mjs";
 import { handleOpenAiSelfTest } from "./routes/openAiSelfTest.mjs";
 import { handleFetchLsoText } from "./routes/fetchLsoText.mjs";
 import { syncWyomingBills } from "./lib/openStatesSync.mjs";
 import { handleDevLsoHydrate } from "./routes/devLsoHydrate.mjs";
 import { runPendingBillsRefresh } from "./jobs/pendingBillsRefresh.mjs";
 import { handleGetPodcastSummary } from "./routes/podcastSummary.mjs";
+import { handleAdminRunWyoleg, handleAdminRunUntilComplete } from "./routes/adminWyoleg.mjs";
+import { handleAdminIngestReset } from "./routes/adminIngestReset.mjs";
+import { handleDevD1Identity } from "./routes/devD1Identity.mjs";
 
 // Civic Watch – delegation lookup
 import { handleGetDelegation } from "./routes/civic/delegation.mjs";
@@ -149,8 +160,19 @@ router.post("/api/internal/civic/test-one", handleTestOne);
 // Test bill summary route
 router.post("/api/internal/civic/test-bill-summary", handleTestBillSummary);
 
+// Hot topic DB check endpoint (dev-only)
+router.get("/api/internal/dev/hot-topic-db-check", handleHotTopicDbCheck);
+
 // Production scan route (Milestone 4)
 router.post("/api/internal/civic/scan-pending-bills", handleScanPendingBills);
+router.post("/api/internal/admin/wyoleg/run", handleAdminRunWyoleg);
+router.post("/api/internal/admin/wyoleg/run-until-complete", handleAdminRunUntilComplete);
+
+// Admin ingestion reset
+router.post("/api/admin/ingest/reset", handleAdminIngestReset);
+
+// Debug endpoint for LSO Service inspection
+router.get("/api/internal/debug/lso/billinformation-sample", handleDebugLsoSample);
 
 // OpenAI API key self-test (dev only)
 router.get("/api/internal/openai-self-test", handleOpenAiSelfTest);
@@ -201,6 +223,7 @@ router.get("/api/_routes", (req, env) => {
         "POST /api/internal/civic/test-one",
         "POST /api/internal/civic/test-bill-summary",
         "POST /api/internal/civic/scan-pending-bills",
+        "POST /api/internal/admin/wyoleg/run",
         "GET /api/internal/openai-self-test",
         "GET /api/podcast/summary",
         "GET /podcast/summary",
@@ -279,6 +302,9 @@ router.get("/api/dev/civic/sample-complete-bills", async (req, env) => {
   return handleDevSampleCompleteBills(req, env);
 });
 
+// DEV: D1 database identity and diagnostics
+router.get("/api/dev/d1/identity", (req, env) => handleDevD1Identity(req, env));
+
 registerSetup(router); // mounts /api/setup/topics
 router.get("/api/topic-index", handlePublicTopicIndex);
 router
@@ -292,6 +318,14 @@ router.get("/api/voters/lookup", handleVoterLookup);
 router
   .get("/api/hot-topics", handleListHotTopics)
   .get("/api/hot-topics/:slug", handleGetHotTopic);
+
+/* Admin – Hot Topics */
+router
+  .get("/api/admin/hot-topics/drafts", handleListDraftTopics)
+  .post("/api/admin/hot-topics/drafts/:topicId", handleEditDraftTopic)
+  .post("/api/admin/hot-topics/publish", handlePublishTopics)
+  .post("/api/admin/hot-topics/reject", handleRejectTopic)
+  .post("/api/admin/hot-topics/approve", handleApproveTopic);
 
 /* Stripe webhook */
 router.post("/api/stripe-webhook", handleStripeWebhook);

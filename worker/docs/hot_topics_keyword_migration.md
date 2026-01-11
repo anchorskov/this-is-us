@@ -91,13 +91,13 @@ To verify the changes locally:
 cd /home/anchor/projects/this-is-us/worker
 
 # View all hot topics with keywords
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT id, slug, badge, title, summary FROM hot_topics ORDER BY id;"
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT id, slug, badge, title, summary FROM hot_topics ORDER BY id;"
 
 # Count total topics
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT COUNT(*) as total_topics FROM hot_topics;"
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT COUNT(*) as total_topics FROM hot_topics;"
 
 # Check by badge
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT badge, COUNT(*) as count FROM hot_topics GROUP BY badge ORDER BY badge;"
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT badge, COUNT(*) as count FROM hot_topics GROUP BY badge ORDER BY badge;"
 ```
 
 ---

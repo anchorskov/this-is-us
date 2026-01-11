@@ -1,0 +1,337 @@
+Design Planning: Phase 1 Checklist + Unified Card Model + Threat Model + Moderation + Help + Phased Plan
+
+Phase 1 Cleanup Checklist (read-only focus)
+- Mark Firestore Town Hall dependencies for removal or rewiring:
+  - static/js/townhall/threads.js
+  - static/js/townhall/map.js
+  - static/js/townhall/threads-inline.js
+  - static/js/townhall-interactive.js
+- Confirm Worker-backed Town Hall pages are the only active paths:
+  - /townhall/ -> layouts/townhall/section.html + static/js/townhall/home.js
+  - /townhall/thread/ -> layouts/townhall/thread/single.html + static/js/townhall/thread-view.js
+  - /townhall/create-thread/ -> layouts/townhall/create-thread/section.html + static/js/townhall/create-thread.js
+- Identify duplicate script injection:
+  - /townhall/threads/ loads static/js/townhall/threads.js twice via layouts/townhall/threads.html and layouts/partials/site-scripts.html.
+- Document reply form mismatch:
+  - static/js/townhall/thread/render-thread.js uses textarea[name="content"]
+  - static/js/townhall/thread-view.js expects textarea[name="body"]
+- Document missing auth token usage:
+  - Civic votes: static/js/civic/pending-bills.js -> worker/src/routes/civicVotes.mjs trusts user_id.
+
+Unified Card Model Design Spec
+
+1) Card JSON Schema
+{
+  "$id": "Card",
+  "type": "object",
+  "required": [
+    "identity",
+    "title",
+    "summary",
+    "tags",
+    "timestamps",
+    "reactions",
+    "comments",
+    "user"
+  ],
+  "properties": {
+    "identity": {
+      "type": "object",
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "type": "string", "enum": ["townhall_thread", "civic_item", "hot_topic", "help_article"] },
+        "id": { "type": "string" },
+        "slug": { "type": "string" }
+      }
+    },
+    "title": { "type": "string" },
+    "summary": { "type": "string" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "county": { "type": ["string", "null"] },
+    "timestamps": {
+      "type": "object",
+      "required": ["created_at"],
+      "properties": {
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "reactions": {
+      "type": "object",
+      "required": ["up", "down", "info"],
+      "properties": {
+        "up": { "type": "integer" },
+        "down": { "type": "integer" },
+        "info": { "type": "integer" }
+      }
+    },
+    "comments": {
+      "type": "object",
+      "required": ["count"],
+      "properties": {
+        "count": { "type": "integer" }
+      }
+    },
+    "user": {
+      "type": "object",
+      "required": ["my_reaction", "can_post", "verified", "county"],
+      "properties": {
+        "my_reaction": { "type": ["string", "null"], "enum": ["up", "down", "info", null] },
+        "can_post": { "type": "boolean" },
+        "verified": { "type": "boolean" },
+        "county": { "type": ["string", "null"] }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "status": { "type": "string" },
+        "bill_number": { "type": "string" },
+        "session": { "type": "string" },
+        "location": { "type": "string" },
+        "links": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "pdf": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+
+2) Example payloads for each card type
+
+Town Hall Thread
+{
+  "identity": { "type": "townhall_thread", "id": "9e7f1c3b-..." },
+  "title": "Safer Crosswalks Downtown",
+  "summary": "We need flashing beacons at 2nd and Center...",
+  "tags": ["public-safety", "traffic"],
+  "county": "Natrona",
+  "timestamps": { "created_at": "2025-12-15T21:30:00Z", "updated_at": null },
+  "reactions": { "up": 12, "down": 2, "info": 1 },
+  "comments": { "count": 4 },
+  "user": { "my_reaction": "up", "can_post": true, "verified": true, "county": "Natrona" },
+  "meta": { "location": "Casper, WY", "links": { "url": "/townhall/thread/9e7f1c3b-..." } }
+}
+
+Civic Item (Pending Bill)
+{
+  "identity": { "type": "civic_item", "id": "HB-22" },
+  "title": "Property Tax Assessment Cap",
+  "summary": "Caps annual assessment increases at 3% or inflation...",
+  "tags": ["property-tax-relief"],
+  "county": null,
+  "timestamps": { "created_at": "2025-12-10T20:00:00Z", "updated_at": "2025-12-16T18:10:00Z" },
+  "reactions": { "up": 58, "down": 9, "info": 12 },
+  "comments": { "count": 3 },
+  "user": { "my_reaction": "info", "can_post": true, "verified": true, "county": "Laramie" },
+  "meta": { "bill_number": "HB 22", "session": "2025", "status": "introduced", "links": { "url": "https://...", "pdf": "https://..." } }
+}
+
+Hot Topic
+{
+  "identity": { "type": "hot_topic", "id": "property-tax-relief", "slug": "property-tax-relief" },
+  "title": "Property Tax Relief",
+  "summary": "Rising assessments are pushing homeowners out...",
+  "tags": ["taxes", "housing"],
+  "county": null,
+  "timestamps": { "created_at": "2025-12-01T00:00:00Z", "updated_at": "2025-12-15T12:00:00Z" },
+  "reactions": { "up": 120, "down": 14, "info": 33 },
+  "comments": { "count": 0 },
+  "user": { "my_reaction": null, "can_post": false, "verified": false, "county": null },
+  "meta": { "links": { "url": "/hot-topics/property-tax-relief" } }
+}
+
+Help Article (optional)
+{
+  "identity": { "type": "help_article", "id": "how-to-verify", "slug": "how-to-verify" },
+  "title": "How to verify your voter record",
+  "summary": "Steps for confirming your county voter status...",
+  "tags": ["help", "verification"],
+  "county": null,
+  "timestamps": { "created_at": "2025-12-05T09:00:00Z", "updated_at": null },
+  "reactions": { "up": 0, "down": 0, "info": 0 },
+  "comments": { "count": 0 },
+  "user": { "my_reaction": null, "can_post": false, "verified": false, "county": null },
+  "meta": { "links": { "url": "/help/how-to-verify" } }
+}
+
+3) Proposed endpoints
+- GET /api/cards
+  - type=townhall_thread|civic_item|hot_topic|help_article|all
+  - county=Natrona
+  - topic=property-tax-relief
+  - status=introduced|in_committee|pending_vote
+  - session=2025
+  - limit=20
+  - cursor=opaque
+- GET /api/cards/:type/:id
+  - Optional include=comments
+
+Reactions
+- POST /api/cards/:type/:id/reactions -> { "reaction": "up|down|info|none" }
+
+Comments
+- GET /api/cards/:type/:id/comments
+- POST /api/cards/:type/:id/comments -> { "body": "..." }
+
+4) Backward compatibility mapping
+- /api/townhall/posts (worker/src/routes/townhall/posts.mjs)
+  - id -> identity.id, title -> title, prompt/snippet -> summary, county -> county, created_at -> timestamps.created_at
+- /api/civic/pending-bills-with-topics (worker/src/routes/pendingBills.mjs)
+  - id -> identity.id, title -> title, ai_summary -> summary, topic slugs -> tags, up_votes/down_votes/info_votes -> reactions
+- /api/hot-topics (worker/src/routes/hotTopics.mjs)
+  - slug -> identity.id, title -> title, summary -> summary, bill_count -> meta
+
+Threat Model (repo-specific)
+
+1) Spoofed identity (user_id in body)
+- Impacted:
+  - worker/src/routes/civicVotes.mjs (vote uses user_id from body)
+  - static/js/civic/pending-bills.js (sends { user_id: user.uid })
+- Severity: High
+- Mitigation: Require Authorization token and resolve user server-side (requireAuth).
+- Tests:
+  - Manual: send vote with fake user_id, no token -> expect 401.
+  - Automated: Worker test for /api/civic/items/:id/vote rejecting missing/invalid tokens.
+
+2) Privilege escalation (role=admin)
+- Impacted:
+  - worker/src/townhall/deletePost.js (role from form data)
+- Severity: High
+- Mitigation: Ignore role from client; authorize using server-verified role table or CF Access.
+- Tests:
+  - Manual: POST delete as normal user with role=admin -> expect 403.
+  - Automated: add test in Worker suite for admin-only delete.
+
+3) Spam and flooding (no rate limit, no Turnstile validation)
+- Impacted:
+  - worker/src/routes/townhall/posts.mjs (create thread/reply)
+  - layouts/partials/turnstile.html (client widget only)
+- Severity: High
+- Mitigation: Add Turnstile server validation and rate limits per user/IP.
+- Tests:
+  - Manual: attempt post without Turnstile token -> expect 400.
+  - Automated: load test, ensure rate limit responses.
+
+4) CORS abuse
+- Impacted:
+  - worker/src/routes/townhall/posts.mjs uses withCORS (open origin)
+  - worker/src/utils/cors.js
+- Severity: Medium
+- Mitigation: Use withRestrictedCORS for writes; enforce allowlist.
+- Tests:
+  - Manual: POST from disallowed origin -> expect 403.
+  - Automated: preflight test for allowlisted vs non-allowlisted origins.
+
+5) Data split-brain (Firestore vs D1)
+- Impacted:
+  - Firestore-based Town Hall JS (static/js/townhall/threads.js, static/js/townhall/map.js, static/js/townhall-interactive.js)
+  - Firestore rules deny these (firestore.rules)
+- Severity: Medium
+- Mitigation: Remove or rewire Firestore paths to Worker API.
+- Tests:
+  - Manual: open /townhall/threads/ and /townhall/map/ after rewiring; verify data loads from Worker.
+  - Automated: UI test for consistent list data across pages.
+
+Moderation Design (Town Hall + Civic)
+
+Statuses
+- pending, approved, hidden, removed, flagged
+
+D1 schema additions
+- townhall_posts add status, moderation_reason, moderated_at, moderated_by
+- townhall_replies already has status; add moderation_reason, moderated_at, moderated_by
+- New table: moderation_audit_log (id, target_type, target_id, action, reason, actor_user_id, actor_source, created_at)
+
+API endpoints
+- POST /api/moderation/:type/:id/status -> { status, reason }
+- GET /api/moderation/audit?type=&id=&limit=&cursor=
+- POST /api/moderation/flag -> { type, id, reason }
+
+UI states/messaging
+- Pending: "Awaiting review"
+- Hidden: "Hidden by moderators"
+- Removed: "Removed for policy violations"
+- Flagged: "Reported for review"
+
+Permissions model
+- Verified by Worker auth (worker/src/auth/verifyFirebaseOrAccess.mjs)
+- Moderator role determined server-side (D1 user_roles or Access group)
+
+Help System Design
+
+Help content model
+- D1 help_articles table: id, slug, title, body, tags, updated_at, status
+- D1 help_feedback: id, article_id, helpful (bool), comment, created_at, user_id optional
+
+Endpoints
+- GET /api/help/articles?query=&tags=&limit=&cursor=
+- GET /api/help/articles/:slug
+- POST /api/help/feedback -> { slug, helpful, comment }
+
+UI responsibilities
+- Help drawer component (open/close, search, list, article view)
+- Contextual tooltips via help keys
+
+Insertion points
+- layouts/townhall/section.html
+- layouts/townhall/thread/single.html
+- layouts/townhall/create-thread/section.html
+- layouts/civic/watch.html
+- layouts/civic/pending-bills.html
+
+Accessibility
+- Keyboard navigation, focus trap, ARIA labels, readable contrast
+
+Phased Implementation Plan
+
+Phase 1: Read-only stabilization
+- Edits:
+  - Rewire Town Hall list/map pages to Worker API, remove Firestore usage
+  - Fix duplicate script injection for /townhall/threads/
+  - Align reply form fields
+- New files: none
+- Tests:
+  - Local: open /townhall/, /townhall/thread/, /townhall/threads/, /townhall/map/
+  - Production parity: use /api/_routes dev check
+- Rollback: revert JS changes only
+
+Phase 2: Secure writes
+- Edits:
+  - Add auth token validation to civic vote endpoint
+  - Add Turnstile server validation and rate limits
+  - Enforce CORS allowlist for writes
+- New files:
+  - Worker helper for Turnstile verification
+- Tests:
+  - Manual: post without token/turnstile -> fail
+  - Automated: route tests in worker/__tests__
+- Rollback: disable new checks behind env flag
+
+Phase 3: Reactions + comments unification
+- Edits:
+  - Add unified Card endpoints
+  - Bridge existing endpoints to new model
+- New files:
+  - worker/src/routes/cards.mjs
+- Tests:
+  - API compatibility checks with existing pages
+- Rollback: keep existing endpoints untouched
+
+Phase 4: Moderation + help layer
+- Edits:
+  - Add moderation endpoints and status rendering
+  - Add help drawer UI + API
+- New files:
+  - worker/src/routes/moderation.mjs
+  - worker/src/routes/help.mjs
+  - static/js/help/drawer.js
+- Tests:
+  - Manual moderation actions
+  - Accessibility checks
+- Rollback: hide help drawer / disable moderation UI

@@ -1,0 +1,34 @@
+# Ingestion Wyoleg Documentation Index
+
+Status: Active
+Updated: 2025-12-17
+Owner: Eng Data
+Scope: Ingestion Wyoleg
+
+## Start here
+- `STATUS_INGESTION_WYOLEG.md` – current state and blockers
+
+## Contents
+- `INGESTION_TODO_NEXT.md`
+- `LSO_DEBUG_ENDPOINT_CODE_DIFF.md`
+- `LSO_DEBUG_ENDPOINT_COMPLETE.md`
+- `LSO_DEBUG_ENDPOINT_IMPLEMENTATION.md`
+- `LSO_DEBUG_ENDPOINT_MASTER_INDEX.md`
+- `LSO_DEBUG_ENDPOINT_QUICK_REF.md`
+- `LSO_DEBUG_ENDPOINT_SUMMARY.md`
+- `LSO_PIPELINE_EXECUTION_REPORT_121125.md`
+- `LSO_count.txt`
+- `STATUS_INGESTION_WYOLEG.md`
+- `STATUS_INGESTION_WYOLEG_SNAPSHOT.md`
+- `WYOLEG_COMPLETENESS_IMPLEMENTATION.md`
+- `WYOLEG_DOCUMENT_INGESTION_IMPLEMENTATION.md`
+- `WYOLEG_PIPELINE_TEST_RESULTS.md`
+- `WYOLEG_QUICK_REFERENCE.md`
+- `WYOLEG_TEST_SUITE_IMPLEMENTATION.md`
+- `WYOLEG_TEST_SUITE_QUICK_REFERENCE.md`
+- `WYOLEG_TEST_SUITE_VERIFICATION.md`
+- `WYOMING_BACKFILL_COMPLETE.md`
+- `lso_pipeline_snapshot.txt`
+
+## Notes
+- Update Owner/Status and refine the start-here pointer when you touch this folder.

@@ -15,7 +15,7 @@
  *   node test/test-bill-scanner.js
  * 
  * Requires:
- * - wrangler dev --local running on http://127.0.0.1:8787
+ * - ./scripts/wr dev --local running on http://127.0.0.1:8787
  * - OPENAI_API_KEY environment variable set
  * - BILL_SCANNER_ENABLED=true environment variable set
  * - WY_DB with civic_items table populated
@@ -68,7 +68,7 @@ async function testServerReachable() {
     console.log("✅ Server is reachable and responding");
   } catch (err) {
     console.error(`❌ Cannot reach ${BASE_URL}: ${err.message}`);
-    console.error("   Make sure 'npx wrangler dev --local' is running");
+    console.error("   Make sure './scripts/wr dev --local' is running");
     process.exit(1);
   }
 }
@@ -305,9 +305,9 @@ async function testDatabaseUpdates() {
 
   console.log("To verify database updates, run in another terminal:");
   console.log("  cd /home/anchor/projects/this-is-us/worker");
-  console.log("  npx wrangler d1 execute WY_DB --local --command");
+  console.log("  ./scripts/wr d1 execute WY_DB --local --command");
   console.log('    "SELECT COUNT(*) as count FROM civic_item_ai_tags;"');
-  console.log("  npx wrangler d1 execute EVENTS_DB --local --command");
+  console.log("  ./scripts/wr d1 execute EVENTS_DB --local --command");
   console.log('    "SELECT COUNT(*) as count FROM hot_topic_civic_items;"');
 }
 
@@ -341,10 +341,10 @@ async function runTests() {
     console.log("\nNext steps:");
     console.log("  1. Check wrangler dev logs for 🚀📋📄✅ emoji prefixes");
     console.log("  2. Verify civic_item_ai_tags table was populated:");
-    console.log("     npx wrangler d1 execute WY_DB --local \\");
+    console.log("     ./scripts/wr d1 execute WY_DB --local \\");
     console.log("       --command 'SELECT COUNT(*) FROM civic_item_ai_tags;'");
     console.log("  3. Check hot_topic_civic_items for new bill links:");
-    console.log("     npx wrangler d1 execute EVENTS_DB --local \\");
+    console.log("     ./scripts/wr d1 execute EVENTS_DB --local \\");
     console.log("       --command 'SELECT COUNT(*) FROM hot_topic_civic_items;'");
     console.log("  4. Test GET /api/hot-topics to see new civic_items in response");
     console.log("");

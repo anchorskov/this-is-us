@@ -1,0 +1,34 @@
+# Bill Scanner Documentation Index
+
+Status: Active
+Updated: 2025-12-17
+Owner: Eng Platform
+Scope: Bill Scanner
+
+## Start here
+- `QUICK_REFERENCE.md` – one-page summary and entry point
+
+## Contents
+- `BILL_SCANNER_IMPLEMENTATION_COMPLETE.md`
+- `BILL_SCANNER_INDEX.md`
+- `BILL_SCANNER_MILESTONES.md`
+- `BILL_SCANNER_REASON_SUMMARY.md`
+- `BILL_SCANNER_REFERENCE.md`
+- `BILL_SCANNER_SECURITY.md`
+- `BILL_SCANNER_SUMMARY.md`
+- `BILL_SCANNER_TESTING.md`
+- `BILL_SUMMARIES_DOCUMENTATION_INDEX.md`
+- `BILL_SUMMARIES_FIX_COMPLETE.md`
+- `DOCUMENTATION_INDEX.md`
+- `DOCUMENTATION_UPDATES_SUMMARY.md`
+- `DOCUMENTATION_UPDATE_CHANGELOG.md`
+- `PIPELINE_FAST_PATH_COMPLETE.md`
+- `PRODUCTION_DEPLOYMENT_COMMANDS.md`
+- `QUICK_REFERENCE.md`
+- `QUICK_REFERENCE_REASON_SUMMARY.md`
+- `TESTING_DELIVERY_SUMMARY.md`
+- `TESTING_GUIDE_BILL_SUMMARIES.md`
+- `TEST_BILL_SCANNER.md`
+
+## Notes
+- Update Owner/Status and refine the start-here pointer when you touch this folder.

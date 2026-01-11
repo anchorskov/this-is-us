@@ -13,7 +13,7 @@ git log --oneline | head -1
 # STEP 2: DEPLOY WORKER (RUN FROM worker/ DIRECTORY)
 # ============================================================================
 cd /home/anchor/projects/this-is-us/worker
-wrangler deploy --env production
+./scripts/wr deploy --env production
 
 # This will:
 # ✓ Compile worker/src/index.mjs (with dual routes)
@@ -34,7 +34,7 @@ wrangler deploy --env production
 # ============================================================================
 # Optional: Check that summary column exists after deploy
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute EVENTS_DB --env production --remote "PRAGMA table_info('podcast_uploads');"
+./scripts/wr d1 execute EVENTS_DB --env production --remote "PRAGMA table_info('podcast_uploads');"
 
 # Expected: Column list includes { "name": "summary", "type": "TEXT" ... }
 
@@ -103,16 +103,16 @@ curl -i http://127.0.0.1:8787/api/_routes
 # ============================================================================
 
 # If primary path still returns 404:
-#   a) Check Worker deployment: wrangler deployments list --env production
-#   b) Force redeploy: wrangler deploy --env production --force
+#   a) Check Worker deployment: ./scripts/wr deployments list --env production
+#   b) Force redeploy: ./scripts/wr deploy --env production --force
 #   c) Check Pages routing: may need cache clear or Pages rebuild
 #   d) Check alternate path works: curl /podcast/summary
 #   e) Check debug endpoint: curl localhost:8787/api/_routes
 
 # If all paths fail:
-#   a) Verify Worker is receiving requests: wrangler tail --env production
+#   a) Verify Worker is receiving requests: ./scripts/wr tail --env production
 #   b) Check EVENTS_DB binding: migration logs in wrangler output
-#   c) Rollback: git revert HEAD~1, git push origin main, wrangler deploy --env production
+#   c) Rollback: git revert HEAD~1, git push origin main, ./scripts/wr deploy --env production
 
 # ============================================================================
 # NOTES
@@ -120,6 +120,6 @@ curl -i http://127.0.0.1:8787/api/_routes
 # - Pages deployment (Hugo) is SEPARATE - does NOT deploy the Worker
 # - Worker must be deployed via wrangler from worker/ directory
 # - D1 migrations auto-apply on Worker deploy
-# - Diagnostic logs will appear in Worker Tail (wrangler tail)
+# - Diagnostic logs will appear in Worker Tail (./scripts/wr tail)
 # - Debug endpoint (/api/_routes) only works on localhost (dev-only guard)
 # - JavaScript fallback retry is transparent to user - modal shows result either way

@@ -15,19 +15,19 @@
 **Option A: Reset locally only** (for development/testing)
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
 ```
 
 **Option B: Reset preview environment**
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env preview --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env preview --remote
 ```
 
 **Option C: Reset production environment** (use with caution!)
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
 ```
 
 ### Execution Results
@@ -37,7 +37,7 @@ wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --e
 
 ### Verification Query (after reset)
 ```bash
-wrangler d1 execute WY_DB --command "
+./scripts/wr d1 execute WY_DB --command "
 SELECT COUNT(*) as openstates_bills FROM civic_items WHERE source='open_states';
 SELECT COUNT(*) as orphaned_verifications FROM civic_item_verification 
 WHERE civic_item_id NOT IN (SELECT id FROM civic_items);
@@ -78,7 +78,7 @@ done
 
 ### Verification Query (after sync)
 ```bash
-wrangler d1 execute WY_DB --command "
+./scripts/wr d1 execute WY_DB --command "
 SELECT 
   COUNT(*) as total_bills,
   legislative_session,
@@ -170,7 +170,7 @@ To verify all bills in the database, use this bash loop pattern:
 
 ```bash
 # Query bill IDs and loop through them
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT id FROM civic_items WHERE source='lso' ORDER BY id;" | \
   tail -n +2 | \
   while read bill_id; do
@@ -217,7 +217,7 @@ Status FLAGGED (structural issues): 0-1 (inspect and fix if any)
 
 **Inspection Query (if any bills flagged):**
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      ci.bill_number,
      civ.structural_ok,
@@ -348,7 +348,7 @@ Added to worker/package.json:
 
 **If bills don't appear after sync:**
 ```bash
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
 ```
 
 **If verification doesn't complete:**
@@ -361,7 +361,7 @@ Wait 1 minute and retry.
 
 **If AI summaries are missing:**
 ```bash
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE ai_summary IS NOT NULL;" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE ai_summary IS NOT NULL;" --local
 ```
 
 Call the summary endpoint manually for specific bills if needed.
@@ -372,13 +372,13 @@ Call the summary endpoint manually for specific bills if needed.
 
 ```bash
 # 1. Reset local DB
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
 
 # Verify reset
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) as bill_count FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) as bill_count FROM civic_items WHERE source='open_states';" --local
 
 # 2. Start dev server (in background or separate terminal)
-npx wrangler dev --local &
+./scripts/wr dev --local &
 
 # Wait a few seconds for server to start
 
@@ -395,7 +395,7 @@ npm run civic:refresh-summaries
 npm run civic:verify-bills
 
 # 7. Verify with query
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
 
 # 8. Open browser and test UI
 # Navigate to /ballot/pending-bills and verify all badges and data appear correctly
@@ -481,7 +481,7 @@ Status FLAGGED (structural issues): 0-1 bill (if any, inspect the structural_rea
 Bills with `structural_ok = 0` require inspection. Use this query to review them:
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      ci.bill_number,
      civ.structural_ok,
@@ -619,7 +619,7 @@ LIMIT 1;
 
 # 3. Run reset in production (if needed)
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
 
 # 4. Run batch verification in production
 npm run civic:verify-bills

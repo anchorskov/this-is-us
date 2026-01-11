@@ -35,7 +35,7 @@ def load_csv_and_insert():
 VALUES ({voter_id}, "{name}", "{chamber}", {district}, "{city}", "{county}", "{party}", "{affiliations}", "{campaign_website}", "{official_profile_url}", "{phone}", "{email}", "{updated}");'''
                 
                 # Execute insert
-                cmd = ['wrangler', 'd1', 'execute', 'WY_DB', '--local', '--command', insert_sql]
+                cmd = ['./scripts/wr', 'd1', 'execute', 'WY_DB', '--local', '--command', insert_sql]
                 result = subprocess.run(cmd, capture_output=True, text=True, cwd='/home/anchor/projects/this-is-us/worker')
                 
                 if result.returncode != 0:

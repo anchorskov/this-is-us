@@ -109,14 +109,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_civic_item_verification_unique
 **Command executed:**
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --local
+./scripts/wr d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --local
 ```
 
 **Result:** ✅ 4 commands executed successfully
 
 **Verification:**
 ```bash
-wrangler d1 execute WY_DB --command \
+./scripts/wr d1 execute WY_DB --command \
   "SELECT name, sql FROM sqlite_master WHERE type='table' AND name='civic_item_verification';" --local
 ```
 
@@ -200,7 +200,7 @@ curl -s "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=ocd-bill/3bf039
 
 **Query:**
 ```bash
-wrangler d1 execute WY_DB --command \
+./scripts/wr d1 execute WY_DB --command \
   "SELECT civic_item_id, check_type, status, confidence, created_at FROM civic_item_verification WHERE civic_item_id = 'ocd-bill/3bf03922-22fb-406e-a83b-54f93849e03f';" --local
 ```
 
@@ -380,11 +380,11 @@ Follow the step-by-step checklist in `VERIFICATION_MANUAL_TEST.md`:
 ```bash
 # Start dev server
 cd /home/anchor/projects/this-is-us/worker
-wrangler dev --local
+./scripts/wr dev --local
 
 # In another terminal, run each step from the checklist
 # Step 1: Verify schema
-wrangler d1 execute WY_DB --command "SELECT name FROM sqlite_master WHERE type='table' AND name='civic_item_verification';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT name FROM sqlite_master WHERE type='table' AND name='civic_item_verification';" --local
 
 # Step 2: Seed test data
 # (see VERIFICATION_MANUAL_TEST.md for full commands)

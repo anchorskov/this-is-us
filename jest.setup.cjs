@@ -81,11 +81,15 @@ if (!global.L) {
   const spy = () => jest.fn();
 
   global.L = {
-    map: jest.fn(() => ({
-      setView: spy(),
-      on:      spy().mockReturnThis(),
-      addLayer: spy(),
-    })),
+    map: jest.fn(() => {
+      const m = {
+        setView: spy(),
+        on:      spy().mockReturnThis(),
+        addLayer: spy(),
+      };
+      m.setView.mockReturnValue(m); // allow chaining
+      return m;
+    }),
 
     marker: jest.fn(() => ({
       addTo: spy(),
@@ -100,7 +104,11 @@ if (!global.L) {
       return grp;
     }),
 
-    tileLayer: jest.fn(() => ({ addTo: spy() })),
+    tileLayer: jest.fn(() => {
+      const t = { addTo: spy() };
+      t.addTo.mockReturnValue(t);
+      return t;
+    }),
   };
 }
 

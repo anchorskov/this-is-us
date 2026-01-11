@@ -19,10 +19,10 @@ Migration file ready:
 
 Apply migration:
   cd /home/anchor/projects/this-is-us/worker
-  npx wrangler d1 migrations apply WY_DB --local
+  ./scripts/wr d1 migrations apply WY_DB --local
 
 Verify it worked:
-  npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+  ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 Then follow IMPLEMENTATION_SUMMARY.md phases 2-5.
 

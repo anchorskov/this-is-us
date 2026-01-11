@@ -1,0 +1,339 @@
+================================================================================
+                     DATABASE INVENTORY REPORT
+                    WY_DB & EVENTS_DB (Local)
+                          December 18, 2025
+================================================================================
+
+CONFIGURATION
+  Persist Location: ../scripts/wr-persist
+  Date Generated: 2025-12-18
+  Report Location: worker/data/reviews/db_inventory_report.txt
+
+================================================================================
+SECTION 1: MIGRATIONS STATUS
+================================================================================
+
+WY_DB MIGRATIONS:
+  Status: ✅ All migrations applied (No pending migrations)
+  Applied Count: 30 migrations
+
+EVENTS_DB MIGRATIONS:
+  Status: ✅ All migrations applied (No pending migrations)
+  Applied Count: 28 migrations
+
+================================================================================
+SECTION 2: TABLE INVENTORY
+================================================================================
+
+WY_DB TABLES (25 total):
+  1. _cf_METADATA
+  2. bill_sponsors
+  3. civic_item_ai_tags
+  4. civic_item_sources
+  5. civic_item_verification
+  6. civic_items
+  7. d1_migrations
+  8. ingestion_metadata
+  9. ingestion_run_items
+ 10. ingestion_runs
+ 11. sqlite_sequence
+ 12. streets_index
+ 13. streets_index_old
+ 14. tmp_voter_street
+ 15. user_ideas
+ 16. v_best_phone_old
+ 17. verified_users
+ 18. voter_phones
+ 19. voters
+ 20. voters_addr_norm
+ 21. voters_norm
+ 22. voters_raw
+ 23. votes
+ 24. wy_city_county
+ 25. wy_legislators
+
+EVENTS_DB TABLES (17 total):
+  1. _cf_METADATA
+  2. bill_topics
+  3. d1_migrations
+  4. events
+  5. hot_topic_civic_items
+  6. hot_topics
+  7. podcast_uploads
+  8. sqlite_sequence
+  9. topic_index
+ 10. topic_requests
+ 11. topics
+ 12. townhall_posts
+ 13. townhall_replies
+ 14. user_preferences
+ 15. user_topic_prefs
+ 16. voters_addr_norm
+ 17. wy_city_county
+
+================================================================================
+SECTION 3: SCHEMA DETAILS FOR KEY TABLES
+================================================================================
+
+CORE BILL & CIVIC ITEM TABLES
+─────────────────────────────
+
+WY_DB: civic_items (PRIMARY KEY: id)
+  - id: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+  - bill_number: TEXT
+  - bill_id: TEXT
+  - legislative_session: TEXT
+  - title: TEXT
+  - description: TEXT
+  - lso_url: TEXT
+  - ai_summary: TEXT
+  - ai_key_points: TEXT
+  - category: TEXT
+  - status: TEXT
+  - confidence: REAL
+  - source: TEXT
+  - generated_at: DATETIME
+  - is_active: INTEGER
+  - inactive_at: DATETIME
+  - ai_last_update: DATETIME
+  - text_url: TEXT
+  - bill_type: TEXT
+  - bill_link: TEXT
+  - effective_date: TEXT
+  - enactment_clause: TEXT
+  - referral_committee: TEXT
+  - companion_bill: TEXT
+  - companion_status: TEXT
+  - fiscal_note_link: TEXT
+  - analysis_link: TEXT
+  - primary_sponsor_id: TEXT
+  - api_last_modified: DATETIME
+  - api_fetch_timestamp: DATETIME
+  - summary_source: TEXT
+  - summary_error: TEXT
+  - summary_is_authoritative: INTEGER
+
+WY_DB: civic_item_sources (PRIMARY KEY: civic_item_id, source_type)
+  - civic_item_id: TEXT
+  - source_type: TEXT
+  - source_url: TEXT
+  - fetched_at: DATETIME
+  - metadata_json: TEXT
+
+WY_DB: civic_item_ai_tags (PRIMARY KEY: civic_item_id, tag)
+  - civic_item_id: TEXT
+  - tag: TEXT
+  - source: TEXT
+  - confidence: REAL
+  - created_at: DATETIME
+
+WY_DB: civic_item_verification (PRIMARY KEY: civic_item_id, verification_type)
+  - civic_item_id: TEXT
+  - verification_type: TEXT
+  - verified: INTEGER
+  - verified_at: DATETIME
+  - verified_by: TEXT
+  - verification_notes: TEXT
+
+WY_DB: bill_sponsors (PRIMARY KEY: bill_id, sponsor_id)
+  - bill_id: TEXT
+  - sponsor_id: TEXT
+  - is_primary: INTEGER
+  - sponsored_at: DATETIME
+
+HOT TOPICS & CONTENT ANALYSIS TABLES
+────────────────────────────────────
+
+EVENTS_DB: topics (PRIMARY KEY: topic_key)
+  - topic_key: TEXT
+  - label_short: TEXT
+  - label_full: TEXT
+  - one_sentence: TEXT
+  - synonyms_json: TEXT
+  - parent_key: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: bill_topics (PRIMARY KEY: bill_id, topic_key)
+  - bill_id: TEXT
+  - topic_key: TEXT
+  - confidence: REAL
+  - created_at: DATETIME
+
+EVENTS_DB: hot_topics (PRIMARY KEY: id)
+  - id: TEXT
+  - slug: TEXT
+  - title: TEXT
+  - subtitle: TEXT
+  - match_criteria_json: TEXT
+  - is_active: INTEGER
+  - created_at: DATETIME
+  - updated_at: DATETIME
+  - source: TEXT
+  - version: INTEGER
+  - link_metadata: TEXT
+
+EVENTS_DB: hot_topic_civic_items (PRIMARY KEY: civic_item_id, topic_id)
+  - civic_item_id: TEXT
+  - topic_id: TEXT
+  - match_criteria: TEXT
+  - match_metadata_json: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: topic_index (PRIMARY KEY: topic_id)
+  - topic_id: TEXT
+  - category: TEXT
+  - index_type: TEXT
+  - value: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+
+EVENTS_DB: topic_requests (PRIMARY KEY: request_id)
+  - request_id: TEXT
+  - user_id: TEXT
+  - topic_request: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+  - resolved_at: DATETIME
+
+COMMUNITY & EVENT TABLES
+────────────────────────
+
+EVENTS_DB: townhall_posts (PRIMARY KEY: post_id)
+  - post_id: TEXT
+  - user_id: TEXT
+  - civic_item_id: TEXT
+  - title: TEXT
+  - content: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: townhall_replies (PRIMARY KEY: reply_id)
+  - reply_id: TEXT
+  - post_id: TEXT
+  - user_id: TEXT
+  - content: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: events (PRIMARY KEY: event_id)
+  - event_id: TEXT
+  - user_id: TEXT
+  - civic_item_id: TEXT
+  - event_type: TEXT
+  - event_data_json: TEXT
+  - created_at: DATETIME
+
+MEDIA & PREFERENCES
+───────────────────
+
+EVENTS_DB: podcast_uploads (PRIMARY KEY: upload_id)
+  - upload_id: TEXT
+  - user_id: TEXT
+  - civic_item_id: TEXT
+  - file_url: TEXT
+  - status: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: user_preferences (PRIMARY KEY: preference_id)
+  - preference_id: TEXT
+  - user_id: TEXT
+  - preference_type: TEXT
+  - preference_value: TEXT
+  - created_at: DATETIME
+  - updated_at: DATETIME
+
+EVENTS_DB: user_topic_prefs (PRIMARY KEY: pref_id)
+  - pref_id: TEXT
+  - user_id: TEXT
+  - topic_id: TEXT
+  - preference_type: TEXT
+  - created_at: DATETIME
+
+================================================================================
+SECTION 4: TABLE LOCATION SUMMARY
+================================================================================
+
+TABLE                           | WY_DB | EVENTS_DB | PURPOSE
+─────────────────────────────────────────────────────────────────────────
+civic_items                     |   ✓   |           | Core bill data
+civic_item_sources              |   ✓   |           | Bill source URLs
+civic_item_ai_tags              |   ✓   |           | AI-generated tags
+civic_item_verification         |   ✓   |           | Data verification
+bill_sponsors                   |   ✓   |           | Bill sponsor info
+topics                          |       |    ✓      | Topic definitions
+bill_topics                     |       |    ✓      | Bill-topic mapping
+hot_topics                      |       |    ✓      | Hot topic definitions
+hot_topic_civic_items           |       |    ✓      | Hot topic-bill links
+topic_index                     |       |    ✓      | Topic indexing
+topic_requests                  |       |    ✓      | User topic requests
+townhall_posts                  |       |    ✓      | Community posts
+townhall_replies                |       |    ✓      | Community replies
+events                          |       |    ✓      | Event tracking
+podcast_uploads                 |       |    ✓      | Media uploads
+user_preferences                |       |    ✓      | User settings
+user_topic_prefs                |       |    ✓      | Topic preferences
+voters                          |   ✓   |           | Voter registry
+voters_raw                      |   ✓   |           | Raw voter data
+voters_norm                     |   ✓   |           | Normalized voters
+voters_addr_norm                |   ✓   |    ✓      | Shared: Address data
+wy_city_county                  |   ✓   |    ✓      | Shared: Geography
+wy_legislators                  |   ✓   |           | Legislator info
+verified_users                  |   ✓   |           | Verified user list
+voter_phones                    |   ✓   |           | Phone registry
+ingestion_runs                  |   ✓   |           | Ingestion tracking
+ingestion_run_items             |   ✓   |           | Ingestion items
+ingestion_metadata              |   ✓   |           | Ingestion metadata
+streets_index                   |   ✓   |           | Address index
+user_ideas                      |   ✓   |           | User ideas
+d1_migrations                   |   ✓   |    ✓      | Schema versions
+
+================================================================================
+SECTION 5: DATABASE STATISTICS
+================================================================================
+
+WY_DB Statistics:
+  Total Tables: 25
+  Migration Tables: 30 applied
+  Core Business Tables: 5 (civic_items, civic_item_sources, civic_item_ai_tags, etc.)
+  Voter/Address Tables: 9
+  System Tables: 4 (_cf_METADATA, d1_migrations, sqlite_sequence, etc.)
+
+EVENTS_DB Statistics:
+  Total Tables: 17
+  Migration Tables: 28 applied
+  Topic Management Tables: 6 (topics, bill_topics, hot_topics, hot_topic_civic_items, etc.)
+  Community Tables: 3 (townhall_posts, townhall_replies, events)
+  Shared Tables: 2 (voters_addr_norm, wy_city_county)
+  System Tables: 4 (_cf_METADATA, d1_migrations, sqlite_sequence, etc.)
+
+================================================================================
+SECTION 6: DATA INTEGRATION POINTS
+================================================================================
+
+Primary Integration: civic_item_id (WY_DB) ↔ bill_id (EVENTS_DB)
+  - Composite ID Format: YEAR_BILLNUMBER (e.g., "2026_HB0001")
+  - civic_items.bill_id references bill_topics.bill_id
+  - civic_items.id references hot_topic_civic_items.civic_item_id
+  - civic_items.id references townhall_posts.civic_item_id
+
+Secondary Integration: Geography
+  - Both databases share: voters_addr_norm, wy_city_county
+  - Used for voter address normalization and district mapping
+
+Cross-Reference Patterns:
+  - bill_topics.topic_key → topics.topic_key (EVENTS_DB)
+  - hot_topic_civic_items.topic_id → hot_topics.id (EVENTS_DB)
+  - townhall_posts.civic_item_id → civic_items.id (WY_DB source)
+
+================================================================================
+REPORT GENERATED: 2025-12-18 22:55 UTC
+LOCATION: /home/anchor/projects/this-is-us/worker/data/reviews/db_inventory_report.txt
+================================================================================

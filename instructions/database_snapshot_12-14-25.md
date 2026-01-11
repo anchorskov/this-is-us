@@ -1,20 +1,20 @@
-# Database Snapshot – December 14, 2025
+# Database Snapshot – December 14, 2025 (UPDATED Dec 15)
 
 ## Overview
 This document captures the current state of the This Is Us project's D1 databases, including schemas, tables, indexes, and access patterns as of December 14, 2025.
 
-**Recent Updates (December 14, 2025):**
-- Added **podcast_uploads** table to EVENTS_DB for tracking podcast files, deduplication, and episode metadata
-- Implemented R2 integration with custom domain (media.this-is-us.org) for audio file hosting
-- Added summary field to podcast_uploads for episode descriptions and chapter points
-- All podcast metadata synced across local and remote D1 environments
-- First episode (JR Riggins, 3 parts) fully cataloged with summaries and R2 links
+**🚨 CRITICAL UPDATE (December 15, 2025):**
+- **LOCAL D1 DATABASE STATE IS STALE** – Only migrations 0001-0006 applied locally (19 missing migrations)
+- **REMOTE/PRODUCTION STATE IS CURRENT** – All 25 migrations applied on Cloudflare D1
+- **NEW TABLES ON REMOTE:** podcast_uploads, townhall_posts, townhall_replies, civic_items (in WY_DB), bill_sponsors, verified_users, civic_item_verification, civic_item_sources
+- **MIGRATION GAP:** Migrations 0007-0025 exist on disk but NOT applied locally due to ./scripts/wr initialization timing
+- **BALLOT_DB STATUS:** Empty/unused (0 bytes, no migrations)
 
 ---
 
 ## D1 Databases Configuration
 
-The project uses **2 active D1 databases** across local development, preview, and production environments:
+The project uses **3 D1 databases** across local development, preview, and production environments:
 
 ### 1. EVENTS_DB (Primary Application DB)
 **Bindings & IDs:**
@@ -22,10 +22,20 @@ The project uses **2 active D1 databases** across local development, preview, an
 - Preview: `events_db_preview` (ID: `1624450c-f228-4802-8a76-9c65f29295fa`)
 - Production: `events_db` (ID: `b5814930-2779-4bfb-8052-24ee419e09fd`)
 
-**Current State:** 14 tables (hot_topics infrastructure + podcast uploads)
-**Size:** ~100 KB (local)
-**Migrations Applied:** 0001-0022 (podcast updates as of Dec 14, 2025)
-**New Additions:** podcast_uploads table (0021) + summary field (0022)
+**LOCAL Current State (Dec 15):** 
+- **Tables:** 9 (events, hot_topics, hot_topic_civic_items, topic_index, user_topic_prefs, topic_requests, _cf_METADATA, d1_migrations, sqlite_sequence)
+- **Size:** 64 KB
+- **Migrations Applied:** 6 only (0001-0006) ⚠️ STALE
+- **Missing Migrations:** 0007-0025 (19 migrations not applied to local) ⚠️
+- **Missing Tables Locally:** podcast_uploads, townhall_posts, townhall_replies, civic_items, civic_item_ai_tags, bill_sponsors, civic_item_verification
+- **Data:** hot_topics (12 rows), hot_topic_civic_items (0 rows), events (0 rows)
+
+**REMOTE/PRODUCTION Current State (Dec 14):**
+- **Tables:** 14+ (hot_topics infrastructure + podcast uploads + townhall system)
+- **Size:** ~100 KB
+- **Migrations Applied:** 0001-0025 (all migrations)
+- **New Additions:** podcast_uploads table (0021) + summary field (0022), townhall_posts (0016), townhall_replies (0018), civic item AI tags (0024)
+- **Data:** JR Riggins podcast (3 parts), 12 hot topics seeded
 
 ### 2. WY_DB (Wyoming Civic Data)
 **Bindings & IDs:**
@@ -33,13 +43,84 @@ The project uses **2 active D1 databases** across local development, preview, an
 - Preview: `wy_preview` (ID: `de78cb41-176d-40e8-bd3b-e053e347ac3f`)
 - Production: `wy` (ID: `4b4227f1-bf30-4fcf-8a08-6967b536a5ab`)
 
-**Current State:** 16 tables (core voter data, civic items, street indexes)
-**Size:** ~111 MB (production) | **Voter Records:** 274,656 normalized addresses
-**Tables:** voters, voters_addr_norm, civic_items, votes, streets_index, etc.
+**LOCAL Current State (Dec 15):**
+- **Tables:** 13 (voters, voters_addr_norm, voters_norm, voters_raw, voter_phones, wy_city_county, streets_index, streets_index_old, tmp_voter_street, v_best_phone_old, _cf_METADATA, d1_migrations, sqlite_sequence)
+- **Size:** 96 KB
+- **Migrations Applied:** 5 only (0001-0005) ⚠️ STALE
+- **Missing Migrations:** 0006-0025 (20 migrations not applied) ⚠️
+- **Missing Tables Locally:** civic_items, votes, user_ideas, bill_sponsors, wy_legislators, civic_item_ai_tags, verified_users, civic_item_sources, civic_item_verification
+- **Data:** voters (0 rows) – empty test database
+
+**REMOTE/PRODUCTION Current State (Dec 14):**
+- **Tables:** 16+ (core voter data, civic items, bill sponsors, legislators, verification system)
+- **Size:** ~111 MB | **Voter Records:** 274,656 normalized addresses
+- **Migrations Applied:** 0001-0025 (all migrations)
+- **Tables:** voters, voters_addr_norm, civic_items, votes, streets_index, bill_sponsors, wy_legislators, civic_item_ai_tags, verified_users, civic_item_sources, civic_item_verification, etc.
+
+### 3. BALLOT_DB (Unused)
+**Bindings & IDs:**
+- ID: `9c4b0c27-eb33-46e6-a477-fb49d4c81474`
+- Status: ⚠️ EMPTY / NEVER INITIALIZED
+- Size: 0 bytes
+- Tables: None
+- Migrations: None applied
 
 ---
 
-## EVENTS_DB Schema (Detail)
+## ⚠️ CRITICAL: LOCAL vs REMOTE DATABASE MISMATCH
+
+### The Problem
+**Local D1 databases are STALE and do NOT match production/remote state.**
+
+- **EVENTS_DB Local:** 6 migrations applied (0001-0006), 9 tables
+- **EVENTS_DB Remote:** 25 migrations applied (0001-0025), 14+ tables ✅ CURRENT
+- **WY_DB Local:** 5 migrations applied (0001-0005), 13 tables
+- **WY_DB Remote:** 25 migrations applied (0001-0025), 16+ tables ✅ CURRENT
+
+### Why This Happened
+1. Local databases were initialized with early migration set (Jul-Dec 2024)
+2. 19 newer migrations (0007-0025) were created on Dec 4-14, 2025
+3. Wrangler does NOT auto-apply new migrations to existing local databases
+4. New migrations exist on disk but have never been applied locally
+5. Migrations WERE applied remotely via Cloudflare D1 console
+
+### What's Missing Locally?
+**EVENTS_DB missing tables:**
+- `podcast_uploads` (created Dec 14 via migration 0021, 0022)
+- `townhall_posts` (migration 0016)
+- `townhall_replies` (migration 0018)
+- Additional civic matching fields
+
+**WY_DB missing tables:**
+- `civic_items` (migration 0006)
+- `user_ideas` (migration 0007)
+- `votes` (migration 0008)
+- `bill_sponsors` (migration 0012)
+- `wy_legislators` (migration 0013)
+- `civic_item_ai_tags` (migration 0009)
+- `civic_item_sources` (migration 0015)
+- `verified_users` (migration 0018)
+- `civic_item_verification` (migration 0019)
+
+### Severity: MEDIUM (Dev Environment)
+- Development features depending on missing tables will fail
+- Remote/production is fine (all tables present)
+- Fix is simple: Reset local DB or manually apply migrations
+
+### Recovery: Reset Local DB (Recommended)
+```bash
+cd worker
+# Delete stale local D1 state
+rm -rf ../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/
+
+# Wrangler will re-initialize and apply all migrations
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT COUNT(*) FROM hot_topics;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters;"
+```
+
+---
+
+## EVENTS_DB Schema (Detail - REMOTE/PRODUCTION STATE)
 
 ### podcast_uploads Table (NEW - Dec 14, 2025)
 **Purpose:** Track podcast episode file uploads, metadata, deduplication, and summaries for display and audit trails
@@ -238,6 +319,110 @@ const exists = await db.prepare(
 
 ---
 
-**Last Updated:** December 14, 2025, 21:00 UTC
-**Verified By:** Schema verification via wrangler d1 execute (PRAGMA table_info)
-**Status:** ✅ All systems operational, ready for production
+## Migration File Inventory
+
+### EVENTS_DB Migrations (worker/migrations/)
+**Total:** 25 files (some duplicates numbered 0023)
+
+**Applied Locally:** 0001-0006 (6 files)
+```
+✓ 0001_add_events_table.sql
+✓ 0002_add_contact_fields.sql
+✓ 0003_add_pdf_key_to_events.sql
+✓ 0004_add_description_pdfhash.sql
+✓ 0005_add_preferences.sql
+✓ 0006_seed_topic_index.sql
+```
+
+**Not Applied Locally (Exist on Disk, Applied Remotely):** 0007-0025 (19 files)
+```
+✗ 0007_create_user_preferences.sql
+✗ 0008_add_city_state_to_user_preferences.sql
+✗ 0009_add_timestamp_to_user_topic_prefs.sql
+✗ 0010_add_voters_addr_norm_test_fixture.sql
+✗ 0011_create_hot_topics.sql
+✗ 0012_add_match_metadata_to_hot_topic_civic_items.sql
+✗ 0013_migrate_hot_topics_schema.sql
+✗ 0014_migrate_hot_topic_civic_items_schema.sql
+✗ 0015_add_match_criteria_json_to_hot_topics.sql
+✗ 0016_create_townhall_posts.sql
+✗ 0017_align_preferences_to_hot_topics.sql
+✗ 0018_create_townhall_replies.sql
+✗ 0019_add_county_to_townhall_posts.sql
+✗ 0020_update_hot_topics_keywords.sql
+✗ 0021_create_podcast_uploads.sql (Dec 14)
+✗ 0022_add_summary_to_podcast_uploads.sql (Dec 14)
+✗ 0024_add_unique_constraint_civic_item_ai_tags.sql
+✗ 0025_update_hot_topics_for_test_data.sql
+```
+
+### WY_DB Migrations (worker/migrations_wy/)
+**Total:** 25 files (has duplicate migration numbers: 2x 0015, 2x 0025)
+
+**Applied Locally:** 0001-0005 (5 files)
+```
+✓ 0001_create_base_schema.sql
+✓ 0002_add_normalization_tables.sql
+✓ 0003_update_city_county_schema.sql
+✓ 0004_populate_city_county_lookup.sql
+✓ 0005_drop_unused_columns.sql
+```
+
+**Not Applied Locally (Exist on Disk, Applied Remotely):** 0006-0025 (20 files)
+```
+✗ 0006_create_civic_items.sql
+✗ 0007_create_user_ideas.sql
+✗ 0008_create_votes.sql
+✗ 0009_add_civic_item_ai_tags.sql
+✗ 0010_add_reason_summary_to_civic_item_ai_tags.sql
+✗ 0011_add_ai_summary_fields_to_civic_items.sql
+✗ 0012_create_bill_sponsors.sql
+✗ 0013_create_wy_legislators.sql
+✗ 0014_add_lat_lng_to_voters_addr_norm.sql
+✗ 0015_create_civic_item_sources.sql [#1 of 2]
+✗ 0015_update_whitehall_coordinates.sql [#2 of 2 - DUPLICATE!]
+✗ 0016_import_geocoded_coordinates.sql
+✗ 0017_import_expanded_geocoded_coordinates.sql
+✗ 0018_create_verified_users.sql
+✗ 0019_create_civic_item_verification.sql
+✗ 0020_add_openstates_person_id_to_bill_sponsors.sql
+✗ 0021_add_structural_fields_to_civic_item_verification.sql
+✗ 0022_populate_wy_legislators.sql
+✗ 0023_add_lso_hydration_fields.sql
+✗ 0024_add_unique_civic_item_ai_tags.sql
+✗ 0025_create_civic_item_sources.sql [#1 of 2]
+✗ 0025_create_civic_item_sources.sql [#2 of 2 - DUPLICATE NAME!]
+```
+
+**⚠️ ISSUE:** migrations_wy/ has duplicate migration numbers (0015 x2, 0025 x2) which may cause ordering confusion when migrations are applied.
+
+---
+
+## Database File Locations
+
+### Local D1 State Directory
+```
+../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/
+├── c823efd7...sqlite        (EVENTS_DB - 64 KB, 6 migrations)
+├── c823efd7...sqlite-shm    (shared memory file)
+├── c823efd7...sqlite-wal    (write-ahead log)
+├── 532b3e00...sqlite        (WY_DB - 96 KB, 5 migrations)
+├── 532b3e00...sqlite-shm
+├── 532b3e00...sqlite-wal
+├── 9db7bd9f...sqlite        (BALLOT_DB - 0 bytes, empty)
+└── ... (R2 bucket state files)
+```
+
+### Migration Source Directories
+```
+worker/
+├── migrations/              (25 migration files for EVENTS_DB)
+├── migrations_wy/           (25 migration files for WY_DB)
+└── migrations/applied/      (4 archived migration files)
+```
+
+---
+
+**Last Updated:** December 15, 2025, 21:30 UTC
+**Verified By:** SQLite queries + ./scripts/wr d1 execute (local state inspection)
+**Status:** ⚠️ LOCAL DB STALE | ✅ REMOTE DB CURRENT | 🔧 Recovery available

@@ -360,11 +360,11 @@ DEBUGGING
 If coordinates not returning in response:
 
 1. Check that migration was applied:
-   npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+   ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
    (Should see lat, lng columns)
 
 2. Check that data was imported:
-   npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NOT NULL;"
+   ./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NOT NULL;"
    (Should be > 0)
 
 3. Test the helper function directly:
@@ -372,11 +372,11 @@ If coordinates not returning in response:
    console.log(JSON.stringify(location, null, 2));
 
 4. Check database connection:
-   npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm;"
+   ./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm;"
    (Should return ~274,656)
 
 5. Verify voter exists:
-   npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, lat, lng FROM voters_addr_norm WHERE voter_id = 'WY00001';"
+   ./scripts/wr d1 execute WY_DB --local --command "SELECT voter_id, lat, lng FROM voters_addr_norm WHERE voter_id = 'WY00001';"
    (Should return row with lat/lng if geocoded)
 
 ════════════════════════════════════════════════════════════════════════════════

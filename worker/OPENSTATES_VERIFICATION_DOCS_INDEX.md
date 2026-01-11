@@ -119,16 +119,16 @@
 ### Apply Migrations
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-npx wrangler d1 migrations apply WY_DB --local
+./scripts/wr d1 migrations apply WY_DB --local
 ```
 
 ### Reset and Sync Bills
 ```bash
 # Reset
-npx wrangler d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
+./scripts/wr d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
 
 # Start server (background)
-npx wrangler dev --local &
+./scripts/wr dev --local &
 
 # Sync
 curl "http://127.0.0.1:8787/api/dev/openstates/sync?session=2025"
@@ -147,7 +147,7 @@ curl "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=$BILL_ID"
 
 ### Check Verification Status
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT bill_number, status, structural_reason FROM civic_item_verification LIMIT 10;"
 ```
 

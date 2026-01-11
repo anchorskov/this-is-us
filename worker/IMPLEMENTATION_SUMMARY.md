@@ -64,16 +64,16 @@ PHASE 1: APPLY MIGRATION (Local D1)
 ───────────────────────────────────
 Command:
   cd /home/anchor/projects/this-is-us/worker
-  npx wrangler d1 migrations apply WY_DB --local
+  ./scripts/wr d1 migrations apply WY_DB --local
 
 Verify:
-  npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+  ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
   (Should show lat and lng columns)
 
 PHASE 2: EXPORT UNGEOCODED ROWS
 ────────────────────────────────
 Step 2a: Export to JSON
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" \
     --json > ../data/voters_addr_norm_to_geocode.json
 
@@ -121,7 +121,7 @@ Option B: Using D1 temp table (if D1 supports CSV import)
   UPDATE voters_addr_norm SET lat, lng FROM voters_geocoded_temp WHERE voter_id matches AND status='OK';
 
 Verify:
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT COUNT(*) as geocoded_count FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
   (Should see row count increase)
 
@@ -224,25 +224,25 @@ QUICK COMMANDS REFERENCE
 All commands assume: cd /home/anchor/projects/this-is-us/worker
 
 --- Apply migration ---
-npx wrangler d1 migrations apply WY_DB --local
+./scripts/wr d1 migrations apply WY_DB --local
 
 --- Check schema ---
-npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 --- Count rows needing geocoding ---
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
 
 --- Count rows already geocoded ---
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
 
 --- Export to JSON ---
-npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" --json > ../data/voters_addr_norm_to_geocode.json
+./scripts/wr d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" --json > ../data/voters_addr_norm_to_geocode.json
 
 --- Convert JSON to CSV (requires jq) ---
 jq -r '.[] | [.voter_id, .addr1, .city, .state, .zip] | @csv' ../data/voters_addr_norm_to_geocode.json > ../data/voters_addr_norm_to_geocode.csv
 
 --- View sample rows for QA ---
-npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city FROM voters_addr_norm WHERE lat IS NULL LIMIT 5;" --json | jq '.'
+./scripts/wr d1 execute WY_DB --local --command "SELECT voter_id, addr1, city FROM voters_addr_norm WHERE lat IS NULL LIMIT 5;" --json | jq '.'
 
 ════════════════════════════════════════════════════════════════════════════════
 IMPLEMENTATION ROADMAP

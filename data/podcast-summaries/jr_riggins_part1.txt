@@ -1,0 +1,44 @@
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-01.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 2718
+Lines: 256
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+Hello, this is Jim Skogard with This Is Us podcast. My guest today is J.R. Riggins from House District 59, State of Wyoming. How are you today, J.R.?
+I'm doing well, Jim. Thanks for the invitation and looking forward to how this all turns out.
+Hey, J.R., you know, me, I grew up in Grable Basin and I understand you grew up here in Casper?
+Actually, I'm a South Dakotan born, but I worked out here from the age of 15 over in Cody and until today.
+So I've been here as long as most people, except for 15 years, the age of 15 before that, I was mostly staying at home in South Dakota.
+Gotcha. J.R., you just started with the house in January 2025, is that correct?
+Yep. Elected here in the November election in the 24.
+In 24? Oh, so you were elected in the 24 election and you got sworn in in January.
+And what have been the challenges, do you think, so far?
+Was it a steep learning curve to figure out how to interact in the house?
+You know, I'm not completely, I'm not a novice to things like Robert's Rules from being involved in county politics and committee meetings.
+I was on the state committee for three years, but they use a different set of rules there.
+The biggest thing to get adjusted to is because there's 60-some people in there, so you don't trample over one another.
+Very specific ways to communicate on the floor.
+Lots of integration with other departments, the legislative service office, the membership, the whole process from getting a bill introduced to getting it passed.
+In a short time frame, in a hurry.
+I see.
+Did anything ever get done in a hurry, do you think?
+Well, we had a big goal of running, we had the five and dime plan.
+I think that was five bills passed in 10 days.
+
+[... Full transcript: 2718 words ...]
+
+KEY METRICS:
+- Total words: 2718
+- Total lines: 256
+- File size: 16K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+

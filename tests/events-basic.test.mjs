@@ -43,7 +43,7 @@ describe('Event-creation helpers (sanity checks)', () => {
     `;
 
     /* Fresh Leaflet instance mocks for each run */
-    mockMap    = { setView: jest.fn() };
+    mockMap    = { setView: jest.fn().mockReturnThis() };
     mockMarker = { addTo: jest.fn(), on: jest.fn().mockReturnThis() };
 
     global.L.map.mockReturnValue(mockMap);
@@ -84,10 +84,8 @@ describe('Event-creation helpers (sanity checks)', () => {
       expect.stringContaining('nominatim.openstreetmap.org/search?'),
       expect.any(Object)
     );
-    expect(global.L.marker).toHaveBeenCalledWith(
-      [expectedLat, expectedLon],
-      expect.any(Object)
-    );
+    expect(global.L.marker).toHaveBeenCalledTimes(1);
+    expect(global.L.marker.mock.calls[0][0]).toEqual([expectedLat, expectedLon]);
     expect(mockMap.setView).toHaveBeenCalledWith(
       [expectedLat, expectedLon],
       15

@@ -301,7 +301,7 @@ curl -s "https://v3.openstates.org/bills?jurisdiction=Wyoming&session=2025&per_p
 ## Important Notes
 
 ### API Key
-- Stored in `worker/wrangler.toml` → `OPENSTATES_API_KEY`
+- Stored in `worker/./scripts/wr.toml` → `OPENSTATES_API_KEY`
 - Must be included in X-API-KEY header
 - Rate limit: ~60 requests per minute (tested, works fine for batch ops)
 

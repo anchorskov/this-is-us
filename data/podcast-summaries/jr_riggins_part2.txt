@@ -1,0 +1,44 @@
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-02.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 2416
+Lines: 186
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+Well, we were talking about power, and might as well just keep talking about power.
+We got some data centers coming into the state of Wyoming, one being built in Cheyenne.
+I heard a proposal about one built between here and Casper and Glenrock, halfway between or something like that.
+It's going to be powered by natural gas.
+Tallgrass is a partner, the one in Cheyenne, right?
+They're providing the gas from their collection network.
+What can you tell me about those things?
+Full disclosure, I used to work for that company and retired here in July for Tallgrass Energy.
+Yeah, they're going to provide gas-powered turbines in Cheyenne,
+and I believe that's directly just for the purpose of the data centers there in that location.
+I don't know if it's just for the one.
+I'm just going to assume it's for one particular company.
+It had a pretty big, I don't know, in the gigawatt range.
+And, yeah, there is discussions going on here just to our east out of town between here and Glenrock about a proposal to put a data center.
+I think it might be a little bit different style.
+It's not like Google's planting something there.
+I think there's a developing trend where companies are putting the infrastructure together where they have the building and they have the power and they have a method for the cooling system, in a sense, for the actual processing.
+But then rent out the whole entity.
+All that, one of the big discussions in legislation has been the exemptions for sales tax or just elements of it, right?
+Not really for the construction.
+
+[... Full transcript: 2416 words ...]
+
+KEY METRICS:
+- Total words: 2416
+- Total lines: 186
+- File size: 16K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+

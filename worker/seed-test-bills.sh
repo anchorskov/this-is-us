@@ -1,15 +1,42 @@
 #!/bin/bash
 
+# worker/seed-test-bills.sh
 # Seed test Wyoming bills into WY_DB for testing bill summary analyzer
+#
+# ⚠️  GUARD: This script REQUIRES explicit opt-in via environment variable
+#    to prevent accidental test data seeding in production contexts.
+#
+# Usage:
+#    ALLOW_TEST_SEEDS=1 bash seed-test-bills.sh
+#
+# If run without ALLOW_TEST_SEEDS=1, will exit with error.
+
+if [[ "${ALLOW_TEST_SEEDS:-}" != "1" ]]; then
+  echo "❌ ERROR: Seeding test bills requires explicit approval."
+  echo ""
+  echo "This script seeds DEMO/TEST bills into your database."
+  echo "If you intend to test with REAL Wyoming Legislature data,"
+  echo "use the real-data-only test instead:"
+  echo ""
+  echo "  ./scripts/test-wyoleg-real-data-local.sh --reset"
+  echo ""
+  echo "To override and seed test bills anyway:"
+  echo ""
+  echo "  ALLOW_TEST_SEEDS=1 bash seed-test-bills.sh"
+  echo ""
+  exit 1
+fi
 
 cd "$(dirname "$0")"
 
-echo "🌱 Seeding test bills into WY_DB..."
+echo "�� Seeding test bills into WY_DB..."
+echo "⚠️  WARNING: This is DEMO data, not real Wyoming legislation."
+echo ""
 
 # Current timestamp
 NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-npx wrangler d1 execute WY_DB --local --command "
+./scripts/wr d1 execute WY_DB --local --command "
 INSERT INTO civic_items (
   id, kind, source, level, jurisdiction_key, bill_number, title, summary,
   status, legislative_session, chamber, created_at, updated_at, up_votes, down_votes
@@ -36,4 +63,6 @@ INSERT INTO civic_items (
    'introduced', '2025', 'upper', '$NOW', '$NOW', 0, 0);
 " 2>&1
 
-echo "✅ Seeding complete! Bills ready for scanning."
+echo ""
+echo "✅ Seeding complete! Test bills ready for scanning."
+echo "⚠️  Remember: This is DEMO data. For real data testing, use test-wyoleg-real-data-local.sh"

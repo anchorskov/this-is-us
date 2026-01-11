@@ -1,0 +1,33 @@
+-- Migration: Add UNIQUE constraint to civic_item_ai_tags
+-- 
+-- Purpose: Make the analyzer idempotent by preventing duplicate (item_id, topic_slug) pairs.
+-- This ensures INSERT OR REPLACE works correctly and prevents accidental duplicates.
+--
+-- Date: December 15, 2025
+-- Status: Ready for deployment
+
+-- Create temporary table with unique constraint
+CREATE TABLE civic_item_ai_tags_new (
+  id INTEGER PRIMARY KEY,
+  item_id TEXT NOT NULL,
+  topic_slug TEXT NOT NULL,
+  confidence REAL NOT NULL,
+  trigger_snippet TEXT,
+  reason_summary TEXT,
+  created_at TEXT NOT NULL DEFAULT datetime('now'),
+  UNIQUE(item_id, topic_slug)
+);
+
+-- Copy existing data (deduplicated by keeping most recent per item/topic)
+INSERT INTO civic_item_ai_tags_new 
+  (id, item_id, topic_slug, confidence, trigger_snippet, reason_summary, created_at)
+SELECT 
+  id, item_id, topic_slug, confidence, trigger_snippet, reason_summary, created_at
+FROM civic_item_ai_tags
+ORDER BY created_at DESC;
+
+-- Drop old table
+DROP TABLE civic_item_ai_tags;
+
+-- Rename new table to original name
+ALTER TABLE civic_item_ai_tags_new RENAME TO civic_item_ai_tags;

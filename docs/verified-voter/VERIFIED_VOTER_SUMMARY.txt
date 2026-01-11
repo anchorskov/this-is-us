@@ -1,0 +1,210 @@
+# Verified Voter Bridge Table - Implementation Summary
+
+**Project**: This Is Us (Wyoming Civic Engagement)  
+**Date**: December 9, 2025  
+**Status**: ✅ COMPLETE & READY FOR DEPLOYMENT
+
+---
+
+## What Was Built
+
+A **verified_users bridge table** in D1 that gates Town Hall posting and voting to verified county voters. Verification happens once, then lookups are fast D1 queries.
+
+## Files Created/Modified
+
+### ✅ 1. Migration File
+**Path**: `worker/migrations_wy/0018_create_verified_users.sql` (NEW)
+
+CREATE TABLE verified_users (
+  user_id TEXT PRIMARY KEY,              -- Firebase uid
+  voter_id TEXT NOT NULL UNIQUE,         -- links to voters_addr_norm.voter_id
+  county TEXT,                           -- cached for quick checks
+  house TEXT,                            -- cached House district
+  senate TEXT,                           -- cached Senate district
+  verified_at TEXT NOT NULL,             -- ISO timestamp
+  status TEXT NOT NULL DEFAULT 'verified',
+  created_at TEXT NOT NULL DEFAULT (datetime('now', 'utc')),
+  
+  FOREIGN KEY (voter_id) REFERENCES voters_addr_norm(voter_id) ON DELETE RESTRICT
+);
+
+-- Indexes for fast lookups
+CREATE INDEX idx_verified_users_voter_id ON verified_users(voter_id);
+CREATE INDEX idx_verified_users_status ON verified_users(status);
+CREATE INDEX idx_verified_users_user_status ON verified_users(user_id, status);
+
+**Apply with**:
+```bash
+cd /home/anchor/projects/this-is-us/worker
+./scripts/wr d1 execute WY_DB --file migrations_wy/0018_create_verified_users.sql
+```
+
+### ✅ 2. Helper Module
+**Path**: `worker/src/townhall/verifiedUserHelper.mjs` (NEW)
+
+Three exported functions:
+
+getVerifiedUser(env, userId) - Fast lookup
+const verified = await getVerifiedUser(env, firebaseUid);
+// Returns verified user object or null
+
+createVerifiedUser(env, userId, voterId, voterInfo)
+// Creates verified record after voter verification
+
+revokeVerifiedUser(env, userId)
+// Revokes verified status
+
+### ✅ 3. Updated Town Hall Routes
+
+worker/src/townhall/createThread.mjs (MODIFIED)
+- Added import of getVerifiedUser
+- Added verification check after requireAuth()
+
+worker/src/townhall/createPost.js (MODIFIED)
+- Added import of getVerifiedUser
+- Added verification check after requireAuth()
+
+worker/src/townhall/deletePost.js (UNCHANGED)
+- Already has ownership/admin authorization
+
+worker/src/townhall/listPosts.js (UNCHANGED)
+- Read-only, public endpoint
+
+### ✅ 4. Test File
+**Path**: `worker/test/townhall.verified.test.mjs` (NEW)
+
+Jest test suite covering verification logic
+
+### ✅ 5. Documentation
+**Path**: `VERIFIED_VOTER_IMPLEMENTATION.md` (NEW)
+
+Complete guide with:
+- Architecture diagrams
+- Database schema
+- API behavior
+- Testing examples
+- Integration points
+
+---
+
+## API Behavior
+
+### Before Implementation
+Any authenticated user → Can POST to Town Hall
+
+### After Implementation
+User authenticates (Firebase)
+    ↓
+Check WY_DB.verified_users for status='verified'
+    ├─ Found → Allow POST (200/201) ✓
+    └─ Not found → Reject 403 with "not_verified" ✗
+
+### Error Response (403)
+{
+  "error": "not_verified",
+  "message": "Verified county voter account required to create Town Hall threads."
+}
+
+---
+
+## How It Works
+
+### 1. Voter Verification (existing process)
+User verifies their voter registration against voters_addr_norm table.
+
+### 2. Create Verified Record
+After successful verification, insert into verified_users:
+
+const success = await createVerifiedUser(
+  env,
+  firebaseUid,
+  voterRecord.voter_id,
+  {
+    county: voterRecord.county,
+    house: voterRecord.house,
+    senate: voterRecord.senate
+  }
+);
+
+### 3. Check Status on POST
+Every POST to Town Hall calls getVerifiedUser():
+
+const verified = await getVerifiedUser(env, identity.uid);
+if (!verified) {
+  // Return 403
+}
+
+### 4. Fast Lookup
+D1 indexed query on (user_id, status) composite index = ~milliseconds.
+
+---
+
+## Deployment Steps
+
+### 1. Apply Migration
+cd /home/anchor/projects/this-is-us/worker
+./scripts/wr d1 execute WY_DB --file migrations_wy/0018_create_verified_users.sql
+
+### 2. Verify Table Created
+./scripts/wr d1 execute WY_DB --command "SELECT * FROM verified_users LIMIT 1;"
+
+### 3. Test Endpoints
+npm test worker/test/townhall.verified.test.mjs
+
+### 4. Deploy Worker
+npm run deploy
+
+### 5. Monitor Logs
+Watch for 'not_verified' errors in Worker logs.
+
+---
+
+## Non-Breaking Changes
+
+✅ Read operations remain public - No auth required for listPosts  
+✅ voters_addr_norm unchanged - Still the source of truth  
+✅ Town Hall storage in D1 - Not moved to Firestore  
+✅ User profiles in Firestore - Unchanged  
+✅ Delete operations - Still use ownership check  
+
+---
+
+## Files by Location
+
+/home/anchor/projects/this-is-us/
+├── worker/
+│   ├── migrations_wy/
+│   │   └── 0018_create_verified_users.sql          ✨ NEW
+│   ├── src/
+│   │   └── townhall/
+│   │       ├── verifiedUserHelper.mjs              ✨ NEW
+│   │       ├── createThread.mjs                    🔧 MODIFIED
+│   │       ├── createPost.js                       🔧 MODIFIED
+│   │       ├── deletePost.js                       (unchanged)
+│   │       └── listPosts.js                        (unchanged)
+│   └── test/
+│       └── townhall.verified.test.mjs              ✨ NEW
+├── VERIFIED_VOTER_IMPLEMENTATION.md                ✨ NEW (full docs)
+└── VERIFIED_VOTER_SUMMARY.txt                      ✨ NEW (this file)
+
+---
+
+## Integration Checklist
+
+- [x] Create verified_users table with indexes
+- [x] Create getVerifiedUser() helper function
+- [x] Create createVerifiedUser() helper function
+- [x] Create revokeVerifiedUser() helper function
+- [x] Add verification check to createThread.mjs
+- [x] Add verification check to createPost.js
+- [x] Confirm listPosts.js remains public
+- [x] Confirm deletePost.js uses ownership
+- [x] Write comprehensive tests
+- [x] Write full documentation
+- [ ] Deploy migration to WY_DB
+- [ ] Run tests against production
+- [ ] Monitor initial deployments
+
+---
+
+**Ready for deployment!**

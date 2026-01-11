@@ -9,13 +9,16 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKER_DIR="${ROOT_DIR}/worker"
 WRANGLER_PORT=8787
 
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$WORKER_DIR/.config}"
+mkdir -p "$XDG_CONFIG_HOME"
+
 cd "$WORKER_DIR"
 
 echo "🔧 Stopping any existing wrangler/workerd..."
 pkill -f "wrangler dev" >/dev/null 2>&1 || true
 pkill -f "workerd serve --binary" >/dev/null 2>&1 || true
 
-CMD=(wrangler dev --local --port "${WRANGLER_PORT}")
+CMD=(./scripts/wr dev --local --port "${WRANGLER_PORT}")
 if [[ -n "${LOCAL_UPSTREAM:-}" ]]; then
   CMD+=(--local-upstream "${LOCAL_UPSTREAM}")
   echo "🌐 Using upstream: ${LOCAL_UPSTREAM}"

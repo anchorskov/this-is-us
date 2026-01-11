@@ -213,9 +213,27 @@ function renderBills(bills) {
     .map((bill) => {
       const subjects =
         Array.isArray(bill.subject_tags) && bill.subject_tags.length
-          ? `<div class="tag-list">${bill.subject_tags
-              .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
-              .join("")}</div>`
+          ? (() => {
+              const cleanTags = bill.subject_tags
+                .filter(v => v !== null && v !== undefined && v !== "")
+                .map((t) => String(t).trim())
+                .filter(
+                  (t) =>
+                    t &&
+                    !["null", "undefined", "none", ""].includes(t.toLowerCase())
+                );
+              if (cleanTags.length !== bill.subject_tags.length) {
+                console.debug("Filtered placeholder subject tags", {
+                  before: bill.subject_tags,
+                  after: cleanTags,
+                });
+              }
+              return cleanTags.length
+                ? `<div class="tag-list">${cleanTags
+                    .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
+                    .join("")}</div>`
+                : "";
+            })()
           : "";
 
       const reviewed = isReviewed(bill);

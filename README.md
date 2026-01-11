@@ -34,6 +34,19 @@ Welcome to the development workspace for [this-is-us.org](https://this-is-us.org
 ├── worker/             # Cloudflare Workers code, D1, and migration scripts
 ```
 
+## Documentation conventions
+- Primary docs live in `docs/` by domain (bill-scanner, pending-bills, townhall, civic-watch, geocoding, platform). See `docs/README.md` for the structure.
+- New docs start from templates in `docs/templates/` and include the status header:  
+  ```
+  Status: Draft | Active | Archived
+  Updated: YYYY-MM-DD
+  Owner: name or team
+  Scope: domain/topic
+  ```
+- Keep filenames short (`<domain>_<type>.md`) and update the domain `INDEX.md` when adding or retiring docs.
+- Move superseded guides, logs, and one-off reports to `docs/archive/` with a date suffix; avoid adding new Markdown files to the repo root.
+- For AI or automated edits, follow `ai_contract.md` in the repo root to keep documentation consistent.
+
 ---
 
 ## 📂 Logic Overview by Folder & Key Files
@@ -79,7 +92,7 @@ Welcome to the development workspace for [this-is-us.org](https://this-is-us.org
 
 ## 🛠 Local development with D1 (keep DB traffic local)
 
-- Start the Worker with local bindings: `cd worker && npm run dev` (alias for `wrangler dev --local`).
+- Start the Worker with local bindings: `cd worker && npm run dev` (alias for `./scripts/wr dev --local`).
 - Apply migrations to local SQLite: `npm run db:migrate:all` (WY_DB + EVENTS_DB with `--local`).
 - Ad-hoc queries stay local: `npm run db:query:wy -- "SELECT COUNT(*) FROM civic_items"` (similar for `db:query:events`).
 - Put local-only secrets in `worker/.dev.vars` (git-ignored). Set `ENVIRONMENT=local` plus any needed API keys.

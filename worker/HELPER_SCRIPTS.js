@@ -168,7 +168,7 @@ rl.on('error', (err) => {
 // SCRIPT 3: import_geocoding_results.js
 // Purpose: Import geocoded results from Census into D1
 // Usage: node scripts/import_geocoding_results.js <input.csv> <env.WY_DB>
-// Usage (Cloudflare Worker): npx wrangler deploy (runs this via API)
+// Usage (Cloudflare Worker): ./scripts/wr deploy (runs this via API)
 // ════════════════════════════════════════════════════════════════════════════════
 
 /*
@@ -502,7 +502,7 @@ mergeBatches().catch(err => {
 WORKFLOW USING THESE SCRIPTS:
 
 1. Export from D1 (see GEOCODING_WORKFLOW.md COMMAND 3)
-   npx wrangler d1 execute WY_DB --local ... --json > data/voters_addr_norm_to_geocode.json
+   ./scripts/wr d1 execute WY_DB --local ... --json > data/voters_addr_norm_to_geocode.json
 
 2. Convert JSON to CSV
    node scripts/export_for_geocoding.js data/voters_addr_norm_to_geocode.json data/voters_addr_norm_to_geocode.csv

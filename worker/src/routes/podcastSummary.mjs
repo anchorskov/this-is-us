@@ -8,6 +8,8 @@ export async function handleGetPodcastSummary(req, env) {
     const episodeDate = url.searchParams.get("date");
     const partNumber = parseInt(url.searchParams.get("part") || "", 10);
     console.log(`[podcast/summary] guest=${guest}, date=${episodeDate}, part=${partNumber}`);
+    // DEV DIAGNOSTIC: Log which DB binding is used
+    console.log(`[podcast/summary] DB binding: EVENTS_DB`);
 
     if (!guest || !episodeDate || Number.isNaN(partNumber)) {
       return jsonResponse(
@@ -35,6 +37,12 @@ export async function handleGetPodcastSummary(req, env) {
     )
       .bind(guest, episodeDate, partNumber)
       .first();
+
+    // DEV DIAGNOSTIC: Log whether row was found (without logging full summary text)
+    console.log(`[podcast/summary] row found: ${row ? "yes" : "no"}`);
+    if (row) {
+      console.log(`[podcast/summary] summary length: ${row.summary ? row.summary.length : 0} chars`);
+    }
 
     if (!row) {
       return jsonResponse({

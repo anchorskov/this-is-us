@@ -21,6 +21,6 @@
 - Vote failures show inline message; successes update counts in-place; tooltips on hover explain each button.
 
 ## Common commands
-- Start both: `./start_local.sh` (Hugo background, wrangler foreground on 8787)
+- Start both: `./start_local.sh` (Hugo background, ./scripts/wr foreground on 8787)
 - APIs: `curl -i http://127.0.0.1:8787/api/_health`, `.../api/hot-topics`
 - Pages: `http://127.0.0.1:8787/hot-topics` or `http://127.0.0.1:1313/hot-topics/?useLocalWorker=1`

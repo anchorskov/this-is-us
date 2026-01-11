@@ -2,6 +2,7 @@
  * __tests__/townhall-create-thread-client.test.js
  */
 
+import { jest } from "@jest/globals";
 import { submitThread } from "../static/js/townhall/create-thread.js";
 
 describe("submitThread", () => {

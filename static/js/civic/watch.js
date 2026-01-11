@@ -26,13 +26,19 @@ function renderHotTopics(container, topics = []) {
   const items = topics
     .slice(0, 3)
     .map(
-      (t) => `<li>
+      (t) => {
+        const count =
+          typeof t.bill_count === "number"
+            ? t.bill_count
+            : (t.civic_items || []).length || 0;
+        return `<li>
         <div class="flex justify-between items-center">
           <span class="font-semibold">${t.title || t.slug}</span>
-          <span class="meta">${(t.civic_items || []).length || 0} bills</span>
+          <span class="meta">${count} bills</span>
         </div>
         <div class="meta">${t.summary || ""}</div>
-      </li>`
+      </li>`;
+      }
     )
     .join("");
   container.innerHTML = `<ul>${items}</ul>`;

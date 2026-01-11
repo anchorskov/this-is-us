@@ -5,7 +5,7 @@
  * If the user already exists, updates fields; otherwise inserts a new row.
  */
 export async function upsertUserPreferences(env, { uid, email, city, state }) {
-  const stmt = env.EVENTS_DB.prepare(`
+  const stmt = env.WY_DB.prepare(`
     INSERT INTO user_preferences (firebase_uid, email, city, state, last_updated)
     VALUES (?1, ?2, ?3, ?4, CURRENT_TIMESTAMP)
     ON CONFLICT(firebase_uid) DO UPDATE SET
@@ -22,7 +22,7 @@ export async function upsertUserPreferences(env, { uid, email, city, state }) {
  * Returns null if not found.
  */
 export async function getUserPreferences(env, uid) {
-  const stmt = env.EVENTS_DB.prepare(`
+  const stmt = env.WY_DB.prepare(`
     SELECT firebase_uid, email, theme, notifications_enabled, last_updated
     FROM user_preferences WHERE firebase_uid = ?1
   `);

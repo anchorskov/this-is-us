@@ -15,19 +15,19 @@
 **Option A: Reset locally only** (for development/testing)
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
 ```
 
 **Option B: Reset preview environment**
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env preview --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env preview --remote
 ```
 
 **Option C: Reset production environment** (use with caution!)
 ```bash
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
 ```
 
 ### Execution Results
@@ -37,7 +37,7 @@ wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --e
 
 ### Verification Query (after reset)
 ```bash
-wrangler d1 execute WY_DB --command "
+./scripts/wr d1 execute WY_DB --command "
 SELECT COUNT(*) as openstates_bills FROM civic_items WHERE source='open_states';
 SELECT COUNT(*) as orphaned_verifications FROM civic_item_verification 
 WHERE civic_item_id NOT IN (SELECT id FROM civic_items);
@@ -78,7 +78,7 @@ done
 
 ### Verification Query (after sync)
 ```bash
-wrangler d1 execute WY_DB --command "
+./scripts/wr d1 execute WY_DB --command "
 SELECT 
   COUNT(*) as total_bills,
   legislative_session,
@@ -175,7 +175,7 @@ Breakdown:
 
 **Verification Query Result:**
 ```bash
-wrangler d1 execute WY_DB --command "
+./scripts/wr d1 execute WY_DB --command "
 SELECT 
   status,
   COUNT(*) as count,
@@ -308,7 +308,7 @@ Added to worker/package.json:
 
 **If bills don't appear after sync:**
 ```bash
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
 ```
 
 **If verification doesn't complete:**
@@ -321,7 +321,7 @@ Wait 1 minute and retry.
 
 **If AI summaries are missing:**
 ```bash
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE ai_summary IS NOT NULL;" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE ai_summary IS NOT NULL;" --local
 ```
 
 Call the summary endpoint manually for specific bills if needed.
@@ -332,13 +332,13 @@ Call the summary endpoint manually for specific bills if needed.
 
 ```bash
 # 1. Reset local DB
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --local
 
 # Verify reset
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) as bill_count FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) as bill_count FROM civic_items WHERE source='open_states';" --local
 
 # 2. Start dev server (in background or separate terminal)
-npx wrangler dev --local &
+./scripts/wr dev --local &
 
 # Wait a few seconds for server to start
 
@@ -355,7 +355,7 @@ npm run civic:refresh-summaries
 npm run civic:verify-bills
 
 # 7. Verify with query
-wrangler d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
+./scripts/wr d1 execute WY_DB --command "SELECT COUNT(*) FROM civic_items WHERE source='open_states';" --local
 
 # 8. Open browser and test UI
 # Navigate to /ballot/pending-bills and verify all badges and data appear correctly

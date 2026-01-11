@@ -15,7 +15,7 @@ The civic_item_verification migration (0019) has been successfully deployed to b
 
 ### Preview Deployment
 ```bash
-wrangler d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --env preview --remote
+./scripts/wr d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --env preview --remote
 ```
 
 **Result:** ✅ 4 queries executed successfully
@@ -26,7 +26,7 @@ wrangler d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verificati
 
 ### Production Deployment
 ```bash
-wrangler d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --env production --remote
+./scripts/wr d1 execute WY_DB --file=migrations_wy/0019_create_civic_item_verification.sql --env production --remote
 ```
 
 **Result:** ✅ 4 queries executed successfully
@@ -128,7 +128,7 @@ Both endpoints are now fully operational in preview and production:
 In the unlikely event of issues, the migration can be rolled back by:
 
 1. Stopping the worker deployment
-2. Running: `wrangler d1 execute WY_DB --command "DROP TABLE civic_item_verification;" --env production --remote`
+2. Running: `./scripts/wr d1 execute WY_DB --command "DROP TABLE civic_item_verification;" --env production --remote`
 3. Re-deploying previous worker code
 
 However, all code is backward-compatible (civic_item_verification is joined with LEFT JOIN), so this shouldn't be necessary.

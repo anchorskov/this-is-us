@@ -1,9 +1,23 @@
 // worker/test/townhall.verified.test.mjs
 // Jest tests for verified voter gating in Town Hall operations
 
-import { handleCreateTownhallThread } from "../src/townhall/createThread.mjs";
-import { handleCreateTownhallPost } from "../src/townhall/createPost.js";
-import { getVerifiedUser, createVerifiedUser } from "../src/townhall/verifiedUserHelper.mjs";
+import { jest } from "@jest/globals";
+const requireAuthMock = jest.fn();
+
+jest.unstable_mockModule("../src/auth/verifyFirebaseOrAccess.mjs", () => ({
+  requireAuth: requireAuthMock,
+}));
+
+const { handleCreateTownhallThread } = await import(
+  "../src/townhall/createThread.mjs"
+);
+const { handleCreateTownhallPost } = await import(
+  "../src/townhall/createPost.js"
+);
+const { getVerifiedUser, createVerifiedUser } = await import(
+  "../src/townhall/verifiedUserHelper.mjs"
+);
+const { requireAuth } = await import("../src/auth/verifyFirebaseOrAccess.mjs");
 
 // Mock environment
 const mockEnv = {
@@ -42,7 +56,7 @@ describe("Town Hall Verified Voter Gating", () => {
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: mockResults }),
+          all: jest.fn().mockResolvedValue({ results: mockResults }),
         }),
       });
 
@@ -57,7 +71,7 @@ describe("Town Hall Verified Voter Gating", () => {
     it("should return null when user is not verified", async () => {
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: [] }),
+          all: jest.fn().mockResolvedValue({ results: [] }),
         }),
       });
 
@@ -69,7 +83,7 @@ describe("Town Hall Verified Voter Gating", () => {
     it("should return null on database error", async () => {
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().rejectValue(new Error("DB error")),
+          all: jest.fn().mockRejectedValue(new Error("DB error")),
         }),
       });
 
@@ -88,7 +102,7 @@ describe("Town Hall Verified Voter Gating", () => {
     it("should create verified user record successfully", async () => {
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          run: jest.fn().resolveValue({ success: true }),
+          run: jest.fn().mockResolvedValue({ success: true }),
         }),
       });
 
@@ -108,7 +122,7 @@ describe("Town Hall Verified Voter Gating", () => {
     it("should return false on database error", async () => {
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          run: jest.fn().rejectValue(new Error("Duplicate key")),
+          run: jest.fn().mockRejectedValue(new Error("Duplicate key")),
         }),
       });
 
@@ -124,12 +138,11 @@ describe("Town Hall Verified Voter Gating", () => {
 
   describe("Town Hall Thread Creation", () => {
     it("should allow verified user to create thread", async () => {
-      const { requireAuth } = require("../src/auth/verifyFirebaseOrAccess.mjs");
       requireAuth.mockResolvedValue({ uid: "verified-user-123" });
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({
+          all: jest.fn().mockResolvedValue({
             results: [
               {
                 userId: "verified-user-123",
@@ -143,7 +156,7 @@ describe("Town Hall Verified Voter Gating", () => {
 
       mockEnv.EVENTS_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          run: jest.fn().resolveValue({ success: true }),
+          run: jest.fn().mockResolvedValue({ success: true }),
         }),
       });
 
@@ -166,12 +179,11 @@ describe("Town Hall Verified Voter Gating", () => {
     });
 
     it("should return 403 for unverified user", async () => {
-      const { requireAuth } = require("../src/auth/verifyFirebaseOrAccess.mjs");
       requireAuth.mockResolvedValue({ uid: "unverified-user" });
 
       mockEnv.WY_DB.prepare = jest.fn().mockReturnValue({
         bind: jest.fn().mockReturnValue({
-          all: jest.fn().resolveValue({ results: [] }),
+          all: jest.fn().mockResolvedValue({ results: [] }),
         }),
       });
 
@@ -193,7 +205,6 @@ describe("Town Hall Verified Voter Gating", () => {
     });
 
     it("should return 401 for unauthenticated request", async () => {
-      const { requireAuth } = require("../src/auth/verifyFirebaseOrAccess.mjs");
       requireAuth.mockRejectedValue(new Error("Invalid token"));
 
       const request = new Request("https://api.example.com/api/townhall/posts", {

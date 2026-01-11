@@ -11,7 +11,7 @@ import sys
 def export_from_remote():
     """Export legislator data from remote database"""
     cmd = [
-        'wrangler', 'd1', 'execute', 'WY_DB', '--remote',
+        './scripts/wr', 'd1', 'execute', 'WY_DB', '--remote',
         '--command',
         '''SELECT json_object(
             'voter_id', voter_id,
@@ -84,7 +84,7 @@ def insert_to_local(legislators):
         
         insert_sql = f'''INSERT INTO wy_legislators VALUES({voter_id},"{name}","{chamber}",{district_val},"{city}","{county}","{party}","{affiliations}","{campaign_website}","{official_profile_url}","{phone}","{email}","{updated}");'''
         
-        cmd = ['wrangler', 'd1', 'execute', 'WY_DB', '--local', '--command', insert_sql]
+        cmd = ['./scripts/wr', 'd1', 'execute', 'WY_DB', '--local', '--command', insert_sql]
         
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, cwd='/home/anchor/projects/this-is-us/worker')

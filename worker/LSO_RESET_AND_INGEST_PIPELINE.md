@@ -30,34 +30,34 @@ Execute the following deletions in order (child tables before parent):
 cd /home/anchor/projects/this-is-us/worker
 
 # 1. Delete votes (no FK, but references civic_items.id)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM votes;"
 
 # 2. Delete AI topic tags (FK → civic_items)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM civic_item_ai_tags;"
 
 # 3. Delete verification records (FK → civic_items)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM civic_item_verification;"
 
 # 4. Delete bill sponsors (FK → civic_items)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM bill_sponsors;"
 
 # 5. Delete user ideas (optional FK → civic_items)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM user_ideas;"
 
 # 6. Finally, delete civic_items (parent table)
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "DELETE FROM civic_items;"
 ```
 
 ### Verification (after reset)
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      (SELECT COUNT(*) FROM civic_items) as civic_items,
      (SELECT COUNT(*) FROM bill_sponsors) as bill_sponsors,
@@ -88,7 +88,7 @@ Import fresh bills from Wyoming Legislature Service (LSO) Committee Bills API.
 
 ```bash
 # Start the Worker in the background (if not already running)
-npx wrangler dev --local &
+./scripts/wr dev --local &
 
 # Wait 3 seconds for Worker to be ready
 sleep 3
@@ -119,7 +119,7 @@ The LSO sync endpoint (`/api/dev/lso/sync-committee-bills`):
 ### Verification (after reseed)
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      source,
      COUNT(*) as total,
@@ -139,7 +139,7 @@ chambers: 2
 Also verify sponsors were created:
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      COUNT(DISTINCT civic_item_id) as bills_with_sponsors,
      COUNT(*) as total_sponsor_records
@@ -197,7 +197,7 @@ curl -s -X POST "http://127.0.0.1:8787/api/internal/civic/test-bill-summary?bill
 ### Verification (after enrichment)
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      COUNT(DISTINCT ci.id) as total_bills,
      COUNT(DISTINCT ciat.item_id) as bills_with_topics,
@@ -232,7 +232,7 @@ To verify all LSO bills:
 
 ```bash
 # Get list of bill IDs from database
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT id FROM civic_items WHERE source='lso' ORDER BY id;" > /tmp/lso_bill_ids.txt
 
 # Loop through each bill and call verify endpoint
@@ -249,7 +249,7 @@ Or use this more concise bash approach:
 #!/bin/bash
 # Bash loop to verify all LSO bills
 
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT id FROM civic_items WHERE source='lso' ORDER BY id;" | \
   tail -n +2 | \
   while read bill_id; do
@@ -275,7 +275,7 @@ npx wrangler d1 execute WY_DB --local --command \
 After verification, check for any bills with structural issues:
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      ci.id,
      ci.bill_number,
@@ -297,7 +297,7 @@ npx wrangler d1 execute WY_DB --local --command \
 ### Verification (after verification phase)
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      ci.source,
      COUNT(DISTINCT ci.id) as total_bills,
@@ -340,26 +340,26 @@ echo ""
 # ============================================================================
 echo "🧹 PHASE 1: Resetting existing bills and dependent records..."
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM votes;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM votes;"
 echo "  ✓ Deleted votes"
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_item_ai_tags;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_item_ai_tags;"
 echo "  ✓ Deleted civic_item_ai_tags"
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_item_verification;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_item_verification;"
 echo "  ✓ Deleted civic_item_verification"
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM bill_sponsors;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM bill_sponsors;"
 echo "  ✓ Deleted bill_sponsors"
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM user_ideas;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM user_ideas;"
 echo "  ✓ Deleted user_ideas"
 
-npx wrangler d1 execute WY_DB --local --command "DELETE FROM civic_items;"
+./scripts/wr d1 execute WY_DB --local --command "DELETE FROM civic_items;"
 echo "  ✓ Deleted civic_items"
 
 # Verify reset
-RESET_CHECK=$(npx wrangler d1 execute WY_DB --local --command \
+RESET_CHECK=$(./scripts/wr d1 execute WY_DB --local --command \
   "SELECT COUNT(*) as total FROM civic_items;" | jq -r '.results[0].total')
 if [ "$RESET_CHECK" == "0" ]; then
   echo "✅ PHASE 1 COMPLETE: All tables cleared"
@@ -376,7 +376,7 @@ echo ""
 echo "🌱 PHASE 2: Reseeding bills from Wyoming Legislature Service..."
 
 # Start Worker in background if not running
-npx wrangler dev --local &
+./scripts/wr dev --local &
 WORKER_PID=$!
 sleep 3
 
@@ -422,7 +422,7 @@ echo ""
 echo "✔️  PHASE 4: Running verification checks..."
 
 # Get bill IDs
-BILL_IDS=$(npx wrangler d1 execute WY_DB --local --command \
+BILL_IDS=$(./scripts/wr d1 execute WY_DB --local --command \
   "SELECT id FROM civic_items WHERE source='lso' ORDER BY id;" | jq -r '.results[] | .id')
 
 VERIFIED_COUNT=0
@@ -446,7 +446,7 @@ echo ""
 # ============================================================================
 echo "📊 FINAL VERIFICATION..."
 
-FINAL_STATS=$(npx wrangler d1 execute WY_DB --local --command \
+FINAL_STATS=$(./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      COUNT(*) as total_bills,
      COUNT(DISTINCT CASE WHEN ai_summary IS NOT NULL THEN id END) as with_summaries,
@@ -479,7 +479,7 @@ curl -s "http://127.0.0.1:8787/api/dev/lso/sync-committee-bills?year=2026" | jq 
 - Ensure you're hitting http://127.0.0.1 (not localhost or hostname)
 
 **If error "lso_sync_failed":**
-- Check Worker logs: `npx wrangler dev --local` shows live logs
+- Check Worker logs: `./scripts/wr dev --local` shows live logs
 - Verify LSO endpoint is responding: Check `worker/src/lib/wyLsoClient.mjs`
 
 ### Verification endpoint not found
@@ -490,7 +490,7 @@ curl -s "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=test" | jq '.'
 ```
 
 **If 404:**
-- Ensure Worker is running: `npx wrangler dev --local`
+- Ensure Worker is running: `./scripts/wr dev --local`
 - Check `worker/src/index.mjs` for route registration
 
 ### Scan-pending-bills returns 0 scanned
@@ -501,7 +501,7 @@ curl -s "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=test" | jq '.'
 
 **Check status distribution:**
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT status, COUNT(*) FROM civic_items WHERE source='lso' GROUP BY status;"
 ```
 
@@ -509,7 +509,7 @@ npx wrangler d1 execute WY_DB --local --command \
 
 **Review flagged bills:**
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT bill_number, structural_reason FROM civic_item_verification WHERE structural_ok=0 LIMIT 5;"
 ```
 
@@ -537,7 +537,7 @@ npx wrangler d1 execute WY_DB --local --command \
 ### Sample Query for Final State
 
 ```bash
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
      ci.bill_number,
      ci.title,

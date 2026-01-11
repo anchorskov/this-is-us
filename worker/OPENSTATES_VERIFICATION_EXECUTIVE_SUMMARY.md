@@ -254,7 +254,7 @@ VALUES (...), ...;
 
 ### 📝 Maintenance Notes
 - D1 SQLite doesn't support `IF NOT EXISTS` on ALTER TABLE ADD COLUMN
-- Dev server startup takes ~10 seconds after `npx wrangler dev --local`
+- Dev server startup takes ~10 seconds after `./scripts/wr dev --local`
 - OpenStates API calls are rate-limited (good practice: add delays for bulk operations)
 - AI verification calls to gpt-4o-mini cost tokens (~0.20-0.50 per bill)
 

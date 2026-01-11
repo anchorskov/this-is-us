@@ -21,9 +21,9 @@ This runbook documents the complete OpenStates bill ingestion and AI verificatio
 - **Wrangler CLI:** v4.52.1 or later
 - **Node.js:** Latest version
 - **Environment Variables:**
-  - `OPENSTATES_API_KEY`: API key for OpenStates v3 API (see `worker/wrangler.toml`)
+  - `OPENSTATES_API_KEY`: API key for OpenStates v3 API (see `worker/./scripts/wr.toml`)
   - `OPENAI_API_KEY`: API key for OpenAI (gpt-4o-mini)
-- **Dev Server:** Running `npx wrangler dev --local` in `/home/anchor/projects/this-is-us/worker`
+- **Dev Server:** Running `./scripts/wr dev --local` in `/home/anchor/projects/this-is-us/worker`
 
 ---
 
@@ -55,11 +55,11 @@ Migrations 0020 and 0021 add support for sponsor tracking and structural verific
 cd /home/anchor/projects/this-is-us/worker
 
 # Apply all pending migrations (0020, 0021, and others)
-npx wrangler d1 migrations apply WY_DB --local
+./scripts/wr d1 migrations apply WY_DB --local
 
 # Verify the new columns exist
-npx wrangler d1 execute WY_DB --local --command "PRAGMA table_info(bill_sponsors);"
-npx wrangler d1 execute WY_DB --local --command "PRAGMA table_info(civic_item_verification);"
+./scripts/wr d1 execute WY_DB --local --command "PRAGMA table_info(bill_sponsors);"
+./scripts/wr d1 execute WY_DB --local --command "PRAGMA table_info(civic_item_verification);"
 ```
 
 ### Expected Output
@@ -87,10 +87,10 @@ If you want to start fresh, remove all OpenStates bills:
 
 ```bash
 # Reset all Wyoming OpenStates bills and related data
-npx wrangler d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
+./scripts/wr d1 execute WY_DB --local --file db/admin/reset_openstates_wy_db.sql
 
 # Verify count is 0
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT COUNT(*) as remaining FROM civic_items WHERE source='open_states';"
 ```
 
@@ -98,7 +98,7 @@ npx wrangler d1 execute WY_DB --local --command \
 
 ```bash
 # In a separate terminal from the worker root
-npx wrangler dev --local
+./scripts/wr dev --local
 ```
 
 The server will be available at `http://127.0.0.1:8787`.
@@ -148,13 +148,13 @@ curl "http://127.0.0.1:8787/api/dev/openstates/sync?session=2025&limit=500"
 
 ```bash
 # Check counts
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     (SELECT COUNT(*) FROM civic_items WHERE source='open_states') as bills,
     (SELECT COUNT(*) FROM bill_sponsors) as sponsors;"
 
 # Check sample bills with sponsors
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     ci.bill_number, 
     ci.chamber,
@@ -229,7 +229,7 @@ curl -s "http://127.0.0.1:8787/api/internal/civic/verify-bill?id=$BILL_ID" | jq 
 
 ```bash
 # Count status distribution
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     status, 
     structural_ok, 
@@ -242,7 +242,7 @@ npx wrangler d1 execute WY_DB --local --command \
   GROUP BY status, structural_ok, structural_reason;"
 
 # Show flagged bills and why
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     ci.bill_number,
     civ.status,
@@ -367,7 +367,7 @@ All civicVerification and verification-related tests should pass. Any failures i
 
 ```bash
 # Example: Insert test legislator
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "INSERT INTO wy_legislators (name, chamber, district, created_at, updated_at)
    VALUES ('Campbell', 'house', null, datetime('now'), datetime('now'));"
 ```
@@ -381,7 +381,7 @@ npx wrangler d1 execute WY_DB --local --command \
 **Debug:**
 ```bash
 # Check bills with and without sponsors
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     ci.bill_number,
     COUNT(bs.id) as sponsor_count

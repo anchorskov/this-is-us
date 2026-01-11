@@ -1,0 +1,44 @@
+JR RIGGINS PODCAST SUMMARY
+==========================
+
+Source: JR_RIGGINS_-03.txt
+Generated: Wed Dec 31 20:12:54 MST 2025
+Word Count: 4980
+Lines: 263
+
+TRANSCRIPT OVERVIEW:
+--------------------
+
+causes and problems you know what people say that but i think people should uh read a little bit of
+read a little bit of more history a little more personal history look at look at the feud between
+jefferson and adams oh yeah look at the feud between hamilton and burr it doesn't get any
+worse than that one right right so well i mean we've always had these things there's a factionalism
+if you read i see that but but i i also see you know some some recent trends in violence and and
+you know and that's to me that's where it gets out of hand where we let the the rhetoric is fine for
+the folks up to a point up to a point when when you start seeing i i watched a documentary the other day
+and he showed showed the speaker of the house of of arizona after the 2026 um or not 2026 i'm sorry
+the 2020 election he was getting visits from folks out in front of his house where this was a pbs thing
+and they showed folks you know threatening him his him threatening his children and then i recently
+saw something with marjorie taylor green and i saw people threatening her when i saw them but
+you know she was complaining about that her her children were getting threatened you know because
+of the stance that she a political stance that she's taken and i'm thinking that's not really
+political division there that's that's to me there's a line that's being crossed or what would
+you say about something like that and how do we bring that that that conversation back to a more
+normal is it possible to bring it back to a more normal tone there's one i think there's probably
+one simple solution if most of that is on social media require your real name on every social media
+post you have to no more no more anonymity no no anonymous stuff you know i also would that what
+would that do it just in general i mean yeah people know who you are and you're not uh hiding behind
+is this a state thing is there is something we can do at the state level or is this more of a federal
+
+[... Full transcript: 4980 words ...]
+
+KEY METRICS:
+- Total words: 4980
+- Total lines: 263
+- File size: 28K
+
+NOTES:
+This is a basic summary. For enhanced AI-powered summaries:
+1. Set OPENAI_API_KEY environment variable
+2. Rerun this script with --summarize-only flag
+

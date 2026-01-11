@@ -8,6 +8,12 @@ jest.unstable_mockModule("../src/auth/verifyFirebaseOrAccess.mjs", () => ({
   requireAuth: mockRequireAuth,
 }));
 
+const mockGetVerifiedUser = jest.fn();
+jest.unstable_mockModule("../src/townhall/verifiedUserHelper.mjs", () => ({
+  getVerifiedUser: mockGetVerifiedUser,
+  createVerifiedUser: jest.fn(),
+}));
+
 // Import handler after mocking
 const { handleCreateTownhallThread } = await import(
   "../src/townhall/createThread.mjs"
@@ -29,6 +35,8 @@ describe("handleCreateTownhallThread", () => {
   beforeEach(() => {
     mockRequireAuth.mockReset();
     mockRequireAuth.mockResolvedValue({ uid: "user-123" });
+    mockGetVerifiedUser.mockReset();
+    mockGetVerifiedUser.mockResolvedValue({ userId: "user-123", status: "verified" });
   });
 
   test("rejects missing auth", async () => {

@@ -376,7 +376,7 @@ Currently not actively used by Worker code (ballot sources defined but no active
 
 ### Local Development Access (Wrangler Emulator)
 
-**Location:** `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/`
+**Location:** `../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/`
 
 Each database is stored as a SQLite file matching its UUID:
 - `events_db_local`: `6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite`
@@ -388,53 +388,53 @@ Each database is stored as a SQLite file matching its UUID:
 **Command Format (from `worker/` directory):**
 ```bash
 # Execute query against local database
-npx wrangler d1 execute <BINDING_NAME> --local --command "<SQL>" --json
+./scripts/wr d1 execute <BINDING_NAME> --local --command "<SQL>" --json
 
 # Example: Query events table locally
 cd /home/anchor/projects/this-is-us/worker
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT COUNT(*) FROM events;" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT COUNT(*) FROM events;" --json
 
 # Example: Query hot topics (NEW)
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT slug, title, badge FROM hot_topics ORDER BY priority;" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT slug, title, badge FROM hot_topics ORDER BY priority;" --json
 
 # Example: Query civic items from Open States
-npx wrangler d1 execute WY_DB --local --command "SELECT bill_number, title, status FROM civic_items;" --json
+./scripts/wr d1 execute WY_DB --local --command "SELECT bill_number, title, status FROM civic_items;" --json
 
 # Import SQL dump into local database
-npx wrangler d1 execute WY_DB --local --file /path/to/dump.sql
+./scripts/wr d1 execute WY_DB --local --file /path/to/dump.sql
 
 # List tables in local database
-npx wrangler d1 execute WY_DB --local --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;" --json
+./scripts/wr d1 execute WY_DB --local --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;" --json
 
 # List migrations applied
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations ORDER BY id;" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations ORDER BY id;" --json
 ```
 
 #### Direct SQLite Access (Offline Debugging)
 
-For offline inspection without starting wrangler dev, access SQLite files directly:
+For offline inspection without starting ./scripts/wr dev, access SQLite files directly:
 
 ```bash
 # Query with sqlite3 CLI (must have sqlite3 installed)
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite "SELECT * FROM hot_topics LIMIT 1;"
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite "SELECT * FROM hot_topics LIMIT 1;"
 
 # WY_DB civic items
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT bill_number, title, status FROM civic_items;"
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT bill_number, title, status FROM civic_items;"
 
 # List all tables in EVENTS_DB
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite ".tables"
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite ".tables"
 
 # Interactive shell (full SQLite CLI available)
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite
 sqlite> SELECT slug, title FROM hot_topics;
 sqlite> .schema hot_topics
 sqlite> .exit
 
 # Check migrations applied
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite "SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 15;"
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite "SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 15;"
 
 # Count voter records in WY_DB
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT COUNT(*) as total_voters FROM voters_addr_norm;"
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT COUNT(*) as total_voters FROM voters_addr_norm;"
 ```
 
 **Key Points:**
@@ -443,7 +443,7 @@ sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-
 - Permissions must allow read/write for your user
 - If a database file carries metadata from another project (cross-project symlinks), Wrangler may reject mutations with `SQLITE_AUTH` error
 - Solution: Delete stale files and let Wrangler re-provision fresh databases
-- **Important:** Changes made directly via sqlite3 won't be reflected in wrangler dev unless you restart the dev process
+- **Important:** Changes made directly via sqlite3 won't be reflected in ./scripts/wr dev unless you restart the dev process
 
 ### Remote/Preview Access (Cloudflare Edge)
 
@@ -453,35 +453,35 @@ sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-
 
 ```bash
 # Execute query against preview database
-npx wrangler d1 execute <BINDING_NAME> --remote --env preview --command "<SQL>" --json
+./scripts/wr d1 execute <BINDING_NAME> --remote --env preview --command "<SQL>" --json
 
 # Example: Query hot topics in preview
 cd /home/anchor/projects/this-is-us/worker
-npx wrangler d1 execute EVENTS_DB --remote --env preview --command "SELECT COUNT(*) FROM hot_topics;" --json
+./scripts/wr d1 execute EVENTS_DB --remote --env preview --command "SELECT COUNT(*) FROM hot_topics;" --json
 
 # Example: Check civic items in preview
-npx wrangler d1 execute WY_DB --remote --env preview --command "SELECT COUNT(*) FROM civic_items;" --json
+./scripts/wr d1 execute WY_DB --remote --env preview --command "SELECT COUNT(*) FROM civic_items;" --json
 ```
 
 #### Production Environment
 
 ```bash
 # Execute query against production database
-npx wrangler d1 execute <BINDING_NAME> --remote --env production --command "<SQL>" --json
+./scripts/wr d1 execute <BINDING_NAME> --remote --env production --command "<SQL>" --json
 
 # Example: Query hot topics in production
 cd /home/anchor/projects/this-is-us/worker
-npx wrangler d1 execute EVENTS_DB --remote --env production --command "SELECT COUNT(*) FROM hot_topics;" --json
+./scripts/wr d1 execute EVENTS_DB --remote --env production --command "SELECT COUNT(*) FROM hot_topics;" --json
 
 # List tables in remote database
-npx wrangler d1 execute WY_DB --remote --env production --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;" --json
+./scripts/wr d1 execute WY_DB --remote --env production --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;" --json
 ```
 
 **Key Points:**
 - Use `--remote --env <environment>` to target specific deployment
 - Queries execute on Cloudflare's D1 instance (not emulated)
 - Results include metadata: `served_by`, `served_by_region`, `duration_ms`, `rows_read`, `rows_written`
-- Bindings are resolved from `wrangler.toml` environment configuration
+- Bindings are resolved from `./scripts/wr.toml` environment configuration
 - Premium feature: requires Cloudflare paid plan
 - Both preview and production have hot topics; ensure WY_DB migrations are applied where civic endpoints run.
 
@@ -507,13 +507,13 @@ export async function handleListEvents(request, env) {
 ```
 
 **Execution Context:**
-- Local development: Uses miniflare emulator from `.wrangler/state/v3/d1/`
+- Local development: Uses miniflare emulator from `../scripts/wr/state/v3/d1/`
 - Production deployment: Queries Cloudflare's edge D1 instance
 - No explicit "local" vs "remote" selector in handler code—determined by deployment environment
 
 ---
 
-## Configuration File: `worker/wrangler.toml`
+## Configuration File: `worker/./scripts/wr.toml`
 
 ### D1 Database Bindings
 
@@ -696,16 +696,16 @@ Columns returned by `fetchCivicItems()`:
 
 ```bash
 # Apply pending migrations to local database
-npx wrangler d1 migrations apply EVENTS_DB --local
-npx wrangler d1 migrations apply WY_DB --local
+./scripts/wr d1 migrations apply EVENTS_DB --local
+./scripts/wr d1 migrations apply WY_DB --local
 
 # Apply pending migrations to preview
-npx wrangler d1 migrations apply EVENTS_DB --remote --env preview
-npx wrangler d1 migrations apply WY_DB --remote --env preview
+./scripts/wr d1 migrations apply EVENTS_DB --remote --env preview
+./scripts/wr d1 migrations apply WY_DB --remote --env preview
 
 # Apply pending migrations to production
-npx wrangler d1 migrations apply EVENTS_DB --remote --env production
-npx wrangler d1 migrations apply WY_DB --remote --env production
+./scripts/wr d1 migrations apply EVENTS_DB --remote --env production
+./scripts/wr d1 migrations apply WY_DB --remote --env production
 ```
 
 ### Key Migration Files
@@ -755,13 +755,13 @@ npx wrangler d1 migrations apply WY_DB --remote --env production
 
 ```bash
 # Check migrations applied to local EVENTS_DB
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations ORDER BY id;" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations ORDER BY id;" --json
 
 # Check migrations applied to remote WY_DB
-npx wrangler d1 execute WY_DB --remote --env production --command "SELECT name FROM d1_migrations ORDER BY id;" --json
+./scripts/wr d1 execute WY_DB --remote --env production --command "SELECT name FROM d1_migrations ORDER BY id;" --json
 
 # Check if specific migration applied (hot topics)
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations WHERE name LIKE '0011%';" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations WHERE name LIKE '0011%';" --json
 ```
 
 ---
@@ -796,7 +796,7 @@ npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrati
 
 6. **Add voter verification** lookup against WY_DB `voters_addr_norm` table
 
-7. **Fix wrangler.toml** to explicitly declare all bindings in each environment
+7. **Fix ./scripts/wr.toml** to explicitly declare all bindings in each environment
 
 8. **Complete event creation flow** with PDF uploads to R2 and proper field mapping
 
@@ -806,29 +806,29 @@ npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrati
 
 ```bash
 # Local EVENTS_DB hot topics
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT slug, title, badge FROM hot_topics ORDER BY priority;" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT slug, title, badge FROM hot_topics ORDER BY priority;" --json
 
 # Local WY_DB civic items count
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as bill_count FROM civic_items;" --json
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) as bill_count FROM civic_items;" --json
 
 # Local voter count
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as total FROM voters_addr_norm;" --json
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) as total FROM voters_addr_norm;" --json
 
 # Production hot topics
-npx wrangler d1 execute EVENTS_DB --remote --env production --command "SELECT slug, title FROM hot_topics;" --json
+./scripts/wr d1 execute EVENTS_DB --remote --env production --command "SELECT slug, title FROM hot_topics;" --json
 
-# Direct SQLite (offline, no wrangler needed)
-sqlite3 /home/anchor/projects/this-is-us/worker/.wrangler/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT bill_number FROM civic_items;"
+# Direct SQLite (offline, no ./scripts/wr needed)
+sqlite3 /home/anchor/projects/this-is-us/worker/../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite "SELECT bill_number FROM civic_items;"
 
 # Check migration status
-npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations WHERE name LIKE '0011%';" --json
+./scripts/wr d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrations WHERE name LIKE '0011%';" --json
 ```
 
 ### File Paths
 
 **Local database files (Wrangler miniflare):**
 ```
-.wrangler/state/v3/d1/miniflare-D1DatabaseObject/
+../scripts/wr/state/v3/d1/miniflare-D1DatabaseObject/
 ├── 6c3fffd4-e6dc-47b8-b541-3857c2882e0c.sqlite  (EVENTS_DB)
 ├── 4b4227f1-bf30-4fcf-8a08-6967b536a5ab.sqlite  (WY_DB)
 └── 9c4b0c27-eb33-46e6-a477-fb49d4c81474.sqlite  (BALLOT_DB)
@@ -838,7 +838,7 @@ npx wrangler d1 execute EVENTS_DB --local --command "SELECT name FROM d1_migrati
 - EVENTS_DB: `worker/migrations/`
 - WY_DB: `worker/migrations_wy/`
 
-**API endpoints (localhost:8788 during wrangler dev):**
+**API endpoints (localhost:8788 during ./scripts/wr dev):**
 - Hot topics list: `GET /api/hot-topics` → Returns all 6 hot topics
 - Hot topic detail: `GET /api/hot-topics/:slug` → Returns single topic with civic_items array
 - Civic items (bills): `GET /api/civic/pending-bills` → Returns all seeded bills

@@ -4,6 +4,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-functions.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
 
 // Helper function to get DOM elements
@@ -17,6 +18,58 @@ const ROLES = {
   30: 'Moderator',
   0: 'User'
 };
+
+const ROLE_LEVELS_BY_ROLE = {
+  super_admin: 100,
+  superadmin: 100,
+  admin: 80,
+  editor: 50,
+  moderator: 30,
+  user: 0,
+  citizen: 0
+};
+
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
+
+async function resolveRoleLevel(app, user) {
+  const idTokenResult = await user.getIdTokenResult();
+  const claimsRole = idTokenResult?.claims?.roleLevel;
+  if (typeof claimsRole === "number") {
+    return claimsRole;
+  }
+
+  const isLocal = LOCAL_HOSTS.has(window.location.hostname);
+  if (!isLocal) {
+    return 0;
+  }
+
+  if (window.currentUserRole) {
+    const roleKey = String(window.currentUserRole).toLowerCase();
+    if (ROLE_LEVELS_BY_ROLE[roleKey] !== undefined) {
+      return ROLE_LEVELS_BY_ROLE[roleKey];
+    }
+  }
+
+  try {
+    const db = getFirestore(app);
+    const snap = await getDoc(doc(db, "users", user.uid));
+    if (!snap.exists()) {
+      return 0;
+    }
+    const data = snap.data() || {};
+    if (typeof data.roleLevel === "number") {
+      return data.roleLevel;
+    }
+    if (typeof data.role === "string") {
+      const roleKey = data.role.toLowerCase();
+      return ROLE_LEVELS_BY_ROLE[roleKey] ?? 0;
+    }
+  } catch (err) {
+    console.warn("Admin Dashboard: Failed to load Firestore role fallback.", err);
+  }
+
+  return 0;
+}
 
 // --- Panel Rendering Functions ---
 
@@ -39,6 +92,23 @@ function renderEventsPanel() {
     <h2 class="text-xl font-semibold">Event Management</h2>
     <p class="mt-2 text-gray-600">Event management UI will be built here.</p>
   `;
+}
+
+async function renderHotTopicsPanel() {
+  const panel = $('#admin-content-panel');
+  panel.innerHTML = `
+    <h2 class="text-xl font-semibold mb-4">Hot Topics Review</h2>
+    <div id="hot-topics-container" class="text-gray-600">Loading draft topics...</div>
+  `;
+  
+  // Load the hot topics admin module
+  try {
+    const { loadHotTopicsUI } = await import('/js/admin/hot-topics.js');
+    await loadHotTopicsUI(document.getElementById('hot-topics-container'));
+  } catch (err) {
+    console.error('Error loading hot topics UI:', err);
+    panel.innerHTML = `<p class="text-red-500">Error loading hot topics: ${err.message}</p>`;
+  }
 }
 
 async function renderUsersPanel(currentUserRole) {
@@ -154,6 +224,7 @@ function buildSidebar(roleLevel) {
     navLinks.push({ href: '#townhall', text: 'Townhall Management' });
   }
   if (roleLevel >= 50) {
+    navLinks.push({ href: '#hot-topics', text: '🔥 Hot Topics Review' });
     navLinks.push({ href: '#events', text: 'Event Management' });
   }
   if (roleLevel >= 80) {
@@ -174,22 +245,31 @@ function handleRouting(currentUserRole) {
         case '#townhall':
             renderTownhallPanel();
             break;
+        case '#hot-topics':
+            if (currentUserRole >= 50) {
+                renderHotTopicsPanel();
+            } else {
+                renderWelcome();
+            }
+            break;
         case '#events':
             renderEventsPanel();
             break;
         case '#users':
-            renderUsersPanel(currentUserRole);
+            if (currentUserRole >= 80) {
+                renderUsersPanel(currentUserRole);
+            } else {
+                renderWelcome();
+            }
             break;
         default:
             renderWelcome();
             break;
     }
 }
-async function initializeDashboard(user) {
+async function initializeDashboard(app, user) {
   try {
-    const idTokenResult = await user.getIdTokenResult();
-    const claims = idTokenResult.claims;
-    const userRole = claims.roleLevel || 0;
+    const userRole = await resolveRoleLevel(app, user);
 
     console.log(`Admin Dashboard: User role level is ${userRole}`);
 
@@ -228,6 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
     : initializeApp(window.firebaseConfig || {});
   const functions = getFunctions(app);
   const auth = getAuth(app);
+  let authResolved = false;
+  let dashboardInitialized = false;
 
   if (window.location.hostname === 'localhost') {
       console.log('Using local function emulators on port 5001');
@@ -236,13 +318,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Use the new modular onAuthStateChanged listener
+  const bootDashboard = (user) => {
+    if (!user || dashboardInitialized) return;
+    dashboardInitialized = true;
+    initializeDashboard(app, user);
+  };
+
   onAuthStateChanged(auth, user => {
+    authResolved = true;
     if (user) {
-      initializeDashboard(user);
+      bootDashboard(user);
     } else {
       console.log("Admin Dashboard: No user logged in.");
       showPanel('denied');
       setTimeout(() => { window.location.href = '/'; }, 3000);
     }
   });
+
+  setTimeout(() => {
+    if (authResolved || dashboardInitialized) return;
+    const compatUser = (() => {
+      try {
+        return window.firebase?.auth?.()?.currentUser || null;
+      } catch (err) {
+        console.warn("Admin Dashboard: compat auth lookup failed.", err);
+        return null;
+      }
+    })();
+    if (auth.currentUser) {
+      bootDashboard(auth.currentUser);
+      return;
+    }
+    if (compatUser) {
+      bootDashboard(compatUser);
+      return;
+    }
+    console.warn("Admin Dashboard: Auth state not resolved; showing access denied.");
+    showPanel('denied');
+    setTimeout(() => { window.location.href = '/'; }, 3000);
+  }, 2000);
 });

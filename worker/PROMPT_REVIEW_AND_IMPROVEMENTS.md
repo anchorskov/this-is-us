@@ -114,7 +114,7 @@ NEW FAILURES (Would indicate regression):
 # This is NOT a bug - it's expected until legislator data is populated
 
 # Once legislators are added, this query should show matching:
-npx wrangler d1 execute WY_DB --local --command \
+./scripts/wr d1 execute WY_DB --local --command \
   "SELECT 
     bs.sponsor_name,
     wl.name as legislator_name,

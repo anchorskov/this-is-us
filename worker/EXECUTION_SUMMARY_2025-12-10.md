@@ -181,7 +181,7 @@ LIMIT 1;
 
 # 3. Run reset in production (if needed)
 cd /home/anchor/projects/this-is-us/worker
-wrangler d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
+./scripts/wr d1 execute WY_DB --file=db/admin/reset_openstates_pending_bills.sql --env production --remote
 
 # 4. Run batch verification in production
 npm run civic:verify-bills

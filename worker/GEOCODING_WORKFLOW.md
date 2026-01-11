@@ -111,7 +111,7 @@ PREREQUISITE: Be in the worker directory
 
 COMMAND 1: Verify migration applied (check schema)
 
-  npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+  ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 Expected output shows 13 columns including lat and lng.
 
@@ -120,23 +120,23 @@ Expected output shows 13 columns including lat and lng.
 COMMAND 2: Check row counts
 
   # Total rows in voters_addr_norm
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT COUNT(*) as total_rows FROM voters_addr_norm;"
 
   # Rows that still need geocoding (lat/lng both NULL)
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT COUNT(*) as rows_needing_geocode FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
 
   # Rows that are already geocoded
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT COUNT(*) as rows_geocoded FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
 
 ────────────────────────────────────────────────────────────────────────────────
 
 COMMAND 3: Export ungeocoded rows to JSON first
 
-  # Export as JSON (wrangler native format)
-  npx wrangler d1 execute WY_DB --local \
+  # Export as JSON (./scripts/wr native format)
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" \
     --json > ../data/voters_addr_norm_to_geocode.json
 
@@ -188,7 +188,7 @@ EOF
 COMMAND 6: Sample inspection—view first 10 rows needing geocoding
 
   # Export just the first 10 for a quick sanity check
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL LIMIT 10;" \
     --json | jq '.[] | {voter_id, addr1, city, state, zip}' | head -20
 
@@ -199,18 +199,18 @@ COMMAND 7: After geocoding—import results back into D1
   # Assuming data/voters_addr_norm_geocoded.csv has been populated by the geocoding service
   
   # Create a temporary table to load CSV
-  npx wrangler d1 execute WY_DB --local --command \
+  ./scripts/wr d1 execute WY_DB --local --command \
     "CREATE TEMPORARY TABLE voters_geocoded_temp (voter_id TEXT, lat REAL, lng REAL, status TEXT);"
 
   # Load CSV (depends on D1 support; if not native, use intermediate JSON)
   # Alternative: convert CSV to SQL INSERTs
 
   # Update voters_addr_norm from temp table
-  npx wrangler d1 execute WY_DB --local --command \
+  ./scripts/wr d1 execute WY_DB --local --command \
     "UPDATE voters_addr_norm SET lat = vg.lat, lng = vg.lng FROM voters_geocoded_temp vg WHERE voters_addr_norm.voter_id = vg.voter_id AND vg.status = 'OK';"
 
   # Verify updates
-  npx wrangler d1 execute WY_DB --local \
+  ./scripts/wr d1 execute WY_DB --local \
     --command "SELECT COUNT(*) as updated_rows FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
 
 ════════════════════════════════════════════════════════════════════════════════
@@ -309,8 +309,8 @@ and can optionally store its coordinates (lat/lng). This allows the frontend to:
 
 Phase 1: Apply the Migration
   □ Review worker/migrations_wy/0014_add_lat_lng_to_voters_addr_norm.sql
-  □ Test locally: npx wrangler d1 migrations apply WY_DB --local
-  □ Verify schema: npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+  □ Test locally: ./scripts/wr d1 migrations apply WY_DB --local
+  □ Verify schema: ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 Phase 2: Export Data for Geocoding
   □ Use COMMAND 2 to check row counts

@@ -71,8 +71,13 @@ export function buildCivicItemFromLso(bill = {}) {
     console.warn(`⚠️  LSO bill ${bill.billNum} missing shortTitle; setting short_title="Unavailable"`);
   }
 
+  // Use composite ID format: ${year}_${billNumber} to avoid PRIMARY KEY conflicts
+  // This allows the same bill_number to exist in multiple legislative sessions
+  const year = String(bill.year || "");
+  const compositeId = year && billNumber ? `${year}_${billNumber}` : billNumber;
+
   return {
-    id: billNumber, // use LSO bill number as stable id
+    id: compositeId, // Composite ID: "2026_HB0011" prevents cross-session collisions
     kind: "bill",
     source: "lso",
     level: "statewide",
@@ -83,7 +88,7 @@ export function buildCivicItemFromLso(bill = {}) {
     summary: shortTitle || null,
     short_title: shortTitle || "Unavailable",
     status,
-    legislative_session: String(bill.year || ""),
+    legislative_session: year,
     chamber: chamberFromBillNum(bill.billNum),
     external_ref_id: bill.billNum || null,
     external_url,

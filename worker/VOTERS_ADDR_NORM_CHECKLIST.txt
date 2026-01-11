@@ -34,21 +34,21 @@ QUICK COMMANDS
 cd /home/anchor/projects/this-is-us/worker
 
 --- Verify Schema ---
-npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 --- Check Row Counts ---
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as total FROM voters_addr_norm;"
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as needing_geocode FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
-npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) as geocoded FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) as total FROM voters_addr_norm;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) as needing_geocode FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
+./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) as geocoded FROM voters_addr_norm WHERE lat IS NOT NULL AND lng IS NOT NULL;"
 
 --- Export to JSON ---
-npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" --json > ../data/voters_addr_norm_to_geocode.json
+./scripts/wr d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;" --json > ../data/voters_addr_norm_to_geocode.json
 
 --- JSON to CSV (using jq) ---
 jq -r '.[] | [.voter_id, .addr1, .city, .state, .zip] | @csv' ../data/voters_addr_norm_to_geocode.json > ../data/voters_addr_norm_to_geocode.csv
 
 --- View first 5 rows needing geocoding ---
-npx wrangler d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL LIMIT 5;" --json | jq '.'
+./scripts/wr d1 execute WY_DB --local --command "SELECT voter_id, addr1, city, state, zip FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL LIMIT 5;" --json | jq '.'
 
 ════════════════════════════════════════════════════════════════════════════════
 EXPORT/GEOCODE/IMPORT FLOW
@@ -90,11 +90,11 @@ PHASE BREAKDOWN
 
 PHASE 1: APPLY MIGRATION
   □ Review: worker/migrations_wy/0014_add_lat_lng_to_voters_addr_norm.sql
-  □ Apply: npx wrangler d1 migrations apply WY_DB --local
-  □ Verify: npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+  □ Apply: ./scripts/wr d1 migrations apply WY_DB --local
+  □ Verify: ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
 
 PHASE 2: EXPORT
-  □ Export JSON: npx wrangler d1 execute WY_DB --local ... --json > voters_addr_norm_to_geocode.json
+  □ Export JSON: ./scripts/wr d1 execute WY_DB --local ... --json > voters_addr_norm_to_geocode.json
   □ Convert CSV: jq -r '.[] | [.voter_id, .addr1, .city, .state, .zip] | @csv' ... > voters_addr_norm_to_geocode.csv
   □ Verify: wc -l voters_addr_norm_to_geocode.csv (should be ~274,657 including header)
 
@@ -162,11 +162,11 @@ TROUBLESHOOTING
 ════════════════════════════════════════════════════════════════════════════════
 
 Q: How do I check if the migration was applied?
-A: npx wrangler d1 execute WY_DB --local --command ".schema voters_addr_norm"
+A: ./scripts/wr d1 execute WY_DB --local --command ".schema voters_addr_norm"
    Should show lat and lng columns.
 
 Q: How many rows need geocoding?
-A: npx wrangler d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
+A: ./scripts/wr d1 execute WY_DB --local --command "SELECT COUNT(*) FROM voters_addr_norm WHERE lat IS NULL OR lng IS NULL;"
 
 Q: What if the Census geocoder returns multiple matches for an address?
 A: Mark status as MULTIPLE_MATCHES; do not auto-update lat/lng. Review manually or

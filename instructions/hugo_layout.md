@@ -19,7 +19,7 @@
 
 ## Verification Steps
 1. `hugo server --baseURL http://localhost:1313 --bind 0.0.0.0`
-2. `npx wrangler dev --local` in `worker/` (ensure pending-bills endpoint returns data).
+2. `./scripts/wr dev --local` in `worker/` (ensure pending-bills endpoint returns data).
 3. Visit `http://localhost:1313/civic/pending/`; ensure red debug bar and cards appear.
 4. Network tab: `200` from `/api/civic/pending-bills-with-topics` and non-empty JSON payload.
 

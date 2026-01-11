@@ -44,20 +44,20 @@ This proposal will clear **bill and idea content** while preserving:
 # ==========================================
 
 # 1. Delete civic_item_verification (references civic_items)
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_item_verification;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_item_verification;" --local
 
 # 2. Delete civic_item_ai_tags (references civic_items via item_id)
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_item_ai_tags;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_item_ai_tags;" --local
 
 # 3. Delete bill_sponsors (has FK to civic_items with ON DELETE CASCADE)
 # But delete explicitly first for clarity
-npx wrangler d1 execute wy_db --command "DELETE FROM bill_sponsors;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM bill_sponsors;" --local
 
 # 4. Delete civic_items (main table with cascading deletes)
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_items;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_items;" --local
 
 # 5. Delete votes where target_type='civic_item' (but keep townhall_post votes if any)
-npx wrangler d1 execute wy_db --command "DELETE FROM votes WHERE target_type = 'civic_item';" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM votes WHERE target_type = 'civic_item';" --local
 ```
 
 ### Commands for EVENTS_DB
@@ -69,16 +69,16 @@ npx wrangler d1 execute wy_db --command "DELETE FROM votes WHERE target_type = '
 
 # 6. Delete hot_topic_civic_items (links topics to test bills)
 #    DO NOT DELETE hot_topics itself!
-npx wrangler d1 execute events_db --command "DELETE FROM hot_topic_civic_items;" --local
+./scripts/wr d1 execute events_db --command "DELETE FROM hot_topic_civic_items;" --local
 
 # 7. Delete townhall_posts (test discussion threads)
 #    Keep this for now OR delete - depends on your preference
 #    Assuming you want to clear test data:
-npx wrangler d1 execute events_db --command "DELETE FROM townhall_posts;" --local
+./scripts/wr d1 execute events_db --command "DELETE FROM townhall_posts;" --local
 
 # Note: townhall_replies will cascade delete if townhall_posts has foreign key
 # Verify your schema - if townhall_replies exists and references townhall_posts:
-# npx wrangler d1 execute events_db --command "DELETE FROM townhall_replies;" --local
+# ./scripts/wr d1 execute events_db --command "DELETE FROM townhall_replies;" --local
 ```
 
 ---
@@ -94,26 +94,26 @@ echo "🔄 Clearing civic bill and idea content..."
 
 # WY_DB Tables
 echo "  [1/7] Deleting civic_item_verification..."
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_item_verification;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_item_verification;" --local
 
 echo "  [2/7] Deleting civic_item_ai_tags..."
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_item_ai_tags;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_item_ai_tags;" --local
 
 echo "  [3/7] Deleting bill_sponsors..."
-npx wrangler d1 execute wy_db --command "DELETE FROM bill_sponsors;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM bill_sponsors;" --local
 
 echo "  [4/7] Deleting civic_items..."
-npx wrangler d1 execute wy_db --command "DELETE FROM civic_items;" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM civic_items;" --local
 
 echo "  [5/7] Deleting civic_item votes..."
-npx wrangler d1 execute wy_db --command "DELETE FROM votes WHERE target_type = 'civic_item';" --local
+./scripts/wr d1 execute wy_db --command "DELETE FROM votes WHERE target_type = 'civic_item';" --local
 
 # EVENTS_DB Tables
 echo "  [6/7] Deleting hot_topic_civic_items..."
-npx wrangler d1 execute events_db --command "DELETE FROM hot_topic_civic_items;" --local
+./scripts/wr d1 execute events_db --command "DELETE FROM hot_topic_civic_items;" --local
 
 echo "  [7/7] Deleting townhall_posts..."
-npx wrangler d1 execute events_db --command "DELETE FROM townhall_posts;" --local
+./scripts/wr d1 execute events_db --command "DELETE FROM townhall_posts;" --local
 
 echo "✅ Reset complete! Preparing verification..."
 ```
@@ -131,38 +131,38 @@ After running the reset commands, verify with these inspection commands:
 
 echo "=== WY_DB Content Verification ==="
 echo "civic_items count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_items;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_items;" --local
 
 echo "civic_item_ai_tags count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_item_ai_tags;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_item_ai_tags;" --local
 
 echo "bill_sponsors count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM bill_sponsors;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM bill_sponsors;" --local
 
 echo "civic_item_verification count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_item_verification;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM civic_item_verification;" --local
 
 echo "votes (civic_item only) count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM votes WHERE target_type = 'civic_item';" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM votes WHERE target_type = 'civic_item';" --local
 
 echo ""
 echo "=== EVENTS_DB Content Verification ==="
 echo "hot_topic_civic_items count:"
-npx wrangler d1 execute events_db --command "SELECT COUNT(*) as count FROM hot_topic_civic_items;" --local
+./scripts/wr d1 execute events_db --command "SELECT COUNT(*) as count FROM hot_topic_civic_items;" --local
 
 echo "townhall_posts count:"
-npx wrangler d1 execute events_db --command "SELECT COUNT(*) as count FROM townhall_posts;" --local
+./scripts/wr d1 execute events_db --command "SELECT COUNT(*) as count FROM townhall_posts;" --local
 
 echo ""
 echo "=== Confirming Preserved Data ==="
 echo "hot_topics count (should be 6):"
-npx wrangler d1 execute events_db --command "SELECT COUNT(*) as count FROM hot_topics;" --local
+./scripts/wr d1 execute events_db --command "SELECT COUNT(*) as count FROM hot_topics;" --local
 
 echo "wy_legislators count (should be 93):"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM wy_legislators;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM wy_legislators;" --local
 
 echo "voters_addr_norm count:"
-npx wrangler d1 execute wy_db --command "SELECT COUNT(*) as count FROM voters_addr_norm;" --local
+./scripts/wr d1 execute wy_db --command "SELECT COUNT(*) as count FROM voters_addr_norm;" --local
 ```
 
 ---
